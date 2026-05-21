@@ -117,6 +117,16 @@
       margin-top: 10px;
     }
 
+    #input-foto { display: none; }
+
+    .preview-foto {
+      width: 100%;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      display: none;
+      border: 1.5px solid var(--gris-borde);
+    }
+
     .exito-circulo {
       width: 76px; height: 76px; border-radius: 50%;
       background: var(--verde-claro);
@@ -125,6 +135,10 @@
     }
     .exito-titulo { text-align: center; font-size: 22px; font-weight: 600; }
     .exito-dato { text-align: center; font-size: 14px; color: var(--gris-texto); margin-top: 4px; }
+    .exito-foto {
+      width: 100%; border-radius: 14px; margin-top: 18px;
+      border: 1.5px solid var(--gris-borde); display: none;
+    }
     .siguiente {
       background: var(--gris-fondo); border-radius: 12px;
       padding: 14px; text-align: center; margin-top: 22px;
@@ -136,11 +150,10 @@
 <body>
   <div class="app">
 
-    <!-- PANTALLA 1: PIN -->
     <div class="pantalla activa" id="p-pin">
       <div class="marca">CleanTrack</div>
       <div class="area-info">
-        <div class="nombre" id="area-nombre">Lobby Principal</div>
+        <div class="nombre" id="area-nombre">Baño Piso 1 — Mujeres</div>
         <div class="edificio" id="area-edificio">Torre Empresarial Norte</div>
       </div>
       <div class="label">Ingresa tu PIN para registrar</div>
@@ -166,26 +179,30 @@
       </div>
     </div>
 
-    <!-- PANTALLA 2: CONFIRMAR -->
     <div class="pantalla" id="p-confirmar">
       <div class="marca">CleanTrack</div>
       <div class="saludo">
-        <div class="circulo">👋</div>
+        <div class="circulo">&#128075;</div>
         <div class="hola" id="saludo-nombre">Hola, María G.</div>
         <div class="sub" id="saludo-area">Baño Piso 1 — Mujeres</div>
       </div>
-      <div class="aviso" id="aviso-foto">📷 Hoy se requiere una foto de esta área</div>
-      <button class="btn btn-azul" id="btn-principal" onclick="ir('p-exito')">Tomar foto y registrar</button>
+      <div class="aviso" id="aviso-foto">&#128247; Hoy se requiere una foto de esta área</div>
+
+      <img class="preview-foto" id="preview-foto" alt="Foto del área" />
+
+      <input type="file" id="input-foto" accept="image/*" capture="environment" onchange="fotoTomada(event)" />
+
+      <button class="btn btn-azul" id="btn-principal" onclick="accionPrincipal()">Tomar foto del área</button>
       <button class="btn btn-fantasma" onclick="ir('p-exito')">Reportar una incidencia</button>
     </div>
 
-    <!-- PANTALLA 3: ÉXITO -->
     <div class="pantalla" id="p-exito">
       <div class="marca">CleanTrack</div>
-      <div class="exito-circulo">✅</div>
+      <div class="exito-circulo">&#9989;</div>
       <div class="exito-titulo">Área registrada</div>
       <div class="exito-dato" id="exito-hora">9:41 am</div>
       <div class="exito-dato">Baño Piso 1 — Mujeres</div>
+      <img class="exito-foto" id="exito-foto" alt="Foto registrada" />
       <div class="siguiente">
         Siguiente área asignada
         <strong>Pasillo Piso 2</strong>
@@ -197,7 +214,9 @@
 
   <script>
     var pin = "";
-    var pideFoto = true; // En el sistema real, esto lo decide el servidor de forma aleatoria
+    var pideFoto = true;
+    var fotoLista = false;
+    var fotoDataURL = null;
 
     function press(n) {
       if (pin.length >= 4) return;
@@ -217,18 +236,48 @@
       }
     }
     function entrar() {
-      // Ajusta el botón y el aviso según si hoy pide foto
       var aviso = document.getElementById("aviso-foto");
       var btn = document.getElementById("btn-principal");
+      fotoLista = false;
+      document.getElementById("preview-foto").style.display = "none";
       if (pideFoto) {
         aviso.style.display = "block";
-        btn.textContent = "Tomar foto y registrar";
+        btn.textContent = "Tomar foto del área";
       } else {
         aviso.style.display = "none";
         btn.textContent = "Confirmar área limpiada";
       }
       ir("p-confirmar");
     }
+
+    function accionPrincipal() {
+      if (!pideFoto) {
+        ir("p-exito");
+        return;
+      }
+      if (!fotoLista) {
+        document.getElementById("input-foto").click();
+      } else {
+        ir("p-exito");
+      }
+    }
+
+    function fotoTomada(event) {
+      var archivo = event.target.files[0];
+      if (!archivo) return;
+      var lector = new FileReader();
+      lector.onload = function(e) {
+        fotoDataURL = e.target.result;
+        var preview = document.getElementById("preview-foto");
+        preview.src = fotoDataURL;
+        preview.style.display = "block";
+        fotoLista = true;
+        document.getElementById("btn-principal").textContent = "Registrar área con esta foto";
+        document.getElementById("aviso-foto").style.display = "none";
+      };
+      lector.readAsDataURL(archivo);
+    }
+
     function ir(id) {
       document.querySelectorAll(".pantalla").forEach(function(p){ p.classList.remove("activa"); });
       document.getElementById(id).classList.add("activa");
@@ -239,12 +288,22 @@
         h = h % 12; if (h === 0) h = 12;
         m = m < 10 ? "0" + m : m;
         document.getElementById("exito-hora").textContent = h + ":" + m + " " + ampm;
+        var exitoFoto = document.getElementById("exito-foto");
+        if (fotoDataURL) {
+          exitoFoto.src = fotoDataURL;
+          exitoFoto.style.display = "block";
+        } else {
+          exitoFoto.style.display = "none";
+        }
       }
     }
+
     function reiniciar() {
       pin = "";
       pintarDots();
-      // Alterna si pide foto, para que veas ambos casos
+      fotoLista = false;
+      fotoDataURL = null;
+      document.getElementById("input-foto").value = "";
       pideFoto = !pideFoto;
       ir("p-pin");
     }
