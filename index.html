@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CleanTrack — Registro de área</title>
+
+  <!-- Conexión con Supabase (la librería que habla con tu base de datos) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root {
       --verde: #1D9E75;
@@ -16,6 +20,8 @@
       --gris-borde: #E2E0D8;
       --texto: #2C2C2A;
       --blanco: #FFFFFF;
+      --rojo: #A32D2D;
+      --rojo-claro: #FCEBEB;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
@@ -108,6 +114,7 @@
       cursor: pointer; transition: transform 0.08s, opacity 0.15s;
     }
     .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.6; }
     .btn-verde { background: var(--verde); color: #fff; }
     .btn-azul { background: var(--azul); color: #fff; }
     .btn-fantasma {
@@ -145,6 +152,13 @@
       font-size: 13px; color: var(--gris-texto);
     }
     .siguiente strong { color: var(--texto); display: block; margin-top: 2px; font-size: 14px; }
+
+    .estado-guardado {
+      text-align: center; font-size: 12px; margin-top: 14px;
+      padding: 8px; border-radius: 10px;
+    }
+    .estado-ok { background: var(--verde-claro); color: var(--verde-texto); }
+    .estado-error { background: var(--rojo-claro); color: var(--rojo); }
   </style>
 </head>
 <body>
@@ -193,7 +207,7 @@
       <input type="file" id="input-foto" accept="image/*" capture="environment" onchange="fotoTomada(event)" />
 
       <button class="btn btn-azul" id="btn-principal" onclick="accionPrincipal()">Tomar foto del área</button>
-      <button class="btn btn-fantasma" onclick="ir('p-exito')">Reportar una incidencia</button>
+      <button class="btn btn-fantasma" onclick="registrar(false)">Reportar una incidencia</button>
     </div>
 
     <div class="pantalla" id="p-exito">
@@ -203,6 +217,7 @@
       <div class="exito-dato" id="exito-hora">9:41 am</div>
       <div class="exito-dato">Baño Piso 1 — Mujeres</div>
       <img class="exito-foto" id="exito-foto" alt="Foto registrada" />
+      <div class="estado-guardado" id="estado-guardado"></div>
       <div class="siguiente">
         Siguiente área asignada
         <strong>Pasillo Piso 2</strong>
@@ -213,6 +228,30 @@
   </div>
 
   <script>
+    // ===================================================================
+    //  PEGA AQUÍ TUS DOS DATOS DE SUPABASE
+    //  Reemplaza el texto entre comillas por tus valores reales.
+    // ===================================================================
+    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
+    // ===================================================================
+
+    // Crear el cliente que habla con tu base de datos
+    let db = null;
+try {
+  const { createClient } = supabase;
+  db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (e) {
+  console.error("No se pudo conectar a Supabase:", e);
+}
+
+    // Datos del área (en el sistema real vendrían del QR escaneado)
+    var datosArea = {
+      area: "Baño Piso 1 — Mujeres",
+      edificio: "Torre Empresarial Norte",
+      nombre_empleado: "María G."
+    };
+
     var pin = "";
     var pideFoto = true;
     var fotoLista = false;
@@ -252,13 +291,13 @@
 
     function accionPrincipal() {
       if (!pideFoto) {
-        ir("p-exito");
+        registrar(false);
         return;
       }
       if (!fotoLista) {
         document.getElementById("input-foto").click();
       } else {
-        ir("p-exito");
+        registrar(true);
       }
     }
 
@@ -278,7 +317,52 @@
       lector.readAsDataURL(archivo);
     }
 
-    function ir(id) {
+    // ===== AQUÍ OCURRE LA MAGIA: GUARDAR EN LA BASE DE DATOS =====
+    async function registrar(conFoto) {
+      // Bloquear botones mientras guarda
+      document.getElementById("btn-principal").disabled = true;
+
+      // Pasar a la pantalla de éxito de inmediato (buena experiencia)
+      ir("p-exito", conFoto);
+
+      var estado = document.getElementById("estado-guardado");
+      estado.className = "estado-guardado";
+      estado.textContent = "Guardando...";
+
+      try {
+        if (!db) {
+          estado.className = "estado-guardado estado-error";
+          estado.textContent = "Sin conexión a la base de datos.";
+          return;
+        }
+        const { data, error } = await db
+          .from("registros")
+          .insert([{
+            pin_empleado: pin,
+            nombre_empleado: datosArea.nombre_empleado,
+            area: datosArea.area,
+            edificio: datosArea.edificio,
+            con_foto: conFoto
+          }]);
+
+        if (error) {
+          estado.className = "estado-guardado estado-error";
+          estado.textContent = "No se pudo guardar. Revisa la conexión.";
+          console.error("Error al guardar:", error);
+        } else {
+          estado.className = "estado-guardado estado-ok";
+          estado.textContent = "✓ Guardado en la base de datos";
+        }
+      } catch (e) {
+        estado.className = "estado-guardado estado-error";
+        estado.textContent = "No se pudo guardar. Revisa la conexión.";
+        console.error("Error:", e);
+      }
+
+      document.getElementById("btn-principal").disabled = false;
+    }
+
+    function ir(id, conFoto) {
       document.querySelectorAll(".pantalla").forEach(function(p){ p.classList.remove("activa"); });
       document.getElementById(id).classList.add("activa");
       if (id === "p-exito") {
@@ -289,7 +373,7 @@
         m = m < 10 ? "0" + m : m;
         document.getElementById("exito-hora").textContent = h + ":" + m + " " + ampm;
         var exitoFoto = document.getElementById("exito-foto");
-        if (fotoDataURL) {
+        if (conFoto && fotoDataURL) {
           exitoFoto.src = fotoDataURL;
           exitoFoto.style.display = "block";
         } else {
@@ -304,6 +388,7 @@
       fotoLista = false;
       fotoDataURL = null;
       document.getElementById("input-foto").value = "";
+      document.getElementById("estado-guardado").textContent = "";
       pideFoto = !pideFoto;
       ir("p-pin");
     }
