@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CleanTrack — Registro de área</title>
+  <style>
+    :root {
+      --verde: #1D9E75;
+      --verde-claro: #EAF3DE;
+      --verde-texto: #0F6E56;
+      --azul: #185FA5;
+      --azul-claro: #E6F1FB;
+      --gris-fondo: #F5F4EF;
+      --gris-texto: #6B6A64;
+      --gris-borde: #E2E0D8;
+      --texto: #2C2C2A;
+      --blanco: #FFFFFF;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--gris-fondo);
+      color: var(--texto);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .app {
+      width: 100%;
+      max-width: 380px;
+      background: var(--blanco);
+      border-radius: 24px;
+      padding: 28px 24px 32px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+    }
+    .marca {
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gris-texto);
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+    .area-info {
+      background: var(--azul-claro);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .area-info .nombre { font-size: 18px; font-weight: 600; color: var(--azul); }
+    .area-info .edificio { font-size: 13px; color: var(--gris-texto); margin-top: 3px; }
+
+    .label { text-align: center; font-size: 14px; color: var(--gris-texto); margin-bottom: 14px; }
+
+    .pin-dots { display: flex; gap: 14px; justify-content: center; margin-bottom: 26px; }
+    .dot {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid var(--gris-borde); background: transparent;
+      transition: all 0.15s;
+    }
+    .dot.full { background: var(--azul); border-color: var(--azul); }
+
+    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .key {
+      aspect-ratio: 1.6;
+      border: none;
+      border-radius: 14px;
+      background: var(--gris-fondo);
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--texto);
+      cursor: pointer;
+      transition: transform 0.08s, background 0.15s;
+    }
+    .key:active { transform: scale(0.94); background: var(--gris-borde); }
+    .key.accion { background: transparent; font-size: 16px; color: var(--gris-texto); }
+
+    .pantalla { display: none; }
+    .pantalla.activa { display: block; animation: aparecer 0.3s ease; }
+    @keyframes aparecer { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .saludo { text-align: center; padding: 6px 0 18px; }
+    .circulo {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: var(--verde-claro);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 30px;
+    }
+    .saludo .hola { font-size: 18px; font-weight: 600; }
+    .saludo .sub { font-size: 13px; color: var(--gris-texto); margin-top: 2px; }
+
+    .aviso {
+      background: #FAEEDA; color: #854F0B;
+      border-radius: 12px; padding: 12px 14px;
+      font-size: 13px; text-align: center; margin-bottom: 16px;
+    }
+
+    .btn {
+      width: 100%; padding: 16px;
+      border: none; border-radius: 14px;
+      font-size: 16px; font-weight: 600;
+      cursor: pointer; transition: transform 0.08s, opacity 0.15s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-verde { background: var(--verde); color: #fff; }
+    .btn-azul { background: var(--azul); color: #fff; }
+    .btn-fantasma {
+      background: transparent; color: var(--gris-texto);
+      border: 1.5px solid var(--gris-borde);
+      font-weight: 500; font-size: 14px; padding: 13px;
+      margin-top: 10px;
+    }
+
+    .exito-circulo {
+      width: 76px; height: 76px; border-radius: 50%;
+      background: var(--verde-claro);
+      display: flex; align-items: center; justify-content: center;
+      margin: 18px auto 18px; font-size: 38px;
+    }
+    .exito-titulo { text-align: center; font-size: 22px; font-weight: 600; }
+    .exito-dato { text-align: center; font-size: 14px; color: var(--gris-texto); margin-top: 4px; }
+    .siguiente {
+      background: var(--gris-fondo); border-radius: 12px;
+      padding: 14px; text-align: center; margin-top: 22px;
+      font-size: 13px; color: var(--gris-texto);
+    }
+    .siguiente strong { color: var(--texto); display: block; margin-top: 2px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- PANTALLA 1: PIN -->
+    <div class="pantalla activa" id="p-pin">
+      <div class="marca">CleanTrack</div>
+      <div class="area-info">
+        <div class="nombre" id="area-nombre">Lobby Principal</div>
+        <div class="edificio" id="area-edificio">Torre Empresarial Norte</div>
+      </div>
+      <div class="label">Ingresa tu PIN para registrar</div>
+      <div class="pin-dots">
+        <div class="dot" id="dot1"></div>
+        <div class="dot" id="dot2"></div>
+        <div class="dot" id="dot3"></div>
+        <div class="dot" id="dot4"></div>
+      </div>
+      <div class="keypad">
+        <button class="key" onclick="press('1')">1</button>
+        <button class="key" onclick="press('2')">2</button>
+        <button class="key" onclick="press('3')">3</button>
+        <button class="key" onclick="press('4')">4</button>
+        <button class="key" onclick="press('5')">5</button>
+        <button class="key" onclick="press('6')">6</button>
+        <button class="key" onclick="press('7')">7</button>
+        <button class="key" onclick="press('8')">8</button>
+        <button class="key" onclick="press('9')">9</button>
+        <button class="key accion" onclick="borrar()">borrar</button>
+        <button class="key" onclick="press('0')">0</button>
+        <button class="key accion" style="opacity:0;pointer-events:none">·</button>
+      </div>
+    </div>
+
+    <!-- PANTALLA 2: CONFIRMAR -->
+    <div class="pantalla" id="p-confirmar">
+      <div class="marca">CleanTrack</div>
+      <div class="saludo">
+        <div class="circulo">👋</div>
+        <div class="hola" id="saludo-nombre">Hola, María G.</div>
+        <div class="sub" id="saludo-area">Baño Piso 1 — Mujeres</div>
+      </div>
+      <div class="aviso" id="aviso-foto">📷 Hoy se requiere una foto de esta área</div>
+      <button class="btn btn-azul" id="btn-principal" onclick="ir('p-exito')">Tomar foto y registrar</button>
+      <button class="btn btn-fantasma" onclick="ir('p-exito')">Reportar una incidencia</button>
+    </div>
+
+    <!-- PANTALLA 3: ÉXITO -->
+    <div class="pantalla" id="p-exito">
+      <div class="marca">CleanTrack</div>
+      <div class="exito-circulo">✅</div>
+      <div class="exito-titulo">Área registrada</div>
+      <div class="exito-dato" id="exito-hora">9:41 am</div>
+      <div class="exito-dato">Baño Piso 1 — Mujeres</div>
+      <div class="siguiente">
+        Siguiente área asignada
+        <strong>Pasillo Piso 2</strong>
+      </div>
+      <button class="btn btn-fantasma" style="margin-top:22px" onclick="reiniciar()">Registrar otra área (reiniciar demo)</button>
+    </div>
+
+  </div>
+
+  <script>
+    var pin = "";
+    var pideFoto = true; // En el sistema real, esto lo decide el servidor de forma aleatoria
+
+    function press(n) {
+      if (pin.length >= 4) return;
+      pin += n;
+      pintarDots();
+      if (pin.length === 4) {
+        setTimeout(entrar, 250);
+      }
+    }
+    function borrar() {
+      pin = pin.slice(0, -1);
+      pintarDots();
+    }
+    function pintarDots() {
+      for (var i = 1; i <= 4; i++) {
+        document.getElementById("dot" + i).classList.toggle("full", pin.length >= i);
+      }
+    }
+    function entrar() {
+      // Ajusta el botón y el aviso según si hoy pide foto
+      var aviso = document.getElementById("aviso-foto");
+      var btn = document.getElementById("btn-principal");
+      if (pideFoto) {
+        aviso.style.display = "block";
+        btn.textContent = "Tomar foto y registrar";
+      } else {
+        aviso.style.display = "none";
+        btn.textContent = "Confirmar área limpiada";
+      }
+      ir("p-confirmar");
+    }
+    function ir(id) {
+      document.querySelectorAll(".pantalla").forEach(function(p){ p.classList.remove("activa"); });
+      document.getElementById(id).classList.add("activa");
+      if (id === "p-exito") {
+        var ahora = new Date();
+        var h = ahora.getHours(), m = ahora.getMinutes();
+        var ampm = h >= 12 ? "pm" : "am";
+        h = h % 12; if (h === 0) h = 12;
+        m = m < 10 ? "0" + m : m;
+        document.getElementById("exito-hora").textContent = h + ":" + m + " " + ampm;
+      }
+    }
+    function reiniciar() {
+      pin = "";
+      pintarDots();
+      // Alterna si pide foto, para que veas ambos casos
+      pideFoto = !pideFoto;
+      ir("p-pin");
+    }
+  </script>
+</body>
+</html>
