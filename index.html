@@ -9,227 +9,212 @@
 
   <style>
     :root {
-      --verde: #1D9E75;
-      --verde-claro: #EAF3DE;
-      --verde-texto: #0F6E56;
-      --azul: #185FA5;
-      --azul-claro: #E6F1FB;
-      --gris-fondo: #F5F4EF;
+      --gris-verde-900: #5F7268;
+      --gris-verde-700: #798C81;
+      --gris-verde-500: #8A9D92;
+      --gris-verde-claro: #EAEEEB;
+      --gris-fondo: #ECEBE4;
       --gris-texto: #6B6A64;
       --gris-borde: #E2E0D8;
-      --texto: #2C2C2A;
+      --texto: #1F2A37;
       --blanco: #FFFFFF;
       --rojo: #A32D2D;
       --rojo-claro: #FCEBEB;
+      --ambar-claro: #FAEEDA;
+      --ambar-texto: #854F0B;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--gris-fondo);
       color: var(--texto);
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       padding: 20px;
+      background:
+        radial-gradient(circle at 25% 20%, rgba(121,140,129,0.08), transparent 42%),
+        radial-gradient(circle at 80% 85%, rgba(95,114,104,0.06), transparent 45%),
+        linear-gradient(160deg, #F1F0EA 0%, #E7E6DF 100%);
     }
     .app {
-      width: 100%;
-      max-width: 380px;
+      width: 100%; max-width: 380px;
       background: var(--blanco);
-      border-radius: 24px;
-      padding: 28px 24px 32px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+      border-radius: 22px;
+      box-shadow: 0 20px 50px rgba(95,114,104,0.18), 0 4px 12px rgba(0,0,0,0.08);
+      overflow: hidden;
     }
-    .marca {
-      text-align: center;
-      font-size: 12px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--gris-texto);
-      font-weight: 600;
-      margin-bottom: 18px;
+    /* Cabecera con marca */
+    .cabecera {
+      background: linear-gradient(135deg, var(--gris-verde-700), var(--gris-verde-900));
+      padding: 18px 24px;
+      display: flex; align-items: center; gap: 10px;
+      justify-content: center;
     }
-    .logo-img { height: 240px; width: auto; display: block; margin: 0 auto 8px; border-radius: 8px; }
-    }
-    .area-info {
-      background: var(--azul-claro);
-      border-radius: 16px;
-      padding: 16px;
-      text-align: center;
-      margin-bottom: 22px;
-    }
-    .area-info .nombre { font-size: 18px; font-weight: 600; color: var(--azul); }
-    .area-info .edificio { font-size: 13px; color: var(--gris-texto); margin-top: 3px; }
+    .cabecera img { height: 30px; width: auto; border-radius: 7px; }
+    .cabecera .marca-texto { color: #fff; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
 
-    .label { text-align: center; font-size: 14px; color: var(--gris-texto); margin-bottom: 14px; }
+    .cuerpo { padding: 24px 24px 30px; }
+
+    .area-info {
+      background: var(--gris-verde-claro);
+      border: 1px solid #DCE3DE;
+      border-radius: 16px; padding: 18px; text-align: center; margin-bottom: 24px;
+    }
+    .area-info .etiqueta { font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gris-verde-700); font-weight: 700; margin-bottom: 6px; }
+    .area-info .nombre { font-size: 19px; font-weight: 600; color: var(--texto); }
+    .area-info .edificio { font-size: 13px; color: var(--gris-texto); margin-top: 4px; }
+
+    .label { text-align: center; font-size: 14px; color: var(--gris-texto); margin-bottom: 16px; }
     .label.error { color: var(--rojo); font-weight: 600; }
 
     .pin-dots { display: flex; gap: 14px; justify-content: center; margin-bottom: 26px; }
-    .dot {
-      width: 16px; height: 16px; border-radius: 50%;
-      border: 2px solid var(--gris-borde); background: transparent;
-      transition: all 0.15s;
-    }
-    .dot.full { background: var(--azul); border-color: var(--azul); }
+    .dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--gris-borde); background: transparent; transition: all 0.15s; }
+    .dot.full { background: var(--gris-verde-700); border-color: var(--gris-verde-700); }
     .dot.error { border-color: var(--rojo); background: var(--rojo); }
 
     .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
     .key {
-      aspect-ratio: 1.6;
-      border: none;
-      border-radius: 14px;
-      background: var(--gris-fondo);
-      font-size: 22px;
-      font-weight: 500;
-      color: var(--texto);
-      cursor: pointer;
-      transition: transform 0.08s, background 0.15s;
+      aspect-ratio: 1.6; border: 1px solid var(--gris-borde); border-radius: 14px;
+      background: #FBFAF7; font-size: 22px; font-weight: 500; color: var(--texto);
+      cursor: pointer; transition: transform 0.08s, background 0.15s;
     }
-    .key:active { transform: scale(0.94); background: var(--gris-borde); }
-    .key.accion { background: transparent; font-size: 16px; color: var(--gris-texto); }
+    .key:active { transform: scale(0.94); background: var(--gris-fondo); }
+    .key.accion { background: transparent; border-color: transparent; font-size: 14px; color: var(--gris-texto); font-weight: 600; }
     .key:disabled { opacity: 0.4; }
 
     .pantalla { display: none; }
     .pantalla.activa { display: block; animation: aparecer 0.3s ease; }
     @keyframes aparecer { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    .saludo { text-align: center; padding: 6px 0 18px; }
-    .circulo {
+    .icono-circulo {
       width: 64px; height: 64px; border-radius: 50%;
-      background: var(--verde-claro);
+      background: var(--gris-verde-claro);
       display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 14px;
-      font-size: 30px;
+      margin: 6px auto 14px;
     }
+    .icono-circulo svg { width: 32px; height: 32px; }
+    .saludo { text-align: center; padding: 0 0 18px; }
     .saludo .hola { font-size: 18px; font-weight: 600; }
     .saludo .sub { font-size: 13px; color: var(--gris-texto); margin-top: 2px; }
 
     .aviso {
-      background: #FAEEDA; color: #854F0B;
-      border-radius: 12px; padding: 12px 14px;
-      font-size: 13px; text-align: center; margin-bottom: 16px;
+      background: var(--ambar-claro); color: var(--ambar-texto);
+      border-radius: 12px; padding: 12px 14px; font-size: 13px;
+      text-align: center; margin-bottom: 16px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
     }
+    .aviso svg { width: 17px; height: 17px; flex-shrink: 0; }
 
     .btn {
-      width: 100%; padding: 16px;
-      border: none; border-radius: 14px;
-      font-size: 16px; font-weight: 600;
-      cursor: pointer; transition: transform 0.08s, opacity 0.15s;
+      width: 100%; padding: 16px; border: none; border-radius: 14px;
+      font-size: 16px; font-weight: 600; cursor: pointer;
+      transition: transform 0.08s, box-shadow 0.15s; color: #fff;
+      background: linear-gradient(135deg, var(--gris-verde-700), var(--gris-verde-900));
+      box-shadow: 0 4px 14px rgba(121,140,129,0.32);
     }
+    .btn:hover { box-shadow: 0 6px 20px rgba(121,140,129,0.45); }
     .btn:active { transform: scale(0.98); }
     .btn:disabled { opacity: 0.6; }
-    .btn-verde { background: var(--verde); color: #fff; }
-    .btn-azul { background: var(--azul); color: #fff; }
     .btn-fantasma {
       background: transparent; color: var(--gris-texto);
-      border: 1.5px solid var(--gris-borde);
-      font-weight: 500; font-size: 14px; padding: 13px;
-      margin-top: 10px;
+      border: 1.5px solid var(--gris-borde); font-weight: 500; font-size: 14px;
+      padding: 13px; margin-top: 10px; box-shadow: none;
     }
+    .btn-fantasma:hover { box-shadow: none; }
 
     #input-foto { display: none; }
-
-    .preview-foto {
-      width: 100%;
-      border-radius: 14px;
-      margin-bottom: 16px;
-      display: none;
-      border: 1.5px solid var(--gris-borde);
-    }
+    .preview-foto { width: 100%; border-radius: 14px; margin-bottom: 16px; display: none; border: 1.5px solid var(--gris-borde); }
 
     .exito-circulo {
       width: 76px; height: 76px; border-radius: 50%;
-      background: var(--verde-claro);
+      background: var(--gris-verde-claro);
       display: flex; align-items: center; justify-content: center;
-      margin: 18px auto 18px; font-size: 38px;
+      margin: 8px auto 18px;
     }
+    .exito-circulo svg { width: 40px; height: 40px; }
     .exito-titulo { text-align: center; font-size: 22px; font-weight: 600; }
     .exito-dato { text-align: center; font-size: 14px; color: var(--gris-texto); margin-top: 4px; }
-    .exito-foto {
-      width: 100%; border-radius: 14px; margin-top: 18px;
-      border: 1.5px solid var(--gris-borde); display: none;
-    }
-    .siguiente {
-      background: var(--gris-fondo); border-radius: 12px;
-      padding: 14px; text-align: center; margin-top: 22px;
-      font-size: 13px; color: var(--gris-texto);
-    }
-    .siguiente strong { color: var(--texto); display: block; margin-top: 2px; font-size: 14px; }
+    .exito-foto { width: 100%; border-radius: 14px; margin-top: 18px; border: 1.5px solid var(--gris-borde); display: none; }
 
-    .estado-guardado {
-      text-align: center; font-size: 12px; margin-top: 14px;
-      padding: 8px; border-radius: 10px;
-    }
-    .estado-ok { background: var(--verde-claro); color: var(--verde-texto); }
+    .estado-guardado { text-align: center; font-size: 12px; margin-top: 14px; padding: 8px; border-radius: 10px; }
+    .estado-ok { background: var(--gris-verde-claro); color: var(--gris-verde-900); }
     .estado-error { background: var(--rojo-claro); color: var(--rojo); }
-    .estado-cargando { background: var(--azul-claro); color: var(--azul); }
+    .estado-cargando { background: #EEF1EF; color: var(--gris-verde-700); }
   </style>
 </head>
 <body>
   <div class="app">
-
-    <div class="pantalla activa" id="p-pin">
-      <img src="logo.png" alt="CleanTrack" class="logo-img" />
-      <div class="area-info">
-        <div class="nombre" id="area-nombre">Baño Piso 1 — Mujeres</div>
-        <div class="edificio" id="area-edificio">Torre Empresarial Norte</div>
-      </div>
-      <div class="label" id="label-pin">Ingresa tu PIN para registrar</div>
-      <div class="pin-dots" id="pin-dots">
-        <div class="dot" id="dot1"></div>
-        <div class="dot" id="dot2"></div>
-        <div class="dot" id="dot3"></div>
-        <div class="dot" id="dot4"></div>
-      </div>
-      <div class="keypad" id="keypad">
-        <button class="key" onclick="press('1')">1</button>
-        <button class="key" onclick="press('2')">2</button>
-        <button class="key" onclick="press('3')">3</button>
-        <button class="key" onclick="press('4')">4</button>
-        <button class="key" onclick="press('5')">5</button>
-        <button class="key" onclick="press('6')">6</button>
-        <button class="key" onclick="press('7')">7</button>
-        <button class="key" onclick="press('8')">8</button>
-        <button class="key" onclick="press('9')">9</button>
-        <button class="key accion" onclick="borrar()">borrar</button>
-        <button class="key" onclick="press('0')">0</button>
-        <button class="key accion" style="opacity:0;pointer-events:none">·</button>
-      </div>
+    <div class="cabecera">
+      <img src="logo.png" alt="CleanTrack" />
+      <span class="marca-texto">CleanTrack</span>
     </div>
 
-    <div class="pantalla" id="p-confirmar">
-      <div class="marca">CleanTrack</div>
-      <div class="saludo">
-        <div class="circulo">&#128075;</div>
-        <div class="hola" id="saludo-nombre">Hola</div>
-        <div class="sub" id="saludo-area">Baño Piso 1 — Mujeres</div>
+    <div class="cuerpo">
+
+      <!-- PANTALLA PIN -->
+      <div class="pantalla activa" id="p-pin">
+        <div class="area-info">
+          <div class="etiqueta">Área a registrar</div>
+          <div class="nombre" id="area-nombre">Cargando área...</div>
+          <div class="edificio" id="area-edificio"></div>
+        </div>
+        <div class="label" id="label-pin">Ingresa tu PIN para registrar</div>
+        <div class="pin-dots" id="pin-dots">
+          <div class="dot" id="dot1"></div>
+          <div class="dot" id="dot2"></div>
+          <div class="dot" id="dot3"></div>
+          <div class="dot" id="dot4"></div>
+        </div>
+        <div class="keypad" id="keypad">
+          <button class="key" onclick="press('1')">1</button>
+          <button class="key" onclick="press('2')">2</button>
+          <button class="key" onclick="press('3')">3</button>
+          <button class="key" onclick="press('4')">4</button>
+          <button class="key" onclick="press('5')">5</button>
+          <button class="key" onclick="press('6')">6</button>
+          <button class="key" onclick="press('7')">7</button>
+          <button class="key" onclick="press('8')">8</button>
+          <button class="key" onclick="press('9')">9</button>
+          <button class="key accion" onclick="borrar()">Borrar</button>
+          <button class="key" onclick="press('0')">0</button>
+          <button class="key accion" style="opacity:0;pointer-events:none">·</button>
+        </div>
       </div>
-      <div class="aviso" id="aviso-foto">&#128247; Hoy se requiere una foto de esta área</div>
 
-      <img class="preview-foto" id="preview-foto" alt="Foto del área" />
+      <!-- PANTALLA CONFIRMAR -->
+      <div class="pantalla" id="p-confirmar">
+        <div class="saludo">
+          <div class="icono-circulo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#5F7268" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <div class="hola" id="saludo-nombre">Hola</div>
+          <div class="sub" id="saludo-area">—</div>
+        </div>
+        <div class="aviso" id="aviso-foto">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#854F0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          Hoy se requiere una foto de esta área
+        </div>
 
-      <input type="file" id="input-foto" accept="image/*" capture="environment" onchange="fotoTomada(event)" />
+        <img class="preview-foto" id="preview-foto" alt="Foto del área" />
+        <input type="file" id="input-foto" accept="image/*" capture="environment" onchange="fotoTomada(event)" />
 
-      <button class="btn btn-azul" id="btn-principal" onclick="accionPrincipal()">Tomar foto del área</button>
-      <button class="btn btn-fantasma" onclick="registrar(false)">Reportar una incidencia</button>
-    </div>
-
-    <div class="pantalla" id="p-exito">
-      <div class="marca">CleanTrack</div>
-      <div class="exito-circulo">&#9989;</div>
-      <div class="exito-titulo">Área registrada</div>
-      <div class="exito-dato" id="exito-hora">9:41 am</div>
-      <div class="exito-dato" id="exito-area">Baño Piso 1 — Mujeres</div>
-      <img class="exito-foto" id="exito-foto" alt="Foto registrada" />
-      <div class="estado-guardado" id="estado-guardado"></div>
-      <div class="siguiente">
-        Siguiente área asignada
-        <strong>Pasillo Piso 2</strong>
+        <button class="btn" id="btn-principal" onclick="accionPrincipal()">Tomar foto del área</button>
+        <button class="btn btn-fantasma" onclick="registrar(false)">Reportar una incidencia</button>
       </div>
-      <button class="btn btn-fantasma" style="margin-top:22px" onclick="reiniciar()">Registrar otra área (reiniciar demo)</button>
-    </div>
 
+      <!-- PANTALLA ÉXITO -->
+      <div class="pantalla" id="p-exito">
+        <div class="exito-circulo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#5F7268" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <div class="exito-titulo">Área registrada</div>
+        <div class="exito-dato" id="exito-hora">9:41 am</div>
+        <div class="exito-dato" id="exito-area">—</div>
+        <img class="exito-foto" id="exito-foto" alt="Foto registrada" />
+        <div class="estado-guardado" id="estado-guardado"></div>
+        <button class="btn btn-fantasma" style="margin-top:22px" onclick="reiniciar()">Registrar otra área</button>
+      </div>
+
+    </div>
   </div>
 
   <script>
@@ -244,32 +229,31 @@
       console.error("No se pudo conectar a Supabase:", e);
     }
 
-    var datosArea = {
-      id: null,
-      area: "Cargando área...",
-      edificio: ""
-    };
+    var datosArea = { id: null, area: "Cargando área...", edificio: "" };
+    var pin = "";
+    var empleadoNombre = null;
+    var pideFoto = false;
+    var fotoLista = false;
+    var fotoDataURL = null;
+    var fotoArchivo = null;
+    var verificando = false;
 
-    // Leer el ?area= del link del QR y buscar el área en la base de datos
+    // Leer el ?area= del QR y buscar el área real
     async function cargarArea() {
       var params = new URLSearchParams(window.location.search);
       var areaId = params.get("area");
-
       if (!areaId) {
         document.getElementById("area-nombre").textContent = "Área no especificada";
         document.getElementById("area-edificio").textContent = "Escanea un código QR válido";
         return;
       }
       if (!db) return;
-
       const { data, error } = await db.from("areas").select("*").eq("id", areaId).eq("activa", true).limit(1);
-
       if (error || !data || data.length === 0) {
         document.getElementById("area-nombre").textContent = "Área no encontrada";
         document.getElementById("area-edificio").textContent = "Verifica el código QR";
         return;
       }
-
       var a = data[0];
       datosArea.id = a.id;
       datosArea.area = a.nombre;
@@ -279,22 +263,12 @@
       document.getElementById("area-edificio").textContent = a.edificio;
     }
 
-    var pin = "";
-    var empleadoNombre = null;   // Se llena cuando el PIN es válido
-    var pideFoto = true;
-    var fotoLista = false;
-    var fotoDataURL = null;
-    var fotoArchivo = null;
-    var verificando = false;
-
     function press(n) {
       if (verificando) return;
       if (pin.length >= 4) return;
       pin += n;
       pintarDots();
-      if (pin.length === 4) {
-        verificarPin();
-      }
+      if (pin.length === 4) verificarPin();
     }
     function borrar() {
       if (verificando) return;
@@ -309,50 +283,31 @@
       }
     }
 
-    // ===== VERIFICAR EL PIN CONTRA LA BASE DE DATOS =====
     async function verificarPin() {
-      if (!db) {
-        mostrarErrorPin("Sin conexión");
-        return;
-      }
+      if (!db) { mostrarErrorPin("Sin conexión"); return; }
       verificando = true;
       document.getElementById("label-pin").textContent = "Verificando...";
       document.getElementById("label-pin").className = "label";
-
       try {
         const { data, error } = await db.rpc("verificar_pin", { pin_ingresado: pin });
-
-        if (error) {
-          console.error("Error al verificar PIN:", error);
-          mostrarErrorPin("Error al verificar. Intenta de nuevo.");
-          return;
-        }
-
+        if (error) { mostrarErrorPin("Error al verificar. Intenta de nuevo."); return; }
         if (data && data.length > 0) {
-          // PIN válido: guardar el nombre real y continuar
           empleadoNombre = data[0].nombre;
           verificando = false;
           entrar();
         } else {
-          // PIN no existe o empleado inactivo
           mostrarErrorPin("PIN no válido");
         }
-      } catch (e) {
-        console.error(e);
-        mostrarErrorPin("Error al verificar. Intenta de nuevo.");
-      }
+      } catch (e) { mostrarErrorPin("Error al verificar. Intenta de nuevo."); }
     }
 
     function mostrarErrorPin(mensaje) {
-      pintarDots(true);  // dots en rojo
+      pintarDots(true);
       var label = document.getElementById("label-pin");
       label.textContent = mensaje;
       label.className = "label error";
-      // Borrar el PIN automáticamente después de un instante
       setTimeout(function() {
-        pin = "";
-        pintarDots();
-        verificando = false;
+        pin = ""; pintarDots(); verificando = false;
         label.textContent = "Ingresa tu PIN para registrar";
         label.className = "label";
       }, 1200);
@@ -361,14 +316,12 @@
     function entrar() {
       var aviso = document.getElementById("aviso-foto");
       var btn = document.getElementById("btn-principal");
-      fotoLista = false;
-      fotoArchivo = null;
+      fotoLista = false; fotoArchivo = null;
       document.getElementById("preview-foto").style.display = "none";
-      // Saludar con el nombre real
       document.getElementById("saludo-nombre").textContent = "Hola, " + empleadoNombre;
       document.getElementById("saludo-area").textContent = datosArea.area;
       if (pideFoto) {
-        aviso.style.display = "block";
+        aviso.style.display = "flex";
         btn.textContent = "Tomar foto del área";
       } else {
         aviso.style.display = "none";
@@ -378,15 +331,9 @@
     }
 
     function accionPrincipal() {
-      if (!pideFoto) {
-        registrar(false);
-        return;
-      }
-      if (!fotoLista) {
-        document.getElementById("input-foto").click();
-      } else {
-        registrar(true);
-      }
+      if (!pideFoto) { registrar(false); return; }
+      if (!fotoLista) { document.getElementById("input-foto").click(); }
+      else { registrar(true); }
     }
 
     function fotoTomada(event) {
@@ -409,7 +356,6 @@
     async function registrar(conFoto) {
       document.getElementById("btn-principal").disabled = true;
       ir("p-exito", conFoto);
-
       var estado = document.getElementById("estado-guardado");
       estado.className = "estado-guardado estado-cargando";
       estado.textContent = conFoto ? "Subiendo foto..." : "Guardando...";
@@ -422,18 +368,15 @@
       }
 
       var fotoUrl = null;
-
       if (conFoto && fotoArchivo) {
         try {
           var nombreArchivo = "foto_" + Date.now() + ".jpg";
           const { data: subida, error: errorSubida } = await db
             .storage.from("fotos")
             .upload(nombreArchivo, fotoArchivo, { contentType: fotoArchivo.type || "image/jpeg" });
-
           if (errorSubida) {
             estado.className = "estado-guardado estado-error";
             estado.textContent = "Error al subir foto: " + errorSubida.message;
-            console.error("Error subida:", errorSubida);
             document.getElementById("btn-principal").disabled = false;
             return;
           }
@@ -442,7 +385,6 @@
         } catch (e) {
           estado.className = "estado-guardado estado-error";
           estado.textContent = "Error al subir foto: " + e.message;
-          console.error(e);
           document.getElementById("btn-principal").disabled = false;
           return;
         }
@@ -450,31 +392,25 @@
 
       estado.textContent = "Guardando registro...";
       try {
-        const { data, error } = await db
-          .from("registros")
-          .insert([{
-            pin_empleado: pin,
-            nombre_empleado: empleadoNombre,
-            area: datosArea.area,
-            edificio: datosArea.edificio,
-            con_foto: conFoto,
-            foto_url: fotoUrl
-          }]);
-
+        const { data, error } = await db.from("registros").insert([{
+          pin_empleado: pin,
+          nombre_empleado: empleadoNombre,
+          area: datosArea.area,
+          edificio: datosArea.edificio,
+          con_foto: conFoto,
+          foto_url: fotoUrl
+        }]);
         if (error) {
           estado.className = "estado-guardado estado-error";
           estado.textContent = "No se pudo guardar: " + error.message;
-          console.error("Error al guardar:", error);
         } else {
           estado.className = "estado-guardado estado-ok";
-          estado.textContent = conFoto ? "✓ Guardado con foto" : "✓ Guardado en la base de datos";
+          estado.textContent = conFoto ? "Guardado con foto" : "Guardado correctamente";
         }
       } catch (e) {
         estado.className = "estado-guardado estado-error";
         estado.textContent = "Error: " + e.message;
-        console.error("Error:", e);
       }
-
       document.getElementById("btn-principal").disabled = false;
     }
 
@@ -490,31 +426,24 @@
         document.getElementById("exito-hora").textContent = h + ":" + m + " " + ampm;
         document.getElementById("exito-area").textContent = datosArea.area;
         var exitoFoto = document.getElementById("exito-foto");
-        if (conFoto && fotoDataURL) {
-          exitoFoto.src = fotoDataURL;
-          exitoFoto.style.display = "block";
-        } else {
-          exitoFoto.style.display = "none";
-        }
+        if (conFoto && fotoDataURL) { exitoFoto.src = fotoDataURL; exitoFoto.style.display = "block"; }
+        else { exitoFoto.style.display = "none"; }
       }
     }
-    cargarArea();
+
     function reiniciar() {
-      pin = "";
-      empleadoNombre = null;
-      verificando = false;
+      pin = ""; empleadoNombre = null; verificando = false;
       pintarDots();
       document.getElementById("label-pin").textContent = "Ingresa tu PIN para registrar";
       document.getElementById("label-pin").className = "label";
-      fotoLista = false;
-      fotoDataURL = null;
-      fotoArchivo = null;
+      fotoLista = false; fotoDataURL = null; fotoArchivo = null;
       document.getElementById("input-foto").value = "";
       document.getElementById("estado-guardado").textContent = "";
       document.getElementById("estado-guardado").className = "estado-guardado";
-     
       ir("p-pin");
     }
+
+    cargarArea();
   </script>
 </body>
 </html>
