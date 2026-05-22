@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CleanTrack — Edificios y áreas</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --verde: #1D9E75;
+      --verde-claro: #EAF3DE;
+      --verde-texto: #0F6E56;
+      --azul: #185FA5;
+      --azul-claro: #E6F1FB;
+      --gris-fondo: #F5F4EF;
+      --gris-texto: #6B6A64;
+      --gris-borde: #E2E0D8;
+      --texto: #2C2C2A;
+      --blanco: #FFFFFF;
+      --rojo: #A32D2D;
+      --rojo-claro: #FCEBEB;
+      --ambar-claro: #FAEEDA;
+      --ambar-texto: #854F0B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
+    .contenedor { max-width: 600px; margin: 0 auto; display: none; }
+    .verificando { max-width: 600px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+
+    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
+    .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
+    .top-botones { display: flex; gap: 8px; }
+    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+
+    .tarjeta { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+    .tarjeta h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--gris-texto); margin-bottom: 6px; }
+    input { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 14px; outline: none; }
+    input:focus { border-color: var(--azul); }
+
+    .checkbox-fila { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .checkbox-fila input { width: auto; margin: 0; }
+    .checkbox-fila label { margin: 0; font-weight: 400; color: var(--texto); font-size: 14px; }
+
+    .btn-agregar { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: var(--verde); color: #fff; }
+    .btn-agregar:active { transform: scale(0.98); }
+    .btn-agregar:disabled { opacity: 0.6; }
+
+    .area-item { padding: 16px 0; border-bottom: 1px solid var(--gris-borde); }
+    .area-item:last-child { border-bottom: none; }
+    .area-fila { display: flex; align-items: center; gap: 14px; }
+    .area-ico { width: 42px; height: 42px; border-radius: 12px; background: var(--ambar-claro); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .area-info { flex: 1; min-width: 0; }
+    .area-nombre { font-size: 15px; font-weight: 600; }
+    .area-detalle { font-size: 13px; color: var(--gris-texto); }
+    .area-inactiva .area-nombre, .area-inactiva .area-detalle { opacity: 0.45; }
+
+    .switch { position: relative; width: 52px; height: 30px; flex-shrink: 0; cursor: pointer; }
+    .switch input { display: none; }
+    .switch-track { position: absolute; inset: 0; background: var(--gris-borde); border-radius: 99px; transition: background 0.2s; }
+    .switch input:checked + .switch-track { background: var(--verde); }
+    .switch-thumb { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; background: #fff; border-radius: 50%; transition: transform 0.2s; }
+    .switch input:checked ~ .switch-thumb { transform: translateX(22px); }
+
+    .btn-qr { margin-top: 12px; width: 100%; padding: 11px; border: 1.5px solid var(--azul-claro); border-radius: 10px; background: var(--azul-claro); color: var(--azul); font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-qr:active { transform: scale(0.98); }
+
+    .mensaje { text-align: center; font-size: 13px; margin-top: 12px; padding: 10px; border-radius: 10px; display: none; }
+    .mensaje.ok { background: var(--verde-claro); color: var(--verde-texto); display: block; }
+    .mensaje.error { background: var(--rojo-claro); color: var(--rojo); display: block; }
+    .cargando { text-align: center; color: var(--gris-texto); padding: 20px; font-size: 14px; }
+
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+    .modal.abierto { display: flex; }
+    .modal-caja { background: #fff; border-radius: 18px; padding: 28px; max-width: 360px; width: 100%; text-align: center; }
+    .modal-caja .marca-qr { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
+    .modal-caja .qr-edificio { font-size: 13px; color: var(--gris-texto); margin-top: 12px; }
+    .modal-caja .qr-nombre { font-size: 19px; font-weight: 600; color: var(--azul); margin-bottom: 16px; }
+    #qr-canvas { display: flex; justify-content: center; margin: 0 auto 16px; }
+    .modal-instr { font-size: 13px; color: var(--gris-texto); margin-bottom: 18px; }
+    .btn-descargar { width: 100%; padding: 13px; border: none; border-radius: 12px; background: var(--verde); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 8px; }
+    .btn-cerrar-modal { width: 100%; padding: 11px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: transparent; color: var(--gris-texto); font-size: 14px; font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <div class="verificando" id="verificando">Verificando sesión...</div>
+
+  <div class="contenedor" id="contenedor">
+
+    <div class="top">
+      <div>
+        <div class="marca">CleanTrack</div>
+        <h1>Edificios y áreas</h1>
+      </div>
+      <div class="top-botones">
+        <a class="btn-salir" href="inicio.html">← Inicio</a>
+        <button class="btn-salir" onclick="salir()">Salir</button>
+      </div>
+    </div>
+
+    <div class="tarjeta">
+      <h2>Crear área nueva</h2>
+      <label for="nombre">Nombre del área</label>
+      <input type="text" id="nombre" placeholder="Ej. Baño Piso 3 — Hombres" />
+      <label for="edificio">Edificio</label>
+      <input type="text" id="edificio" placeholder="Ej. Torre Empresarial Norte" />
+      <div class="checkbox-fila">
+        <input type="checkbox" id="requiere-foto" />
+        <label for="requiere-foto">Esta área siempre requiere foto</label>
+      </div>
+      <button class="btn-agregar" id="btn-agregar" onclick="crearArea()">Crear área</button>
+      <div class="mensaje" id="mensaje-crear"></div>
+    </div>
+
+    <div class="tarjeta">
+      <h2>Áreas registradas</h2>
+      <div id="lista-areas">
+        <div class="cargando">Cargando...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modal" id="modal-qr">
+    <div class="modal-caja">
+      <div class="marca-qr">CleanTrack</div>
+      <div class="qr-edificio" id="qr-edificio">Edificio</div>
+      <div class="qr-nombre" id="qr-nombre">Área</div>
+      <div id="qr-canvas"></div>
+      <div class="modal-instr">Escanea al terminar de limpiar esta área</div>
+      <button class="btn-descargar" onclick="descargarQR()">Descargar QR</button>
+      <button class="btn-cerrar-modal" onclick="cerrarModal()">Cerrar</button>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
+    const BASE_URL = "https://project-n0ucj.vercel.app";
+
+    let db = null;
+    try {
+      const { createClient } = supabase;
+      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (e) {
+      console.error("No se pudo conectar a Supabase:", e);
+    }
+
+    var qrActual = null;
+    var nombreAreaActual = "";
+
+    async function verificarAcceso() {
+      if (!db) {
+        document.getElementById("verificando").textContent = "Sin conexión a la base de datos.";
+        return;
+      }
+      const { data } = await db.auth.getSession();
+      if (!data.session) {
+        window.location.href = "login.html";
+        return;
+      }
+      document.getElementById("verificando").style.display = "none";
+      document.getElementById("contenedor").style.display = "block";
+      cargarAreas();
+    }
+
+    async function salir() {
+      if (db) await db.auth.signOut();
+      window.location.href = "login.html";
+    }
+
+    async function cargarAreas() {
+      var cont = document.getElementById("lista-areas");
+      cont.innerHTML = '<div class="cargando">Cargando...</div>';
+
+      const { data, error } = await db.from("areas").select("*").order("created_at", { ascending: true });
+
+      if (error) {
+        cont.innerHTML = '<div class="mensaje error" style="display:block">Error: ' + error.message + '</div>';
+        return;
+      }
+      if (!data || data.length === 0) {
+        cont.innerHTML = '<div class="cargando">Aún no hay áreas. Crea la primera arriba.</div>';
+        return;
+      }
+
+      cont.innerHTML = "";
+      data.forEach(function(a) {
+        var div = document.createElement("div");
+        div.className = "area-item" + (a.activa ? "" : " area-inactiva");
+        div.innerHTML =
+          '<div class="area-fila">' +
+            '<div class="area-ico">🏢</div>' +
+            '<div class="area-info">' +
+              '<div class="area-nombre">' + a.nombre + '</div>' +
+              '<div class="area-detalle">' + a.edificio + (a.requiere_foto ? ' · 📷 Requiere foto' : '') + ' · ' + (a.activa ? 'Activa' : 'Inactiva') + '</div>' +
+            '</div>' +
+            '<label class="switch">' +
+              '<input type="checkbox" ' + (a.activa ? "checked" : "") + ' onchange="cambiarEstado(' + a.id + ', this.checked)" />' +
+              '<span class="switch-track"></span><span class="switch-thumb"></span>' +
+            '</label>' +
+          '</div>' +
+          '<button class="btn-qr" onclick="mostrarQR(' + a.id + ', \'' + a.nombre.replace(/'/g, "\\'") + '\', \'' + a.edificio.replace(/'/g, "\\'") + '\')">Generar código QR</button>';
+        cont.appendChild(div);
+      });
+    }
+
+    async function crearArea() {
+      var nombre = document.getElementById("nombre").value.trim();
+      var edificio = document.getElementById("edificio").value.trim();
+      var requiereFoto = document.getElementById("requiere-foto").checked;
+      var msg = document.getElementById("mensaje-crear");
+
+      if (!nombre || !edificio) {
+        msg.textContent = "Escribe el nombre y el edificio."; msg.className = "mensaje error"; return;
+      }
+
+      document.getElementById("btn-agregar").disabled = true;
+      msg.textContent = "Creando..."; msg.className = "mensaje"; msg.style.display = "block";
+
+      const { error } = await db.from("areas").insert([{ nombre: nombre, edificio: edificio, requiere_foto: requiereFoto, activa: true }]);
+
+      if (error) {
+        msg.textContent = "Error: " + error.message; msg.className = "mensaje error";
+      } else {
+        msg.textContent = "✓ Área creada"; msg.className = "mensaje ok";
+        document.getElementById("nombre").value = "";
+        document.getElementById("edificio").value = "";
+        document.getElementById("requiere-foto").checked = false;
+        cargarAreas();
+      }
+      document.getElementById("btn-agregar").disabled = false;
+    }
+
+    async function cambiarEstado(id, nuevoEstado) {
+      const { error } = await db.from("areas").update({ activa: nuevoEstado }).eq("id", id);
+      if (error) alert("No se pudo cambiar: " + error.message);
+      cargarAreas();
+    }
+
+    function mostrarQR(id, nombre, edificio) {
+      document.getElementById("qr-edificio").textContent = edificio;
+      document.getElementById("qr-nombre").textContent = nombre;
+      nombreAreaActual = nombre;
+
+      var cont = document.getElementById("qr-canvas");
+      cont.innerHTML = "";
+      var url = BASE_URL + "/?area=" + id;
+      qrActual = new QRCode(cont, { text: url, width: 220, height: 220, colorDark: "#185FA5", colorLight: "#ffffff" });
+
+      document.getElementById("modal-qr").classList.add("abierto");
+    }
+
+    function cerrarModal() {
+      document.getElementById("modal-qr").classList.remove("abierto");
+    }
+
+    function descargarQR() {
+      var img = document.querySelector("#qr-canvas img") || document.querySelector("#qr-canvas canvas");
+      if (!img) { alert("Espera a que el QR cargue."); return; }
+      var src = img.tagName === "IMG" ? img.src : img.toDataURL("image/png");
+      var a = document.createElement("a");
+      a.href = src;
+      a.download = "QR_" + nombreAreaActual.replace(/[^a-zA-Z0-9]/g, "_") + ".png";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    verificarAcceso();
+  </script>
+</body>
+</html>
