@@ -158,6 +158,7 @@
     }
     .estado-ok { background: var(--verde-claro); color: var(--verde-texto); }
     .estado-error { background: var(--rojo-claro); color: var(--rojo); }
+    .estado-cargando { background: var(--azul-claro); color: var(--azul); }
   </style>
 </head>
 <body>
@@ -227,12 +228,8 @@
   </div>
 
   <script>
-    // ===================================================================
-    //  DATOS DE SUPABASE (ya configurados)
-    // ===================================================================
     const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
-    // ===================================================================
 
     let db = null;
     try {
@@ -252,6 +249,7 @@
     var pideFoto = true;
     var fotoLista = false;
     var fotoDataURL = null;
+    var fotoArchivo = null;   // El archivo real de la foto, para subirlo
 
     function press(n) {
       if (pin.length >= 4) return;
@@ -274,6 +272,7 @@
       var aviso = document.getElementById("aviso-foto");
       var btn = document.getElementById("btn-principal");
       fotoLista = false;
+      fotoArchivo = null;
       document.getElementById("preview-foto").style.display = "none";
       if (pideFoto) {
         aviso.style.display = "block";
@@ -300,6 +299,7 @@
     function fotoTomada(event) {
       var archivo = event.target.files[0];
       if (!archivo) return;
+      fotoArchivo = archivo;   // Guardamos el archivo real para subirlo después
       var lector = new FileReader();
       lector.onload = function(e) {
         fotoDataURL = e.target.result;
@@ -318,8 +318,8 @@
       ir("p-exito", conFoto);
 
       var estado = document.getElementById("estado-guardado");
-      estado.className = "estado-guardado";
-      estado.textContent = "Guardando...";
+      estado.className = "estado-guardado estado-cargando";
+      estado.textContent = conFoto ? "Subiendo foto..." : "Guardando...";
 
       if (!db) {
         estado.className = "estado-guardado estado-error";
@@ -328,6 +328,39 @@
         return;
       }
 
+      var fotoUrl = null;
+
+      // PASO 1: si hay foto, subirla al Storage primero
+      if (conFoto && fotoArchivo) {
+        try {
+          var nombreArchivo = "foto_" + Date.now() + ".jpg";
+          const { data: subida, error: errorSubida } = await db
+            .storage
+            .from("fotos")
+            .upload(nombreArchivo, fotoArchivo, { contentType: fotoArchivo.type || "image/jpeg" });
+
+          if (errorSubida) {
+            estado.className = "estado-guardado estado-error";
+            estado.textContent = "Error al subir foto: " + errorSubida.message;
+            console.error("Error subida:", errorSubida);
+            document.getElementById("btn-principal").disabled = false;
+            return;
+          }
+
+          // Obtener el link público de la foto recién subida
+          const { data: urlData } = db.storage.from("fotos").getPublicUrl(nombreArchivo);
+          fotoUrl = urlData.publicUrl;
+        } catch (e) {
+          estado.className = "estado-guardado estado-error";
+          estado.textContent = "Error al subir foto: " + e.message;
+          console.error(e);
+          document.getElementById("btn-principal").disabled = false;
+          return;
+        }
+      }
+
+      // PASO 2: guardar el registro (con el link de la foto si la hubo)
+      estado.textContent = "Guardando registro...";
       try {
         const { data, error } = await db
           .from("registros")
@@ -336,7 +369,8 @@
             nombre_empleado: datosArea.nombre_empleado,
             area: datosArea.area,
             edificio: datosArea.edificio,
-            con_foto: conFoto
+            con_foto: conFoto,
+            foto_url: fotoUrl
           }]);
 
         if (error) {
@@ -345,7 +379,7 @@
           console.error("Error al guardar:", error);
         } else {
           estado.className = "estado-guardado estado-ok";
-          estado.textContent = "✓ Guardado en la base de datos";
+          estado.textContent = conFoto ? "✓ Guardado con foto" : "✓ Guardado en la base de datos";
         }
       } catch (e) {
         estado.className = "estado-guardado estado-error";
@@ -381,8 +415,10 @@
       pintarDots();
       fotoLista = false;
       fotoDataURL = null;
+      fotoArchivo = null;
       document.getElementById("input-foto").value = "";
       document.getElementById("estado-guardado").textContent = "";
+      document.getElementById("estado-guardado").className = "estado-guardado";
       pideFoto = !pideFoto;
       ir("p-pin");
     }
