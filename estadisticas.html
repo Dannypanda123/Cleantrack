@@ -19,8 +19,6 @@
       --gris-borde: #E2E0D8;
       --texto: #2C2C2A;
       --blanco: #FFFFFF;
-      --morado: #7C4DBC;
-      --morado-claro: #F3E8FB;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
@@ -33,6 +31,12 @@
     .top-botones { display: flex; gap: 8px; }
     .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
 
+    /* Selector de edificio */
+    .selector-cont { margin-bottom: 22px; }
+    .selector-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-texto); margin-bottom: 8px; }
+    .selector { width: 100%; padding: 14px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: var(--blanco); color: var(--texto); outline: none; cursor: pointer; }
+    .selector:focus { border-color: var(--azul); }
+
     .metricas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
     @media (max-width: 560px) { .metricas { grid-template-columns: repeat(2, 1fr); } }
     .metrica { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 16px; }
@@ -42,23 +46,23 @@
     .tarjeta { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
     .tarjeta h2 { font-size: 15px; font-weight: 600; margin-bottom: 18px; }
 
-    /* Gráfica de barras por día */
     .grafica-dias { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding-top: 10px; }
     .barra-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
-    .barra { width: 100%; max-width: 40px; background: var(--azul); border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.4s; position: relative; }
+    .barra { width: 100%; max-width: 40px; background: var(--azul); border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.4s; }
     .barra-valor { font-size: 12px; font-weight: 600; color: var(--azul); }
     .barra-dia { font-size: 11px; color: var(--gris-texto); }
 
-    /* Rankings (áreas y empleados) */
     .rank-fila { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
     .rank-fila:last-child { margin-bottom: 0; }
-    .rank-nombre { font-size: 14px; min-width: 0; flex-shrink: 0; width: 38%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rank-nombre { font-size: 14px; flex-shrink: 0; width: 38%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .rank-barra-fondo { flex: 1; height: 24px; background: var(--gris-fondo); border-radius: 6px; overflow: hidden; }
     .rank-barra { height: 100%; border-radius: 6px; min-width: 2px; }
     .rank-valor { font-size: 13px; font-weight: 600; color: var(--gris-texto); width: 30px; text-align: right; flex-shrink: 0; }
 
     .vacio { text-align: center; color: var(--gris-texto); padding: 20px; font-size: 14px; }
     .cargando { text-align: center; color: var(--gris-texto); padding: 40px; font-size: 14px; }
+    .titulo-edificio { font-size: 18px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .subtitulo-edificio { font-size: 13px; color: var(--gris-texto); margin-bottom: 18px; }
   </style>
 </head>
 <body>
@@ -78,26 +82,15 @@
       </div>
     </div>
 
-    <div class="metricas">
-      <div class="metrica"><div class="label">Total registros</div><div class="valor" id="m-total">—</div></div>
-      <div class="metrica"><div class="label">Hoy</div><div class="valor" id="m-hoy">—</div></div>
-      <div class="metrica"><div class="label">Esta semana</div><div class="valor" id="m-semana">—</div></div>
-      <div class="metrica"><div class="label">% con foto</div><div class="valor" id="m-foto">—</div></div>
+    <div class="selector-cont">
+      <div class="selector-label">Edificio</div>
+      <select class="selector" id="selector-edificio" onchange="mostrarEdificio()">
+        <option value="">Cargando edificios...</option>
+      </select>
     </div>
 
-    <div class="tarjeta">
-      <h2>Actividad últimos 7 días</h2>
-      <div class="grafica-dias" id="grafica-dias"></div>
-    </div>
-
-    <div class="tarjeta">
-      <h2>Áreas más atendidas</h2>
-      <div id="rank-areas"><div class="vacio">Sin datos aún</div></div>
-    </div>
-
-    <div class="tarjeta">
-      <h2>Actividad por empleado</h2>
-      <div id="rank-empleados"><div class="vacio">Sin datos aún</div></div>
+    <div id="contenido-edificio">
+      <div class="cargando">Cargando estadísticas...</div>
     </div>
 
   </div>
@@ -112,13 +105,15 @@
       db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     } catch (e) { console.error(e); }
 
+    var todosLosRegistros = [];
+
     async function verificarAcceso() {
       if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
-      cargarEstadisticas();
+      cargarDatos();
     }
 
     async function salir() {
@@ -130,13 +125,43 @@
       return f1.getFullYear() === f2.getFullYear() && f1.getMonth() === f2.getMonth() && f1.getDate() === f2.getDate();
     }
 
-    async function cargarEstadisticas() {
+    async function cargarDatos() {
       const { data, error } = await db.from("registros").select("*").order("created_at", { ascending: false });
       if (error) { console.error(error); return; }
-      var regs = data || [];
+      todosLosRegistros = data || [];
+
+      // Sacar lista de edificios únicos
+      var edificios = {};
+      todosLosRegistros.forEach(function(r){
+        var e = r.edificio || "Sin edificio";
+        edificios[e] = true;
+      });
+      var listaEdificios = Object.keys(edificios).sort();
+
+      var sel = document.getElementById("selector-edificio");
+      if (listaEdificios.length === 0) {
+        sel.innerHTML = '<option value="">No hay datos aún</option>';
+        document.getElementById("contenido-edificio").innerHTML = '<div class="vacio">Aún no hay registros. Cuando los empleados registren áreas, sus estadísticas aparecerán aquí agrupadas por edificio.</div>';
+        return;
+      }
+
+      sel.innerHTML = "";
+      listaEdificios.forEach(function(e){
+        var opt = document.createElement("option");
+        opt.value = e;
+        opt.textContent = e;
+        sel.appendChild(opt);
+      });
+
+      // Mostrar el primero por defecto
+      mostrarEdificio();
+    }
+
+    function mostrarEdificio() {
+      var edificio = document.getElementById("selector-edificio").value;
+      var regs = todosLosRegistros.filter(function(r){ return (r.edificio || "Sin edificio") === edificio; });
       var hoy = new Date();
 
-      // Métricas
       var total = regs.length;
       var nHoy = regs.filter(function(r){ return mismoDia(new Date(r.created_at), hoy); }).length;
       var hace7 = new Date(); hace7.setDate(hace7.getDate() - 6); hace7.setHours(0,0,0,0);
@@ -144,37 +169,36 @@
       var conFoto = regs.filter(function(r){ return r.con_foto; }).length;
       var pctFoto = total > 0 ? Math.round((conFoto / total) * 100) : 0;
 
-      document.getElementById("m-total").textContent = total;
-      document.getElementById("m-hoy").textContent = nHoy;
-      document.getElementById("m-semana").textContent = nSemana;
-      document.getElementById("m-foto").textContent = pctFoto + "%";
-
-      // Gráfica últimos 7 días
+      // Gráfica 7 días
       var dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
-      var conteoDias = [];
-      var maxDia = 1;
+      var conteoDias = []; var maxDia = 1;
       for (var i = 6; i >= 0; i--) {
         var d = new Date(); d.setDate(d.getDate() - i);
         var c = regs.filter(function(r){ return mismoDia(new Date(r.created_at), d); }).length;
         conteoDias.push({ etiqueta: dias[d.getDay()], valor: c });
         if (c > maxDia) maxDia = c;
       }
-      var gcont = document.getElementById("grafica-dias");
-      gcont.innerHTML = "";
+      var barrasHTML = "";
       conteoDias.forEach(function(d){
         var altura = Math.round((d.valor / maxDia) * 130);
-        var col = document.createElement("div");
-        col.className = "barra-col";
-        col.innerHTML =
-          '<div class="barra-valor">' + d.valor + '</div>' +
-          '<div class="barra" style="height:' + altura + 'px;"></div>' +
-          '<div class="barra-dia">' + d.etiqueta + '</div>';
-        gcont.appendChild(col);
+        barrasHTML += '<div class="barra-col"><div class="barra-valor">' + d.valor + '</div><div class="barra" style="height:' + altura + 'px;"></div><div class="barra-dia">' + d.etiqueta + '</div></div>';
       });
 
-      // Ranking de áreas
+      var cont = document.getElementById("contenido-edificio");
+      cont.innerHTML =
+        '<div class="titulo-edificio">🏢 ' + edificio + '</div>' +
+        '<div class="subtitulo-edificio">Estadísticas de este edificio</div>' +
+        '<div class="metricas">' +
+          '<div class="metrica"><div class="label">Total registros</div><div class="valor">' + total + '</div></div>' +
+          '<div class="metrica"><div class="label">Hoy</div><div class="valor">' + nHoy + '</div></div>' +
+          '<div class="metrica"><div class="label">Esta semana</div><div class="valor">' + nSemana + '</div></div>' +
+          '<div class="metrica"><div class="label">% con foto</div><div class="valor">' + pctFoto + '%</div></div>' +
+        '</div>' +
+        '<div class="tarjeta"><h2>Actividad últimos 7 días</h2><div class="grafica-dias">' + barrasHTML + '</div></div>' +
+        '<div class="tarjeta"><h2>Áreas más atendidas</h2><div id="rank-areas"></div></div>' +
+        '<div class="tarjeta"><h2>Actividad por empleado</h2><div id="rank-empleados"></div></div>';
+
       pintarRanking(regs, "area", "rank-areas", "#185FA5");
-      // Ranking de empleados
       pintarRanking(regs, "nombre_empleado", "rank-empleados", "#1D9E75");
     }
 
@@ -189,18 +213,12 @@
       arr = arr.slice(0, 6);
 
       var cont = document.getElementById(contId);
-      if (arr.length === 0) { cont.innerHTML = '<div class="vacio">Sin datos aún</div>'; return; }
+      if (arr.length === 0) { cont.innerHTML = '<div class="vacio">Sin datos</div>'; return; }
       var max = arr[0].valor;
       cont.innerHTML = "";
       arr.forEach(function(item){
         var pct = Math.round((item.valor / max) * 100);
-        var div = document.createElement("div");
-        div.className = "rank-fila";
-        div.innerHTML =
-          '<div class="rank-nombre">' + item.nombre + '</div>' +
-          '<div class="rank-barra-fondo"><div class="rank-barra" style="width:' + pct + '%; background:' + color + ';"></div></div>' +
-          '<div class="rank-valor">' + item.valor + '</div>';
-        cont.appendChild(div);
+        cont.innerHTML += '<div class="rank-fila"><div class="rank-nombre">' + item.nombre + '</div><div class="rank-barra-fondo"><div class="rank-barra" style="width:' + pct + '%; background:' + color + ';"></div></div><div class="rank-valor">' + item.valor + '</div></div>';
       });
     }
 
