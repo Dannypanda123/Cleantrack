@@ -243,9 +243,39 @@
     }
 
     var datosArea = {
-      area: "Baño Piso 1 — Mujeres",
-      edificio: "Torre Empresarial Norte"
+      id: null,
+      area: "Cargando área...",
+      edificio: ""
     };
+
+    // Leer el ?area= del link del QR y buscar el área en la base de datos
+    async function cargarArea() {
+      var params = new URLSearchParams(window.location.search);
+      var areaId = params.get("area");
+
+      if (!areaId) {
+        document.getElementById("area-nombre").textContent = "Área no especificada";
+        document.getElementById("area-edificio").textContent = "Escanea un código QR válido";
+        return;
+      }
+      if (!db) return;
+
+      const { data, error } = await db.from("areas").select("*").eq("id", areaId).eq("activa", true).limit(1);
+
+      if (error || !data || data.length === 0) {
+        document.getElementById("area-nombre").textContent = "Área no encontrada";
+        document.getElementById("area-edificio").textContent = "Verifica el código QR";
+        return;
+      }
+
+      var a = data[0];
+      datosArea.id = a.id;
+      datosArea.area = a.nombre;
+      datosArea.edificio = a.edificio;
+      pideFoto = a.requiere_foto;
+      document.getElementById("area-nombre").textContent = a.nombre;
+      document.getElementById("area-edificio").textContent = a.edificio;
+    }
 
     var pin = "";
     var empleadoNombre = null;   // Se llena cuando el PIN es válido
