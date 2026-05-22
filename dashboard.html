@@ -9,15 +9,15 @@
 
   <style>
     :root {
-      --verde: #1D9E75;
-      --verde-claro: #EAF3DE;
-      --verde-texto: #0F6E56;
-      --azul: #185FA5;
-      --azul-claro: #E6F1FB;
-      --gris-fondo: #F5F4EF;
+      --verde: #798C81;
+      --verde-claro: #EAEEEB;
+      --verde-texto: #5F7268;
+      --azul: #798C81;
+      --azul-claro: #EAEEEB;
+      --gris-fondo: #ECEBE4;
       --gris-texto: #6B6A64;
       --gris-borde: #E2E0D8;
-      --texto: #2C2C2A;
+      --texto: #1F2A37;
       --blanco: #FFFFFF;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -46,9 +46,10 @@
     .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
     .top-botones { display: flex; gap: 8px; }
     .btn-refrescar {
-      background: var(--azul); color: #fff; border: none;
+      background: linear-gradient(135deg, #798C81, #5F7268); color: #fff; border: none;
       padding: 10px 18px; border-radius: 12px; font-size: 14px;
       font-weight: 600; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(121,140,129,0.3);
     }
     .btn-salir {
       background: transparent; color: var(--gris-texto);
@@ -96,9 +97,10 @@
     .registro .hora { font-size: 13px; color: var(--gris-texto); text-align: right; flex-shrink: 0; }
 
     .badge {
-      display: inline-block; font-size: 11px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600;
       padding: 3px 9px; border-radius: 8px; margin-top: 4px;
     }
+    .badge svg { width: 13px; height: 13px; }
     .badge-foto { background: var(--azul-claro); color: var(--azul); }
     .badge-sinfoto { background: var(--verde-claro); color: var(--verde-texto); }
 
@@ -263,8 +265,8 @@
       lista.innerHTML = "";
       data.forEach(function(r) {
         var badge = r.con_foto
-          ? '<span class="badge badge-foto">📷 Con foto</span>'
-          : '<span class="badge badge-sinfoto">✓ Registrado</span>';
+          ? '<span class="badge badge-foto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>Con foto</span>'
+          : '<span class="badge badge-sinfoto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Registrado</span>';
 
         var visual;
         if (r.foto_url) {
