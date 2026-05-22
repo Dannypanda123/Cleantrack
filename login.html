@@ -113,7 +113,7 @@
       if (!db) return;
       const { data } = await db.auth.getSession();
       if (data.session) {
-        window.location.href = "dashboard.html";
+        window.location.href = "inicio.html";
       }
     }
     revisarSesion();
@@ -148,7 +148,7 @@
       }
 
       // Éxito: ir al dashboard
-      window.location.href = "dashboard.html";
+      window.location.href = "inicio.html";
     }
 
     // Permitir entrar con la tecla Enter
