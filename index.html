@@ -486,6 +486,7 @@
         h = h % 12; if (h === 0) h = 12;
         m = m < 10 ? "0" + m : m;
         document.getElementById("exito-hora").textContent = h + ":" + m + " " + ampm;
+        document.getElementById("exito-area").textContent = datosArea.area;
         var exitoFoto = document.getElementById("exito-foto");
         if (conFoto && fotoDataURL) {
           exitoFoto.src = fotoDataURL;
