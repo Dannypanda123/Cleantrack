@@ -10,20 +10,11 @@
 
   <style>
     :root {
-      --verde: #1D9E75;
-      --verde-claro: #EAF3DE;
-      --verde-texto: #0F6E56;
-      --azul: #185FA5;
-      --azul-claro: #E6F1FB;
-      --gris-fondo: #F5F4EF;
-      --gris-texto: #6B6A64;
-      --gris-borde: #E2E0D8;
-      --texto: #2C2C2A;
-      --blanco: #FFFFFF;
-      --rojo: #A32D2D;
-      --rojo-claro: #FCEBEB;
+      --verde: #1D9E75; --verde-claro: #EAF3DE; --verde-texto: #0F6E56;
+      --azul: #185FA5; --azul-claro: #E6F1FB;
+      --gris-fondo: #F5F4EF; --gris-texto: #6B6A64; --gris-borde: #E2E0D8;
+      --texto: #2C2C2A; --blanco: #FFFFFF; --rojo: #A32D2D; --rojo-claro: #FCEBEB;
       --ambar-claro: #FAEEDA;
-      --ambar-texto: #854F0B;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
@@ -40,16 +31,24 @@
     .tarjeta h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
 
     label { display: block; font-size: 13px; font-weight: 600; color: var(--gris-texto); margin-bottom: 6px; }
-    input { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 14px; outline: none; }
-    input:focus { border-color: var(--azul); }
+    input, select { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 14px; outline: none; background: var(--blanco); color: var(--texto); }
+    input:focus, select:focus { border-color: var(--azul); }
 
     .checkbox-fila { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
     .checkbox-fila input { width: auto; margin: 0; }
     .checkbox-fila label { margin: 0; font-weight: 400; color: var(--texto); font-size: 14px; }
 
+    .fila-crear { display: flex; gap: 10px; }
+    .fila-crear input { flex: 1; margin-bottom: 0; }
+    .btn-mini { padding: 13px 18px; border: none; border-radius: 12px; background: var(--azul); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .btn-mini:active { transform: scale(0.97); }
+
     .btn-agregar { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: var(--verde); color: #fff; }
     .btn-agregar:active { transform: scale(0.98); }
     .btn-agregar:disabled { opacity: 0.6; }
+
+    .chip-edificio { display: inline-flex; align-items: center; gap: 8px; background: var(--ambar-claro); border-radius: 10px; padding: 8px 12px; margin: 0 8px 8px 0; font-size: 13px; }
+    .chip-edificio button { background: none; border: none; color: var(--gris-texto); cursor: pointer; font-size: 14px; padding: 0; }
 
     .area-item { padding: 16px 0; border-bottom: 1px solid var(--gris-borde); }
     .area-item:last-child { border-bottom: none; }
@@ -74,6 +73,7 @@
     .mensaje.ok { background: var(--verde-claro); color: var(--verde-texto); display: block; }
     .mensaje.error { background: var(--rojo-claro); color: var(--rojo); display: block; }
     .cargando { text-align: center; color: var(--gris-texto); padding: 20px; font-size: 14px; }
+    .vacio-mini { color: var(--gris-texto); font-size: 13px; padding: 4px 0; }
 
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
     .modal.abierto { display: flex; }
@@ -104,25 +104,39 @@
       </div>
     </div>
 
+    <!-- CREAR EDIFICIO -->
+    <div class="tarjeta">
+      <h2>Edificios</h2>
+      <label for="nombre-edificio">Agregar un edificio nuevo</label>
+      <div class="fila-crear">
+        <input type="text" id="nombre-edificio" placeholder="Ej. Marbella I" />
+        <button class="btn-mini" id="btn-crear-edificio" onclick="crearEdificio()">Agregar</button>
+      </div>
+      <div id="lista-edificios" style="margin-top:14px;"></div>
+      <div class="mensaje" id="mensaje-edificio"></div>
+    </div>
+
+    <!-- CREAR ÁREA -->
     <div class="tarjeta">
       <h2>Crear área nueva</h2>
-      <label for="nombre">Nombre del área</label>
-      <input type="text" id="nombre" placeholder="Ej. Baño Piso 3 — Hombres" />
-      <label for="edificio">Edificio</label>
-      <input type="text" id="edificio" placeholder="Ej. Torre Empresarial Norte" />
+      <label for="nombre-area">Nombre del área</label>
+      <input type="text" id="nombre-area" placeholder="Ej. Baño Piso 3 — Hombres" />
+      <label for="select-edificio">Edificio</label>
+      <select id="select-edificio">
+        <option value="">Selecciona un edificio...</option>
+      </select>
       <div class="checkbox-fila">
         <input type="checkbox" id="requiere-foto" />
         <label for="requiere-foto">Esta área siempre requiere foto</label>
       </div>
-      <button class="btn-agregar" id="btn-agregar" onclick="crearArea()">Crear área</button>
-      <div class="mensaje" id="mensaje-crear"></div>
+      <button class="btn-agregar" id="btn-agregar-area" onclick="crearArea()">Crear área</button>
+      <div class="mensaje" id="mensaje-area"></div>
     </div>
 
+    <!-- LISTA DE ÁREAS -->
     <div class="tarjeta">
       <h2>Áreas registradas</h2>
-      <div id="lista-areas">
-        <div class="cargando">Cargando...</div>
-      </div>
+      <div id="lista-areas"><div class="cargando">Cargando...</div></div>
     </div>
 
   </div>
@@ -148,25 +162,17 @@
     try {
       const { createClient } = supabase;
       db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) {
-      console.error("No se pudo conectar a Supabase:", e);
-    }
+    } catch (e) { console.error(e); }
 
-    var qrActual = null;
     var nombreAreaActual = "";
 
     async function verificarAcceso() {
-      if (!db) {
-        document.getElementById("verificando").textContent = "Sin conexión a la base de datos.";
-        return;
-      }
+      if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
       const { data } = await db.auth.getSession();
-      if (!data.session) {
-        window.location.href = "login.html";
-        return;
-      }
+      if (!data.session) { window.location.href = "login.html"; return; }
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+      cargarEdificios();
       cargarAreas();
     }
 
@@ -175,20 +181,62 @@
       window.location.href = "login.html";
     }
 
+    // ===== EDIFICIOS =====
+    async function cargarEdificios() {
+      const { data, error } = await db.from("edificios").select("*").eq("activo", true).order("nombre", { ascending: true });
+      var lista = document.getElementById("lista-edificios");
+      var select = document.getElementById("select-edificio");
+
+      if (error) { lista.innerHTML = '<div class="vacio-mini">Error al cargar edificios</div>'; return; }
+
+      // Chips de edificios
+      if (!data || data.length === 0) {
+        lista.innerHTML = '<div class="vacio-mini">Aún no hay edificios. Agrega el primero arriba.</div>';
+      } else {
+        lista.innerHTML = "";
+        data.forEach(function(e){
+          var chip = document.createElement("span");
+          chip.className = "chip-edificio";
+          chip.innerHTML = '🏢 ' + e.nombre;
+          lista.appendChild(chip);
+        });
+      }
+
+      // Llenar el menú desplegable de áreas
+      select.innerHTML = '<option value="">Selecciona un edificio...</option>';
+      (data || []).forEach(function(e){
+        var opt = document.createElement("option");
+        opt.value = e.nombre;
+        opt.textContent = e.nombre;
+        select.appendChild(opt);
+      });
+    }
+
+    async function crearEdificio() {
+      var nombre = document.getElementById("nombre-edificio").value.trim();
+      var msg = document.getElementById("mensaje-edificio");
+      if (!nombre) { msg.textContent = "Escribe el nombre del edificio."; msg.className = "mensaje error"; return; }
+
+      document.getElementById("btn-crear-edificio").disabled = true;
+      const { error } = await db.from("edificios").insert([{ nombre: nombre, activo: true }]);
+      document.getElementById("btn-crear-edificio").disabled = false;
+
+      if (error) {
+        msg.textContent = "Error: " + error.message; msg.className = "mensaje error";
+      } else {
+        msg.textContent = "✓ Edificio agregado"; msg.className = "mensaje ok";
+        document.getElementById("nombre-edificio").value = "";
+        cargarEdificios();
+      }
+    }
+
+    // ===== ÁREAS =====
     async function cargarAreas() {
       var cont = document.getElementById("lista-areas");
       cont.innerHTML = '<div class="cargando">Cargando...</div>';
-
       const { data, error } = await db.from("areas").select("*").order("created_at", { ascending: true });
-
-      if (error) {
-        cont.innerHTML = '<div class="mensaje error" style="display:block">Error: ' + error.message + '</div>';
-        return;
-      }
-      if (!data || data.length === 0) {
-        cont.innerHTML = '<div class="cargando">Aún no hay áreas. Crea la primera arriba.</div>';
-        return;
-      }
+      if (error) { cont.innerHTML = '<div class="mensaje error" style="display:block">Error: ' + error.message + '</div>'; return; }
+      if (!data || data.length === 0) { cont.innerHTML = '<div class="cargando">Aún no hay áreas. Crea la primera arriba.</div>'; return; }
 
       cont.innerHTML = "";
       data.forEach(function(a) {
@@ -196,7 +244,7 @@
         div.className = "area-item" + (a.activa ? "" : " area-inactiva");
         div.innerHTML =
           '<div class="area-fila">' +
-            '<div class="area-ico">🏢</div>' +
+            '<div class="area-ico">🚪</div>' +
             '<div class="area-info">' +
               '<div class="area-nombre">' + a.nombre + '</div>' +
               '<div class="area-detalle">' + a.edificio + (a.requiere_foto ? ' · 📷 Requiere foto' : '') + ' · ' + (a.activa ? 'Activa' : 'Inactiva') + '</div>' +
@@ -212,30 +260,29 @@
     }
 
     async function crearArea() {
-      var nombre = document.getElementById("nombre").value.trim();
-      var edificio = document.getElementById("edificio").value.trim();
+      var nombre = document.getElementById("nombre-area").value.trim();
+      var edificio = document.getElementById("select-edificio").value;
       var requiereFoto = document.getElementById("requiere-foto").checked;
-      var msg = document.getElementById("mensaje-crear");
+      var msg = document.getElementById("mensaje-area");
 
-      if (!nombre || !edificio) {
-        msg.textContent = "Escribe el nombre y el edificio."; msg.className = "mensaje error"; return;
-      }
+      if (!nombre) { msg.textContent = "Escribe el nombre del área."; msg.className = "mensaje error"; return; }
+      if (!edificio) { msg.textContent = "Selecciona un edificio (créalo arriba si no existe)."; msg.className = "mensaje error"; return; }
 
-      document.getElementById("btn-agregar").disabled = true;
+      document.getElementById("btn-agregar-area").disabled = true;
       msg.textContent = "Creando..."; msg.className = "mensaje"; msg.style.display = "block";
 
       const { error } = await db.from("areas").insert([{ nombre: nombre, edificio: edificio, requiere_foto: requiereFoto, activa: true }]);
+      document.getElementById("btn-agregar-area").disabled = false;
 
       if (error) {
         msg.textContent = "Error: " + error.message; msg.className = "mensaje error";
       } else {
         msg.textContent = "✓ Área creada"; msg.className = "mensaje ok";
-        document.getElementById("nombre").value = "";
-        document.getElementById("edificio").value = "";
+        document.getElementById("nombre-area").value = "";
+        document.getElementById("select-edificio").value = "";
         document.getElementById("requiere-foto").checked = false;
         cargarAreas();
       }
-      document.getElementById("btn-agregar").disabled = false;
     }
 
     async function cambiarEstado(id, nuevoEstado) {
@@ -244,33 +291,24 @@
       cargarAreas();
     }
 
+    // ===== QR =====
     function mostrarQR(id, nombre, edificio) {
       document.getElementById("qr-edificio").textContent = edificio;
       document.getElementById("qr-nombre").textContent = nombre;
       nombreAreaActual = nombre;
-
       var cont = document.getElementById("qr-canvas");
       cont.innerHTML = "";
-      var url = BASE_URL + "/?area=" + id;
-      qrActual = new QRCode(cont, { text: url, width: 220, height: 220, colorDark: "#185FA5", colorLight: "#ffffff" });
-
+      new QRCode(cont, { text: BASE_URL + "/?area=" + id, width: 220, height: 220, colorDark: "#185FA5", colorLight: "#ffffff" });
       document.getElementById("modal-qr").classList.add("abierto");
     }
-
-    function cerrarModal() {
-      document.getElementById("modal-qr").classList.remove("abierto");
-    }
-
+    function cerrarModal() { document.getElementById("modal-qr").classList.remove("abierto"); }
     function descargarQR() {
       var img = document.querySelector("#qr-canvas img") || document.querySelector("#qr-canvas canvas");
       if (!img) { alert("Espera a que el QR cargue."); return; }
       var src = img.tagName === "IMG" ? img.src : img.toDataURL("image/png");
       var a = document.createElement("a");
-      a.href = src;
-      a.download = "QR_" + nombreAreaActual.replace(/[^a-zA-Z0-9]/g, "_") + ".png";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      a.href = src; a.download = "QR_" + nombreAreaActual.replace(/[^a-zA-Z0-9]/g, "_") + ".png";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
 
     verificarAcceso();
