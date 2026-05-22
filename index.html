@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CleanTrack — Registro de área</title>
 
-  <!-- Conexión con Supabase (la librería que habla con tu base de datos) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -229,23 +228,20 @@
 
   <script>
     // ===================================================================
-    //  PEGA AQUÍ TUS DOS DATOS DE SUPABASE
-    //  Reemplaza el texto entre comillas por tus valores reales.
+    //  DATOS DE SUPABASE (ya configurados)
     // ===================================================================
     const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
     // ===================================================================
 
-    // Crear el cliente que habla con tu base de datos
     let db = null;
-try {
-  const { createClient } = supabase;
-  db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-} catch (e) {
-  console.error("No se pudo conectar a Supabase:", e);
-}
+    try {
+      const { createClient } = supabase;
+      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (e) {
+      console.error("No se pudo conectar a Supabase:", e);
+    }
 
-    // Datos del área (en el sistema real vendrían del QR escaneado)
     var datosArea = {
       area: "Baño Piso 1 — Mujeres",
       edificio: "Torre Empresarial Norte",
@@ -317,24 +313,22 @@ try {
       lector.readAsDataURL(archivo);
     }
 
-    // ===== AQUÍ OCURRE LA MAGIA: GUARDAR EN LA BASE DE DATOS =====
     async function registrar(conFoto) {
-      // Bloquear botones mientras guarda
       document.getElementById("btn-principal").disabled = true;
-
-      // Pasar a la pantalla de éxito de inmediato (buena experiencia)
       ir("p-exito", conFoto);
 
       var estado = document.getElementById("estado-guardado");
       estado.className = "estado-guardado";
       estado.textContent = "Guardando...";
 
+      if (!db) {
+        estado.className = "estado-guardado estado-error";
+        estado.textContent = "Sin conexión a la base de datos.";
+        document.getElementById("btn-principal").disabled = false;
+        return;
+      }
+
       try {
-        if (!db) {
-          estado.className = "estado-guardado estado-error";
-          estado.textContent = "Sin conexión a la base de datos.";
-          return;
-        }
         const { data, error } = await db
           .from("registros")
           .insert([{
@@ -347,7 +341,7 @@ try {
 
         if (error) {
           estado.className = "estado-guardado estado-error";
-          estado.textContent = "No se pudo guardar. Revisa la conexión.";
+          estado.textContent = "No se pudo guardar: " + error.message;
           console.error("Error al guardar:", error);
         } else {
           estado.className = "estado-guardado estado-ok";
@@ -355,7 +349,7 @@ try {
         }
       } catch (e) {
         estado.className = "estado-guardado estado-error";
-        estado.textContent = "No se pudo guardar. Revisa la conexión.";
+        estado.textContent = "Error: " + e.message;
         console.error("Error:", e);
       }
 
