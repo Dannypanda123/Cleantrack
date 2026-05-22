@@ -10,8 +10,8 @@
 
   <style>
     :root {
-      --verde: #1D9E75; --verde-claro: #EAF3DE; --verde-texto: #0F6E56;
-      --azul: #185FA5; --azul-claro: #E6F1FB;
+      --verde: #798C81; --verde-claro: #EAEEEB; --verde-texto: #5F7268;
+      --azul: #798C81; --azul-claro: #EAEEEB;
       --gris-fondo: #F5F4EF; --gris-texto: #6B6A64; --gris-borde: #E2E0D8;
       --texto: #2C2C2A; --blanco: #FFFFFF; --rojo: #A32D2D; --rojo-claro: #FCEBEB;
       --ambar-claro: #FAEEDA;
@@ -30,8 +30,8 @@
     .acciones { display: flex; gap: 12px; margin-bottom: 22px; }
     .btn-accion { flex: 1; padding: 16px; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.08s; }
     .btn-accion:active { transform: scale(0.98); }
-    .btn-edificio { background: var(--azul); color: #fff; }
-    .btn-area { background: var(--verde); color: #fff; }
+    .btn-edificio { background: linear-gradient(135deg, #798C81, #5F7268); color: #fff; box-shadow: 0 4px 12px rgba(121,140,129,0.3); }
+    .btn-area { background: linear-gradient(135deg, #8A9D92, #6E8278); color: #fff; box-shadow: 0 4px 12px rgba(121,140,129,0.3); }
     @media (max-width: 460px) { .acciones { flex-direction: column; } }
 
     .tarjeta { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
@@ -41,7 +41,8 @@
     .area-item { padding: 16px 0; border-bottom: 1px solid var(--gris-borde); }
     .area-item:last-child { border-bottom: none; }
     .area-fila { display: flex; align-items: center; gap: 14px; }
-    .area-ico { width: 42px; height: 42px; border-radius: 12px; background: var(--ambar-claro); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .area-ico { width: 42px; height: 42px; border-radius: 12px; background: var(--verde-claro); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .area-ico svg { width: 21px; height: 21px; stroke: #5F7268; }
     .area-info { flex: 1; min-width: 0; }
     .area-nombre { font-size: 15px; font-weight: 600; }
     .area-detalle { font-size: 13px; color: var(--gris-texto); }
@@ -63,7 +64,8 @@
     .grupo-edificio { border: 1px solid var(--gris-borde); border-radius: 14px; margin-bottom: 12px; overflow: hidden; background: var(--blanco); }
     .grupo-cabecera { display: flex; align-items: center; gap: 12px; padding: 16px; cursor: pointer; user-select: none; transition: background 0.15s; }
     .grupo-cabecera:hover { background: var(--gris-fondo); }
-    .grupo-ico { width: 40px; height: 40px; border-radius: 10px; background: var(--azul-claro); display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; }
+    .grupo-ico { width: 40px; height: 40px; border-radius: 10px; background: var(--verde-claro); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .grupo-ico svg { width: 20px; height: 20px; stroke: #5F7268; }
     .grupo-info { flex: 1; min-width: 0; }
     .grupo-nombre { font-size: 15px; font-weight: 600; }
     .grupo-conteo { font-size: 12px; color: var(--gris-texto); margin-top: 2px; }
@@ -125,8 +127,8 @@
     </div>
 
     <div class="acciones">
-      <button class="btn-accion btn-edificio" onclick="abrirModalEdificio()">🏢 Crear edificio</button>
-      <button class="btn-accion btn-area" onclick="abrirModalArea()">🚪 Crear área</button>
+      <button class="btn-accion btn-edificio" onclick="abrirModalEdificio()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg> Crear edificio</button>
+      <button class="btn-accion btn-area" onclick="abrirModalArea()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Crear área</button>
     </div>
 
     <div class="tarjeta">
@@ -140,7 +142,7 @@
   <!-- MODAL CREAR EDIFICIO -->
   <div class="modal" id="modal-edificio">
     <div class="modal-caja">
-      <div class="modal-titulo">🏢 Crear edificio</div>
+      <div class="modal-titulo">Crear edificio</div>
       <label>Nombre del edificio *</label>
       <input type="text" id="e-nombre" placeholder="Ej. Marbella I" />
       <label>Dirección</label>
@@ -166,7 +168,7 @@
   <!-- MODAL CREAR ÁREA -->
   <div class="modal" id="modal-area">
     <div class="modal-caja">
-      <div class="modal-titulo">🚪 Crear área</div>
+      <div class="modal-titulo">Crear área</div>
       <label>Nombre del área *</label>
       <input type="text" id="a-nombre" placeholder="Ej. Baño Piso 3 — Hombres" />
       <label>Edificio *</label>
@@ -345,10 +347,10 @@
           areasHTML +=
             '<div class="area-item' + (a.activa ? "" : " area-inactiva") + '">' +
               '<div class="area-fila">' +
-                '<div class="area-ico">🚪</div>' +
+                '<div class="area-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div>' +
                 '<div class="area-info">' +
                   '<div class="area-nombre">' + a.nombre + '</div>' +
-                  '<div class="area-detalle">' + (a.requiere_foto ? '📷 Requiere foto · ' : '') + (a.activa ? 'Activa' : 'Inactiva') + '</div>' +
+                  '<div class="area-detalle">' + (a.requiere_foto ? 'Requiere foto · ' : '') + (a.activa ? 'Activa' : 'Inactiva') + '</div>' +
                 '</div>' +
                 '<label class="switch">' +
                   '<input type="checkbox" ' + (a.activa ? "checked" : "") + ' onchange="cambiarEstado(' + a.id + ', this.checked)" />' +
@@ -366,7 +368,7 @@
         grupo.className = "grupo-edificio" + claseAbierto;
         grupo.innerHTML =
           '<div class="grupo-cabecera" onclick="this.parentElement.classList.toggle(\'abierto\')">' +
-            '<div class="grupo-ico">🏢</div>' +
+            '<div class="grupo-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg></div>' +
             '<div class="grupo-info">' +
               '<div class="grupo-nombre">' + edificio + '</div>' +
               '<div class="grupo-conteo">' + areas.length + ' área' + (areas.length !== 1 ? 's' : '') + ' · ' + activas + ' activa' + (activas !== 1 ? 's' : '') + '</div>' +
