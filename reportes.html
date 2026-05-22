@@ -34,7 +34,7 @@
     select { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 16px; outline: none; background: var(--blanco); color: var(--texto); cursor: pointer; }
     select:focus { border-color: var(--azul); }
 
-    .btn-generar { width: 100%; padding: 16px; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; background: #377D37; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-generar { width: 100%; padding: 16px; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; background: #3C993C; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-generar:active { transform: scale(0.98); }
     .btn-generar:disabled { opacity: 0.6; }
 
@@ -82,7 +82,7 @@
         <option value="7-dias">Últimos 7 días</option>
       </select>
 
-      <button class="btn-generar" id="btn-generar" onclick="generar()">📄 Generar PDF</button>
+      <button class="btn-generar" id="btn-generar" onclick="generar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> Generar PDF</button>
       <div class="mensaje" id="mensaje"></div>
     </div>
 
