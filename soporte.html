@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CleanTrack — Soporte</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --verde: #1D9E75; --verde-claro: #EAF3DE; --verde-texto: #0F6E56;
+      --azul: #185FA5; --azul-claro: #E6F1FB;
+      --gris-fondo: #F5F4EF; --gris-texto: #6B6A64; --gris-borde: #E2E0D8;
+      --texto: #2C2C2A; --blanco: #FFFFFF; --rojo: #A32D2D; --rojo-claro: #FCEBEB;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
+    .contenedor { max-width: 640px; margin: 0 auto; display: none; }
+    .verificando { max-width: 640px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+
+    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
+    .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
+    .top-botones { display: flex; gap: 8px; }
+    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+
+    .buscador-cont { margin-bottom: 22px; }
+    .buscador { width: 100%; padding: 15px 16px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 14px; outline: none; }
+    .buscador:focus { border-color: var(--azul); }
+
+    .tarjeta { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 8px 20px; margin-bottom: 20px; }
+    .seccion-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-texto); margin: 6px 0 4px; padding: 8px 0; }
+
+    .faq-item { border-bottom: 1px solid var(--gris-borde); }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-pregunta { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 0; cursor: pointer; font-size: 15px; font-weight: 600; user-select: none; }
+    .faq-flecha { color: var(--gris-texto); font-size: 13px; transition: transform 0.2s; flex-shrink: 0; }
+    .faq-item.abierto .faq-flecha { transform: rotate(90deg); }
+    .faq-respuesta { display: none; padding: 0 0 16px; font-size: 14px; color: var(--gris-texto); line-height: 1.6; }
+    .faq-item.abierto .faq-respuesta { display: block; }
+    .faq-oculto { display: none; }
+
+    .sin-resultados { text-align: center; color: var(--gris-texto); padding: 24px; font-size: 14px; }
+
+    .form-card { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 20px; }
+    .form-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .form-card .sub { font-size: 13px; color: var(--gris-texto); margin-bottom: 16px; }
+    textarea { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; outline: none; font-family: inherit; resize: vertical; min-height: 90px; margin-bottom: 12px; }
+    textarea:focus { border-color: var(--azul); }
+    .btn-enviar { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: var(--azul); color: #fff; }
+    .btn-enviar:active { transform: scale(0.98); }
+    .btn-enviar:disabled { opacity: 0.6; }
+    .mensaje { text-align: center; font-size: 13px; margin-top: 12px; padding: 10px; border-radius: 10px; display: none; }
+    .mensaje.ok { background: var(--verde-claro); color: var(--verde-texto); display: block; }
+    .mensaje.error { background: var(--rojo-claro); color: var(--rojo); display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="verificando" id="verificando">Verificando sesión...</div>
+
+  <div class="contenedor" id="contenedor">
+
+    <div class="top">
+      <div>
+        <div class="marca">CleanTrack</div>
+        <h1>Centro de ayuda</h1>
+      </div>
+      <div class="top-botones">
+        <a class="btn-salir" href="inicio.html">← Inicio</a>
+        <button class="btn-salir" onclick="salir()">Salir</button>
+      </div>
+    </div>
+
+    <div class="buscador-cont">
+      <input type="text" class="buscador" id="buscador" placeholder="🔍 Escribe tu duda..." oninput="filtrarFAQ()" />
+    </div>
+
+    <div class="tarjeta">
+      <div class="seccion-label">Preguntas frecuentes</div>
+      <div id="lista-faq"></div>
+      <div class="sin-resultados faq-oculto" id="sin-resultados">No encontramos una respuesta para eso. Envíanos tu pregunta abajo y te ayudaremos.</div>
+    </div>
+
+    <div class="form-card">
+      <h2>¿No encontraste tu respuesta?</h2>
+      <div class="sub">Envíanos tu pregunta y la revisaremos</div>
+      <textarea id="pregunta" placeholder="Escribe tu pregunta aquí..."></textarea>
+      <button class="btn-enviar" id="btn-enviar" onclick="enviarPregunta()">Enviar pregunta</button>
+      <div class="mensaje" id="mensaje"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
+
+    let db = null;
+    try {
+      const { createClient } = supabase;
+      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (e) { console.error(e); }
+
+    var emailUsuario = "";
+
+    // Base de preguntas y respuestas
+    var faq = [
+      { p: "¿Cómo registro la limpieza de un área?", r: "El empleado escanea el código QR pegado en el área con la cámara de su celular. Se abre la app, ingresa su PIN de 4 dígitos, toma una foto si se le solicita, y confirma. El registro queda guardado con la hora exacta.", clave: "registrar limpieza area empleado escanear qr pin foto" },
+      { p: "¿Cómo agrego un nuevo empleado?", r: "Entra a 'Empleados' desde el inicio. Escribe el nombre y un PIN de 4 dígitos, y toca 'Agregar empleado'. El empleado ya podrá usar ese PIN para registrar áreas.", clave: "agregar nuevo empleado pin nombre crear personal" },
+      { p: "¿Cómo desactivo a un empleado que ya no trabaja?", r: "En 'Empleados', busca a la persona y toca su interruptor para ponerlo en 'Inactivo'. Su PIN dejará de funcionar de inmediato, pero su historial de registros se conserva.", clave: "desactivar empleado despedir quitar inactivo pin dejar trabajar" },
+      { p: "¿Cómo creo un edificio?", r: "Entra a 'Edificios y áreas' y toca 'Crear edificio'. Llena el nombre y los datos que quieras (dirección, contacto, etc.) y guarda. Luego podrás crear áreas dentro de ese edificio.", clave: "crear edificio nuevo direccion contacto agregar" },
+      { p: "¿Cómo creo un área?", r: "En 'Edificios y áreas', toca 'Crear área'. Escribe el nombre del área, elige el edificio de la lista, marca si requiere foto, y crea. El área aparecerá agrupada bajo su edificio.", clave: "crear area nueva edificio bano lobby piso requiere foto" },
+      { p: "¿Cómo genero el código QR de un área?", r: "En 'Edificios y áreas', abre el edificio, busca el área y toca 'Generar código QR'. Aparecerá el QR, que puedes descargar para imprimir y pegar en el área. Cada área tiene su propio QR único.", clave: "generar codigo qr area imprimir descargar pegar" },
+      { p: "¿Qué hago si un código QR se daña o se pierde?", r: "Simplemente vuelve a 'Edificios y áreas', abre el área, y genera su QR de nuevo. El QR será el mismo que el anterior, así que el historial no se pierde. Imprímelo y reemplaza el dañado.", clave: "qr danado perdido roto reimprimir reemplazar generar nuevo" },
+      { p: "¿Cómo veo los registros de limpieza?", r: "Entra a 'Registros' desde el inicio. Verás todas las áreas limpiadas, con el nombre del empleado, la hora, y la foto si la hubo. Se actualiza automáticamente.", clave: "ver registros limpieza dashboard panel historial fotos" },
+      { p: "¿Cómo descargo el informe mensual en PDF?", r: "Entra a 'Reportes', elige el edificio y el período (este mes, mes pasado o últimos 7 días), y toca 'Generar PDF'. Se descargará un informe profesional que puedes imprimir o enviar a tu cliente.", clave: "descargar informe reporte pdf mensual cliente edificio periodo" },
+      { p: "¿Cómo veo las estadísticas?", r: "Entra a 'Estadísticas' y elige un edificio en el menú de arriba. Verás los números, la actividad de los últimos 7 días, y los rankings de áreas y empleados de ese edificio.", clave: "estadisticas datos graficas numeros rendimiento edificio" }
+    ];
+
+    async function verificarAcceso() {
+      if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
+      const { data } = await db.auth.getSession();
+      if (!data.session) { window.location.href = "login.html"; return; }
+      emailUsuario = data.session.user.email || "";
+      document.getElementById("verificando").style.display = "none";
+      document.getElementById("contenedor").style.display = "block";
+      pintarFAQ();
+    }
+
+    async function salir() {
+      if (db) await db.auth.signOut();
+      window.location.href = "login.html";
+    }
+
+    function pintarFAQ() {
+      var cont = document.getElementById("lista-faq");
+      cont.innerHTML = "";
+      faq.forEach(function(item, i) {
+        var div = document.createElement("div");
+        div.className = "faq-item";
+        div.setAttribute("data-clave", (item.p + " " + item.clave).toLowerCase());
+        div.innerHTML =
+          '<div class="faq-pregunta" onclick="this.parentElement.classList.toggle(\'abierto\')">' +
+            '<span>' + item.p + '</span>' +
+            '<span class="faq-flecha">▶</span>' +
+          '</div>' +
+          '<div class="faq-respuesta">' + item.r + '</div>';
+        cont.appendChild(div);
+      });
+    }
+
+    function filtrarFAQ() {
+      var texto = document.getElementById("buscador").value.toLowerCase().trim();
+      var items = document.querySelectorAll(".faq-item");
+      var visibles = 0;
+      items.forEach(function(item) {
+        var clave = item.getAttribute("data-clave");
+        // Coincide si alguna palabra del texto está en la clave
+        var palabras = texto.split(" ").filter(function(w){ return w.length > 2; });
+        var coincide = texto === "" || palabras.some(function(w){ return clave.indexOf(w) !== -1; });
+        if (coincide) { item.classList.remove("faq-oculto"); visibles++; }
+        else { item.classList.add("faq-oculto"); }
+      });
+      document.getElementById("sin-resultados").classList.toggle("faq-oculto", visibles > 0 || texto === "");
+    }
+
+    async function enviarPregunta() {
+      var pregunta = document.getElementById("pregunta").value.trim();
+      var msg = document.getElementById("mensaje");
+      if (!pregunta) { msg.textContent = "Escribe tu pregunta."; msg.className = "mensaje error"; return; }
+
+      document.getElementById("btn-enviar").disabled = true;
+      msg.textContent = "Enviando..."; msg.className = "mensaje"; msg.style.display = "block";
+
+      const { error } = await db.from("soporte").insert([{ email_usuario: emailUsuario, pregunta: pregunta, resuelto: false }]);
+      document.getElementById("btn-enviar").disabled = false;
+
+      if (error) {
+        msg.textContent = "Error al enviar: " + error.message; msg.className = "mensaje error";
+      } else {
+        msg.textContent = "✓ Tu pregunta fue enviada. Te responderemos pronto."; msg.className = "mensaje ok";
+        document.getElementById("pregunta").value = "";
+      }
+    }
+
+    verificarAcceso();
+  </script>
+</body>
+</html>
