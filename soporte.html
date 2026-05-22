@@ -25,8 +25,9 @@
     .top-botones { display: flex; gap: 8px; }
     .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
 
-    .buscador-cont { margin-bottom: 22px; }
-    .buscador { width: 100%; padding: 15px 16px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 14px; outline: none; }
+    .buscador-cont { margin-bottom: 22px; position: relative; }
+    .buscador-cont .lupa { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; stroke: var(--gris-texto); pointer-events: none; }
+    .buscador { width: 100%; padding: 15px 16px 15px 44px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 14px; outline: none; }
     .buscador:focus { border-color: var(--azul); }
 
     .tarjeta { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 8px 20px; margin-bottom: 20px; }
@@ -48,7 +49,7 @@
     .form-card .sub { font-size: 13px; color: var(--gris-texto); margin-bottom: 16px; }
     textarea { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; outline: none; font-family: inherit; resize: vertical; min-height: 90px; margin-bottom: 12px; }
     textarea:focus { border-color: var(--azul); }
-    .btn-enviar { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: #377D37; color: #fff; }
+    .btn-enviar { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: #3C993C; color: #fff; }
     .btn-enviar:active { transform: scale(0.98); }
     .btn-enviar:disabled { opacity: 0.6; }
     .mensaje { text-align: center; font-size: 13px; margin-top: 12px; padding: 10px; border-radius: 10px; display: none; }
@@ -74,7 +75,8 @@
     </div>
 
     <div class="buscador-cont">
-      <input type="text" class="buscador" id="buscador" placeholder="🔍 Escribe tu duda..." oninput="filtrarFAQ()" />
+      <svg class="lupa" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" class="buscador" id="buscador" placeholder="Escribe tu duda..." oninput="filtrarFAQ()" />
     </div>
 
     <div class="tarjeta">
