@@ -59,6 +59,19 @@
 
     .cargando { text-align: center; color: var(--gris-texto); padding: 20px; font-size: 14px; }
 
+    /* ACORDEÓN DE EDIFICIOS */
+    .grupo-edificio { border: 1px solid var(--gris-borde); border-radius: 14px; margin-bottom: 12px; overflow: hidden; background: var(--blanco); }
+    .grupo-cabecera { display: flex; align-items: center; gap: 12px; padding: 16px; cursor: pointer; user-select: none; transition: background 0.15s; }
+    .grupo-cabecera:hover { background: var(--gris-fondo); }
+    .grupo-ico { width: 40px; height: 40px; border-radius: 10px; background: var(--azul-claro); display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; }
+    .grupo-info { flex: 1; min-width: 0; }
+    .grupo-nombre { font-size: 15px; font-weight: 600; }
+    .grupo-conteo { font-size: 12px; color: var(--gris-texto); margin-top: 2px; }
+    .grupo-flecha { font-size: 14px; color: var(--gris-texto); transition: transform 0.2s; flex-shrink: 0; }
+    .grupo-edificio.abierto .grupo-flecha { transform: rotate(90deg); }
+    .grupo-cuerpo { display: none; padding: 0 16px 8px; border-top: 1px solid var(--gris-borde); }
+    .grupo-edificio.abierto .grupo-cuerpo { display: block; }
+
     /* MODALES */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
     .modal.abierto { display: flex; }
@@ -303,7 +316,7 @@
       }
     }
 
-    // ===== LISTA DE ÁREAS =====
+    // ===== LISTA DE ÁREAS AGRUPADA POR EDIFICIO =====
     async function cargarAreas() {
       var cont = document.getElementById("lista-areas");
       cont.innerHTML = '<div class="cargando">Cargando...</div>';
@@ -311,24 +324,57 @@
       if (error) { cont.innerHTML = '<div class="mensaje error" style="display:block">Error: ' + error.message + '</div>'; return; }
       if (!data || data.length === 0) { cont.innerHTML = '<div class="cargando">Aún no hay áreas. Crea la primera con el botón de arriba.</div>'; return; }
 
+      // Agrupar áreas por edificio
+      var grupos = {};
+      data.forEach(function(a){
+        var ed = a.edificio || "Sin edificio";
+        if (!grupos[ed]) grupos[ed] = [];
+        grupos[ed].push(a);
+      });
+
+      var nombresEdificios = Object.keys(grupos).sort();
       cont.innerHTML = "";
-      data.forEach(function(a) {
-        var div = document.createElement("div");
-        div.className = "area-item" + (a.activa ? "" : " area-inactiva");
-        div.innerHTML =
-          '<div class="area-fila">' +
-            '<div class="area-ico">🚪</div>' +
-            '<div class="area-info">' +
-              '<div class="area-nombre">' + a.nombre + '</div>' +
-              '<div class="area-detalle">' + a.edificio + (a.requiere_foto ? ' · 📷 Requiere foto' : '') + ' · ' + (a.activa ? 'Activa' : 'Inactiva') + '</div>' +
+
+      nombresEdificios.forEach(function(edificio, idx) {
+        var areas = grupos[edificio];
+        var activas = areas.filter(function(a){ return a.activa; }).length;
+
+        // Construir las áreas internas
+        var areasHTML = "";
+        areas.forEach(function(a){
+          areasHTML +=
+            '<div class="area-item' + (a.activa ? "" : " area-inactiva") + '">' +
+              '<div class="area-fila">' +
+                '<div class="area-ico">🚪</div>' +
+                '<div class="area-info">' +
+                  '<div class="area-nombre">' + a.nombre + '</div>' +
+                  '<div class="area-detalle">' + (a.requiere_foto ? '📷 Requiere foto · ' : '') + (a.activa ? 'Activa' : 'Inactiva') + '</div>' +
+                '</div>' +
+                '<label class="switch">' +
+                  '<input type="checkbox" ' + (a.activa ? "checked" : "") + ' onchange="cambiarEstado(' + a.id + ', this.checked)" />' +
+                  '<span class="switch-track"></span><span class="switch-thumb"></span>' +
+                '</label>' +
+              '</div>' +
+              '<button class="btn-qr" onclick="mostrarQR(' + a.id + ', \'' + a.nombre.replace(/'/g, "\\'") + '\', \'' + edificio.replace(/'/g, "\\'") + '\')">Generar código QR</button>' +
+            '</div>';
+        });
+
+        // El primer edificio arranca abierto, los demás cerrados
+        var claseAbierto = idx === 0 ? " abierto" : "";
+
+        var grupo = document.createElement("div");
+        grupo.className = "grupo-edificio" + claseAbierto;
+        grupo.innerHTML =
+          '<div class="grupo-cabecera" onclick="this.parentElement.classList.toggle(\'abierto\')">' +
+            '<div class="grupo-ico">🏢</div>' +
+            '<div class="grupo-info">' +
+              '<div class="grupo-nombre">' + edificio + '</div>' +
+              '<div class="grupo-conteo">' + areas.length + ' área' + (areas.length !== 1 ? 's' : '') + ' · ' + activas + ' activa' + (activas !== 1 ? 's' : '') + '</div>' +
             '</div>' +
-            '<label class="switch">' +
-              '<input type="checkbox" ' + (a.activa ? "checked" : "") + ' onchange="cambiarEstado(' + a.id + ', this.checked)" />' +
-              '<span class="switch-track"></span><span class="switch-thumb"></span>' +
-            '</label>' +
+            '<div class="grupo-flecha">▶</div>' +
           '</div>' +
-          '<button class="btn-qr" onclick="mostrarQR(' + a.id + ', \'' + a.nombre.replace(/'/g, "\\'") + '\', \'' + a.edificio.replace(/'/g, "\\'") + '\')">Generar código QR</button>';
-        cont.appendChild(div);
+          '<div class="grupo-cuerpo">' + areasHTML + '</div>';
+        cont.appendChild(grupo);
       });
     }
 
