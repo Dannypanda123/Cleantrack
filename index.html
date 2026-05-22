@@ -61,6 +61,7 @@
     .area-info .edificio { font-size: 13px; color: var(--gris-texto); margin-top: 3px; }
 
     .label { text-align: center; font-size: 14px; color: var(--gris-texto); margin-bottom: 14px; }
+    .label.error { color: var(--rojo); font-weight: 600; }
 
     .pin-dots { display: flex; gap: 14px; justify-content: center; margin-bottom: 26px; }
     .dot {
@@ -69,6 +70,7 @@
       transition: all 0.15s;
     }
     .dot.full { background: var(--azul); border-color: var(--azul); }
+    .dot.error { border-color: var(--rojo); background: var(--rojo); }
 
     .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
     .key {
@@ -84,6 +86,7 @@
     }
     .key:active { transform: scale(0.94); background: var(--gris-borde); }
     .key.accion { background: transparent; font-size: 16px; color: var(--gris-texto); }
+    .key:disabled { opacity: 0.4; }
 
     .pantalla { display: none; }
     .pantalla.activa { display: block; animation: aparecer 0.3s ease; }
@@ -170,14 +173,14 @@
         <div class="nombre" id="area-nombre">Baño Piso 1 — Mujeres</div>
         <div class="edificio" id="area-edificio">Torre Empresarial Norte</div>
       </div>
-      <div class="label">Ingresa tu PIN para registrar</div>
-      <div class="pin-dots">
+      <div class="label" id="label-pin">Ingresa tu PIN para registrar</div>
+      <div class="pin-dots" id="pin-dots">
         <div class="dot" id="dot1"></div>
         <div class="dot" id="dot2"></div>
         <div class="dot" id="dot3"></div>
         <div class="dot" id="dot4"></div>
       </div>
-      <div class="keypad">
+      <div class="keypad" id="keypad">
         <button class="key" onclick="press('1')">1</button>
         <button class="key" onclick="press('2')">2</button>
         <button class="key" onclick="press('3')">3</button>
@@ -197,7 +200,7 @@
       <div class="marca">CleanTrack</div>
       <div class="saludo">
         <div class="circulo">&#128075;</div>
-        <div class="hola" id="saludo-nombre">Hola, María G.</div>
+        <div class="hola" id="saludo-nombre">Hola</div>
         <div class="sub" id="saludo-area">Baño Piso 1 — Mujeres</div>
       </div>
       <div class="aviso" id="aviso-foto">&#128247; Hoy se requiere una foto de esta área</div>
@@ -241,39 +244,96 @@
 
     var datosArea = {
       area: "Baño Piso 1 — Mujeres",
-      edificio: "Torre Empresarial Norte",
-      nombre_empleado: "María G."
+      edificio: "Torre Empresarial Norte"
     };
 
     var pin = "";
+    var empleadoNombre = null;   // Se llena cuando el PIN es válido
     var pideFoto = true;
     var fotoLista = false;
     var fotoDataURL = null;
-    var fotoArchivo = null;   // El archivo real de la foto, para subirlo
+    var fotoArchivo = null;
+    var verificando = false;
 
     function press(n) {
+      if (verificando) return;
       if (pin.length >= 4) return;
       pin += n;
       pintarDots();
       if (pin.length === 4) {
-        setTimeout(entrar, 250);
+        verificarPin();
       }
     }
     function borrar() {
+      if (verificando) return;
       pin = pin.slice(0, -1);
       pintarDots();
     }
-    function pintarDots() {
+    function pintarDots(conError) {
       for (var i = 1; i <= 4; i++) {
-        document.getElementById("dot" + i).classList.toggle("full", pin.length >= i);
+        var d = document.getElementById("dot" + i);
+        d.classList.toggle("full", pin.length >= i && !conError);
+        d.classList.toggle("error", !!conError);
       }
     }
+
+    // ===== VERIFICAR EL PIN CONTRA LA BASE DE DATOS =====
+    async function verificarPin() {
+      if (!db) {
+        mostrarErrorPin("Sin conexión");
+        return;
+      }
+      verificando = true;
+      document.getElementById("label-pin").textContent = "Verificando...";
+      document.getElementById("label-pin").className = "label";
+
+      try {
+        const { data, error } = await db.rpc("verificar_pin", { pin_ingresado: pin });
+
+        if (error) {
+          console.error("Error al verificar PIN:", error);
+          mostrarErrorPin("Error al verificar. Intenta de nuevo.");
+          return;
+        }
+
+        if (data && data.length > 0) {
+          // PIN válido: guardar el nombre real y continuar
+          empleadoNombre = data[0].nombre;
+          verificando = false;
+          entrar();
+        } else {
+          // PIN no existe o empleado inactivo
+          mostrarErrorPin("PIN no válido");
+        }
+      } catch (e) {
+        console.error(e);
+        mostrarErrorPin("Error al verificar. Intenta de nuevo.");
+      }
+    }
+
+    function mostrarErrorPin(mensaje) {
+      pintarDots(true);  // dots en rojo
+      var label = document.getElementById("label-pin");
+      label.textContent = mensaje;
+      label.className = "label error";
+      // Borrar el PIN automáticamente después de un instante
+      setTimeout(function() {
+        pin = "";
+        pintarDots();
+        verificando = false;
+        label.textContent = "Ingresa tu PIN para registrar";
+        label.className = "label";
+      }, 1200);
+    }
+
     function entrar() {
       var aviso = document.getElementById("aviso-foto");
       var btn = document.getElementById("btn-principal");
       fotoLista = false;
       fotoArchivo = null;
       document.getElementById("preview-foto").style.display = "none";
+      // Saludar con el nombre real
+      document.getElementById("saludo-nombre").textContent = "Hola, " + empleadoNombre;
       if (pideFoto) {
         aviso.style.display = "block";
         btn.textContent = "Tomar foto del área";
@@ -299,7 +359,7 @@
     function fotoTomada(event) {
       var archivo = event.target.files[0];
       if (!archivo) return;
-      fotoArchivo = archivo;   // Guardamos el archivo real para subirlo después
+      fotoArchivo = archivo;
       var lector = new FileReader();
       lector.onload = function(e) {
         fotoDataURL = e.target.result;
@@ -330,13 +390,11 @@
 
       var fotoUrl = null;
 
-      // PASO 1: si hay foto, subirla al Storage primero
       if (conFoto && fotoArchivo) {
         try {
           var nombreArchivo = "foto_" + Date.now() + ".jpg";
           const { data: subida, error: errorSubida } = await db
-            .storage
-            .from("fotos")
+            .storage.from("fotos")
             .upload(nombreArchivo, fotoArchivo, { contentType: fotoArchivo.type || "image/jpeg" });
 
           if (errorSubida) {
@@ -346,8 +404,6 @@
             document.getElementById("btn-principal").disabled = false;
             return;
           }
-
-          // Obtener el link público de la foto recién subida
           const { data: urlData } = db.storage.from("fotos").getPublicUrl(nombreArchivo);
           fotoUrl = urlData.publicUrl;
         } catch (e) {
@@ -359,14 +415,13 @@
         }
       }
 
-      // PASO 2: guardar el registro (con el link de la foto si la hubo)
       estado.textContent = "Guardando registro...";
       try {
         const { data, error } = await db
           .from("registros")
           .insert([{
             pin_empleado: pin,
-            nombre_empleado: datosArea.nombre_empleado,
+            nombre_empleado: empleadoNombre,
             area: datosArea.area,
             edificio: datosArea.edificio,
             con_foto: conFoto,
@@ -412,7 +467,11 @@
 
     function reiniciar() {
       pin = "";
+      empleadoNombre = null;
+      verificando = false;
       pintarDots();
+      document.getElementById("label-pin").textContent = "Ingresa tu PIN para registrar";
+      document.getElementById("label-pin").className = "label";
       fotoLista = false;
       fotoDataURL = null;
       fotoArchivo = null;
