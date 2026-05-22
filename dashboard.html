@@ -28,7 +28,12 @@
       min-height: 100vh;
       padding: 20px;
     }
-    .contenedor { max-width: 720px; margin: 0 auto; }
+    /* Oculto hasta confirmar sesión, para no mostrar datos antes de verificar */
+    .contenedor { max-width: 720px; margin: 0 auto; display: none; }
+    .verificando {
+      max-width: 720px; margin: 60px auto; text-align: center;
+      color: var(--gris-texto); font-size: 15px;
+    }
 
     .top {
       display: flex; align-items: center; justify-content: space-between;
@@ -39,12 +44,19 @@
       color: var(--gris-texto); font-weight: 600;
     }
     .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
+    .top-botones { display: flex; gap: 8px; }
     .btn-refrescar {
       background: var(--azul); color: #fff; border: none;
       padding: 10px 18px; border-radius: 12px; font-size: 14px;
       font-weight: 600; cursor: pointer;
     }
-    .btn-refrescar:active { transform: scale(0.97); }
+    .btn-salir {
+      background: transparent; color: var(--gris-texto);
+      border: 1.5px solid var(--gris-borde);
+      padding: 10px 18px; border-radius: 12px; font-size: 14px;
+      font-weight: 600; cursor: pointer;
+    }
+    .btn-refrescar:active, .btn-salir:active { transform: scale(0.97); }
 
     .metricas {
       display: grid; grid-template-columns: repeat(3, 1fr);
@@ -111,14 +123,20 @@
   </style>
 </head>
 <body>
-  <div class="contenedor">
+
+  <div class="verificando" id="verificando">Verificando sesión...</div>
+
+  <div class="contenedor" id="contenedor">
 
     <div class="top">
       <div>
         <div class="marca">CleanTrack</div>
         <h1>Panel del supervisor</h1>
       </div>
-      <button class="btn-refrescar" onclick="cargar()">Actualizar</button>
+      <div class="top-botones">
+        <button class="btn-refrescar" onclick="cargar()">Actualizar</button>
+        <button class="btn-salir" onclick="salir()">Salir</button>
+      </div>
     </div>
 
     <div class="metricas">
@@ -158,6 +176,29 @@
       db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     } catch (e) {
       console.error("No se pudo conectar a Supabase:", e);
+    }
+
+    // ===== PROTECCIÓN: si no hay sesión, mandar al login =====
+    async function verificarAcceso() {
+      if (!db) {
+        document.getElementById("verificando").textContent = "Sin conexión a la base de datos.";
+        return;
+      }
+      const { data } = await db.auth.getSession();
+      if (!data.session) {
+        // No hay sesión: fuera, al login
+        window.location.href = "login.html";
+        return;
+      }
+      // Hay sesión: mostrar el dashboard y cargar datos
+      document.getElementById("verificando").style.display = "none";
+      document.getElementById("contenedor").style.display = "block";
+      cargar();
+    }
+
+    async function salir() {
+      if (db) await db.auth.signOut();
+      window.location.href = "login.html";
     }
 
     function esHoy(fechaISO) {
@@ -224,7 +265,6 @@
           ? '<span class="badge badge-foto">📷 Con foto</span>'
           : '<span class="badge badge-sinfoto">✓ Registrado</span>';
 
-        // Miniatura: si hay foto_url, mostrar la imagen; si no, el icono de escoba
         var visual;
         if (r.foto_url) {
           visual = '<img class="miniatura" src="' + r.foto_url + '" alt="Foto" onclick="abrirModal(\'' + r.foto_url + '\')" />';
@@ -246,8 +286,11 @@
       });
     }
 
-    cargar();
-    setInterval(cargar, 30000);
+    // Arranca verificando el acceso (no carga datos hasta confirmar sesión)
+    verificarAcceso();
+    setInterval(function(){
+      if (document.getElementById("contenedor").style.display === "block") cargar();
+    }, 30000);
   </script>
 </body>
 </html>
