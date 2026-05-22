@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CleanTrack — Inicio</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --verde: #1D9E75;
+      --verde-claro: #EAF3DE;
+      --verde-texto: #0F6E56;
+      --azul: #185FA5;
+      --azul-claro: #E6F1FB;
+      --gris-fondo: #F5F4EF;
+      --gris-texto: #6B6A64;
+      --gris-borde: #E2E0D8;
+      --texto: #2C2C2A;
+      --blanco: #FFFFFF;
+      --ambar-claro: #FAEEDA;
+      --ambar-texto: #854F0B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--gris-fondo);
+      color: var(--texto);
+      min-height: 100vh;
+      padding: 24px 20px 40px;
+    }
+    .contenedor { max-width: 680px; margin: 0 auto; display: none; }
+    .verificando { max-width: 680px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+
+    .top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 12px; }
+    .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
+    .top h1 { font-size: 26px; font-weight: 600; margin-top: 4px; }
+    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 9px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-salir:active { transform: scale(0.97); }
+
+    .saludo-sub { font-size: 15px; color: var(--gris-texto); margin-bottom: 28px; }
+
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+
+    .tarjeta {
+      background: var(--blanco); border: 1px solid var(--gris-borde);
+      border-radius: 18px; padding: 22px; cursor: pointer;
+      text-decoration: none; color: inherit; display: block;
+      transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+      position: relative;
+    }
+    .tarjeta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); border-color: var(--azul-claro); }
+    .tarjeta:active { transform: translateY(0); }
+
+    .tarjeta.proximamente { cursor: default; opacity: 0.7; }
+    .tarjeta.proximamente:hover { transform: none; box-shadow: none; border-color: var(--gris-borde); }
+
+    .ico {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; margin-bottom: 16px;
+    }
+    .ico-registros { background: var(--azul-claro); }
+    .ico-empleados { background: var(--verde-claro); }
+    .ico-estadisticas { background: #F3E8FB; }
+    .ico-edificios { background: var(--ambar-claro); }
+    .ico-reportes { background: #E8F0FB; }
+    .ico-soporte { background: #FBE8E8; }
+
+    .tarjeta h3 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+    .tarjeta p { font-size: 13px; color: var(--gris-texto); line-height: 1.4; }
+
+    .etiqueta-pronto {
+      position: absolute; top: 16px; right: 16px;
+      background: var(--gris-fondo); color: var(--gris-texto);
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; padding: 4px 9px; border-radius: 8px;
+    }
+    .seccion-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gris-texto); margin: 28px 0 12px; }
+  </style>
+</head>
+<body>
+
+  <div class="verificando" id="verificando">Verificando sesión...</div>
+
+  <div class="contenedor" id="contenedor">
+
+    <div class="top">
+      <div>
+        <div class="marca">CleanTrack</div>
+        <h1 id="titulo-saludo">Hola</h1>
+      </div>
+      <button class="btn-salir" onclick="salir()">Salir</button>
+    </div>
+    <div class="saludo-sub">Centro de control del supervisor</div>
+
+    <div class="seccion-label">Disponible</div>
+    <div class="grid">
+
+      <a class="tarjeta" href="dashboard.html">
+        <div class="ico ico-registros">📋</div>
+        <h3>Registros</h3>
+        <p>Ver áreas limpiadas, fotos y horarios en tiempo real</p>
+      </a>
+
+      <a class="tarjeta" href="admin.html">
+        <div class="ico ico-empleados">👥</div>
+        <h3>Empleados</h3>
+        <p>Agregar, activar o desactivar al personal de limpieza</p>
+      </a>
+
+    </div>
+
+    <div class="seccion-label">Próximamente</div>
+    <div class="grid">
+
+      <div class="tarjeta proximamente">
+        <span class="etiqueta-pronto">Pronto</span>
+        <div class="ico ico-estadisticas">📊</div>
+        <h3>Estadísticas</h3>
+        <p>Cumplimiento, áreas más atendidas y tendencias</p>
+      </div>
+
+      <div class="tarjeta proximamente">
+        <span class="etiqueta-pronto">Pronto</span>
+        <div class="ico ico-edificios">🏢</div>
+        <h3>Edificios y áreas</h3>
+        <p>Gestionar espacios y generar códigos QR por área</p>
+      </div>
+
+      <div class="tarjeta proximamente">
+        <span class="etiqueta-pronto">Pronto</span>
+        <div class="ico ico-reportes">📄</div>
+        <h3>Reportes</h3>
+        <p>Informe mensual en PDF para presentar al cliente</p>
+      </div>
+
+      <div class="tarjeta proximamente">
+        <span class="etiqueta-pronto">Pronto</span>
+        <div class="ico ico-soporte">🆘</div>
+        <h3>Soporte técnico</h3>
+        <p>Contacto y ayuda con el uso de la plataforma</p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
+
+    let db = null;
+    try {
+      const { createClient } = supabase;
+      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (e) {
+      console.error("No se pudo conectar a Supabase:", e);
+    }
+
+    async function verificarAcceso() {
+      if (!db) {
+        document.getElementById("verificando").textContent = "Sin conexión a la base de datos.";
+        return;
+      }
+      const { data } = await db.auth.getSession();
+      if (!data.session) {
+        window.location.href = "login.html";
+        return;
+      }
+      // Mostrar el email del supervisor en el saludo (parte antes del @)
+      var email = data.session.user.email || "";
+      var nombre = email.split("@")[0];
+      if (nombre) {
+        document.getElementById("titulo-saludo").textContent = "Hola, " + nombre;
+      }
+      document.getElementById("verificando").style.display = "none";
+      document.getElementById("contenedor").style.display = "block";
+    }
+
+    async function salir() {
+      if (db) await db.auth.signOut();
+      window.location.href = "login.html";
+    }
+
+    verificarAcceso();
+  </script>
+</body>
+</html>
