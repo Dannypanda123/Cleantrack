@@ -134,7 +134,6 @@
         <h1>Panel del supervisor</h1>
       </div>
       <div class="top-botones">
-        <a class="btn-salir" href="inicio.html" style="text-decoration:none; display:inline-block;">← Inicio</a>
         <button class="btn-refrescar" onclick="cargar()">Actualizar</button>
         <button class="btn-salir" onclick="salir()">Salir</button>
       </div>
@@ -270,7 +269,7 @@
         if (r.foto_url) {
           visual = '<img class="miniatura" src="' + r.foto_url + '" alt="Foto" onclick="abrirModal(\'' + r.foto_url + '\')" />';
         } else {
-          visual = '<div class="icono">🧹</div>';
+          visual = '<div class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="#5F7268" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>';
         }
 
         var div = document.createElement("div");
