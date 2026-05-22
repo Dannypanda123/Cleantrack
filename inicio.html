@@ -168,8 +168,11 @@
       }
       // Mostrar el email del supervisor en el saludo (parte antes del @)
       var email = data.session.user.email || "";
-      var nombre = email.split("@")[0];
+      var nombre = email.split("@")[0];        // "daniel.obandoo2002"
+      nombre = nombre.split(".")[0];           // "daniel" (toma antes del primer punto)
+      nombre = nombre.replace(/[0-9]/g, "");   // quita números por si quedaron
       if (nombre) {
+        nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1);  // "Daniel"
         document.getElementById("titulo-saludo").textContent = "Hola, " + nombre;
       }
       document.getElementById("verificando").style.display = "none";
