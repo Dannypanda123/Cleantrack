@@ -441,7 +441,8 @@
           edificio: datosArea.edificio,
           con_foto: conFoto,
           foto_url: fotoUrl,
-          compania_id: datosArea.compania_id
+          compania_id: datosArea.compania_id,
+          area_id: datosArea.id
         }]);
         if (error) {
           estado.className = "estado-guardado estado-error";
@@ -571,7 +572,8 @@
           nombre_empleado: empleadoNombre || "Empleado",
           foto_url: fotoUrl,
           resuelto: false,
-          compania_id: datosArea.compania_id
+          compania_id: datosArea.compania_id,
+          area_id: datosArea.id
         }]);
         if (error) {
           estado.className = "estado-guardado estado-error";
