@@ -30,8 +30,8 @@
     .acciones { display: flex; gap: 12px; margin-bottom: 22px; }
     .btn-accion { flex: 1; padding: 16px; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.08s; }
     .btn-accion:active { transform: scale(0.98); }
-    .btn-edificio { background: #377D37; color: #fff; box-shadow: 0 4px 12px rgba(60,153,60,0.3); }
-    .btn-area { background: #377D37; color: #fff; box-shadow: 0 4px 12px rgba(60,153,60,0.3); }
+    .btn-edificio { background: #3C993C; color: #fff; box-shadow: 0 4px 12px rgba(60,153,60,0.3); }
+    .btn-area { background: #3C993C; color: #fff; box-shadow: 0 4px 12px rgba(60,153,60,0.3); }
     @media (max-width: 460px) { .acciones { flex-direction: column; } }
 
     .tarjeta { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
@@ -51,11 +51,11 @@
     .switch { position: relative; width: 52px; height: 30px; flex-shrink: 0; cursor: pointer; }
     .switch input { display: none; }
     .switch-track { position: absolute; inset: 0; background: var(--gris-borde); border-radius: 99px; transition: background 0.2s; }
-    .switch input:checked + .switch-track { background: #377D37; }
+    .switch input:checked + .switch-track { background: #3C993C; }
     .switch-thumb { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; background: #fff; border-radius: 50%; transition: transform 0.2s; }
     .switch input:checked ~ .switch-thumb { transform: translateX(22px); }
 
-    .btn-qr { margin-top: 12px; width: 100%; padding: 11px; border: none; border-radius: 10px; background: #377D37; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-qr { margin-top: 12px; width: 100%; padding: 11px; border: none; border-radius: 10px; background: #3C993C; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
     .btn-qr:active { transform: scale(0.98); }
 
     .cargando { text-align: center; color: var(--gris-texto); padding: 20px; font-size: 14px; }
@@ -69,10 +69,18 @@
     .grupo-info { flex: 1; min-width: 0; }
     .grupo-nombre { font-size: 15px; font-weight: 600; }
     .grupo-conteo { font-size: 12px; color: var(--gris-texto); margin-top: 2px; }
-    .grupo-flecha { font-size: 14px; color: var(--gris-texto); transition: transform 0.2s; flex-shrink: 0; }
+    .grupo-flecha { font-size: 14px; color: var(--gris-texto); transition: transform 0.2s; flex-shrink: 0; cursor: pointer; }
     .grupo-edificio.abierto .grupo-flecha { transform: rotate(90deg); }
     .grupo-cuerpo { display: none; padding: 0 16px 8px; border-top: 1px solid var(--gris-borde); }
     .grupo-edificio.abierto .grupo-cuerpo { display: block; }
+    .grupo-cabecera { cursor: default; }
+    .grupo-ico, .grupo-info { cursor: pointer; }
+    .grupo-acciones { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .btn-icono { width: 34px; height: 34px; border-radius: 9px; border: 1.5px solid var(--gris-borde); background: var(--blanco); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+    .btn-icono svg { width: 16px; height: 16px; stroke: var(--gris-verde-900, #5F7268); }
+    .btn-icono:active { transform: scale(0.92); }
+    .edificio-inactivo .grupo-nombre, .edificio-inactivo .grupo-conteo { opacity: 0.5; }
+    .sin-areas { font-size: 13px; color: var(--gris-texto); padding: 14px 4px; font-style: italic; }
 
     /* MODALES */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
@@ -91,8 +99,8 @@
 
     .modal-botones { display: flex; gap: 10px; margin-top: 6px; }
     .btn-guardar { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; color: #fff; }
-    .btn-guardar.azul { background: #377D37; }
-    .btn-guardar.verde { background: #377D37; }
+    .btn-guardar.azul { background: #3C993C; }
+    .btn-guardar.verde { background: #3C993C; }
     .btn-guardar:disabled { opacity: 0.6; }
     .btn-cancelar { flex: 0 0 auto; padding: 14px 20px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: transparent; color: var(--gris-texto); font-size: 15px; font-weight: 600; cursor: pointer; }
 
@@ -132,8 +140,8 @@
     </div>
 
     <div class="tarjeta">
-      <h2>Áreas registradas</h2>
-      <div class="sub">Toca "Generar código QR" para descargar el QR de cada área</div>
+      <h2>Edificios y sus áreas</h2>
+      <div class="sub">Cada edificio con sus áreas. Toca "Generar código QR" para descargar el QR de cada área.</div>
       <div id="lista-areas"><div class="cargando">Cargando...</div></div>
     </div>
 
@@ -161,6 +169,32 @@
       <div class="modal-botones">
         <button class="btn-cancelar" onclick="cerrar('modal-edificio')">Cancelar</button>
         <button class="btn-guardar azul" id="btn-guardar-edificio" onclick="guardarEdificio()">Guardar edificio</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR EDIFICIO -->
+  <div class="modal" id="modal-editar-edificio">
+    <div class="modal-caja">
+      <div class="modal-titulo">Editar edificio</div>
+      <label>Nombre del edificio *</label>
+      <input type="text" id="ee-nombre" />
+      <label>Dirección</label>
+      <input type="text" id="ee-direccion" />
+      <label>Persona de contacto</label>
+      <input type="text" id="ee-contacto" />
+      <label>Teléfono</label>
+      <input type="text" id="ee-telefono" inputmode="tel" />
+      <label>Email</label>
+      <input type="email" id="ee-email" />
+      <label>Número de pisos</label>
+      <input type="text" id="ee-pisos" />
+      <label>Notas</label>
+      <textarea id="ee-notas"></textarea>
+      <div class="mensaje" id="mensaje-editar-edificio"></div>
+      <div class="modal-botones">
+        <button class="btn-cancelar" onclick="cerrar('modal-editar-edificio')">Cancelar</button>
+        <button class="btn-guardar azul" id="btn-guardar-editar-edificio" onclick="guardarEdicionEdificio()">Guardar cambios</button>
       </div>
     </div>
   </div>
@@ -318,72 +352,153 @@
       }
     }
 
-    // ===== LISTA DE ÁREAS AGRUPADA POR EDIFICIO =====
+    // ===== LISTA DE EDIFICIOS (todos) CON SUS ÁREAS =====
+    var edificiosCache = [];
+
     async function cargarAreas() {
       var cont = document.getElementById("lista-areas");
       cont.innerHTML = '<div class="cargando">Cargando...</div>';
-      const { data, error } = await db.from("areas").select("*").order("created_at", { ascending: true });
-      if (error) { cont.innerHTML = '<div class="mensaje error" style="display:block">Error: ' + error.message + '</div>'; return; }
-      if (!data || data.length === 0) { cont.innerHTML = '<div class="cargando">Aún no hay áreas. Crea la primera con el botón de arriba.</div>'; return; }
 
-      // Agrupar áreas por edificio
-      var grupos = {};
-      data.forEach(function(a){
+      // Traer edificios y áreas en paralelo
+      var resEd = await db.from("edificios").select("*").order("nombre", { ascending: true });
+      var resAr = await db.from("areas").select("*").order("created_at", { ascending: true });
+
+      if (resEd.error) { cont.innerHTML = '<div class="mensaje error" style="display:block">Error: ' + resEd.error.message + '</div>'; return; }
+
+      var edificios = resEd.data || [];
+      var areas = resAr.data || [];
+      edificiosCache = edificios;
+
+      if (edificios.length === 0) {
+        cont.innerHTML = '<div class="cargando">Aún no hay edificios. Crea el primero con el botón de arriba.</div>';
+        return;
+      }
+
+      // Agrupar áreas por nombre de edificio
+      var areasPorEdificio = {};
+      areas.forEach(function(a){
         var ed = a.edificio || "Sin edificio";
-        if (!grupos[ed]) grupos[ed] = [];
-        grupos[ed].push(a);
+        if (!areasPorEdificio[ed]) areasPorEdificio[ed] = [];
+        areasPorEdificio[ed].push(a);
       });
 
-      var nombresEdificios = Object.keys(grupos).sort();
       cont.innerHTML = "";
+      edificios.forEach(function(edi, idx) {
+        var nombreEd = edi.nombre;
+        var areasEd = areasPorEdificio[nombreEd] || [];
+        var activas = areasEd.filter(function(a){ return a.activa; }).length;
 
-      nombresEdificios.forEach(function(edificio, idx) {
-        var areas = grupos[edificio];
-        var activas = areas.filter(function(a){ return a.activa; }).length;
-
-        // Construir las áreas internas
+        // Áreas internas
         var areasHTML = "";
-        areas.forEach(function(a){
-          areasHTML +=
-            '<div class="area-item' + (a.activa ? "" : " area-inactiva") + '">' +
-              '<div class="area-fila">' +
-                '<div class="area-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div>' +
-                '<div class="area-info">' +
-                  '<div class="area-nombre">' + a.nombre + '</div>' +
-                  '<div class="area-detalle">' + (a.requiere_foto ? 'Requiere foto · ' : '') + (a.activa ? 'Activa' : 'Inactiva') + '</div>' +
+        if (areasEd.length === 0) {
+          areasHTML = '<div class="sin-areas">Este edificio aún no tiene áreas. Usa "Crear área" para agregar la primera.</div>';
+        } else {
+          areasEd.forEach(function(a){
+            areasHTML +=
+              '<div class="area-item' + (a.activa ? "" : " area-inactiva") + '">' +
+                '<div class="area-fila">' +
+                  '<div class="area-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div>' +
+                  '<div class="area-info">' +
+                    '<div class="area-nombre">' + a.nombre + '</div>' +
+                    '<div class="area-detalle">' + (a.requiere_foto ? 'Requiere foto · ' : '') + (a.activa ? 'Activa' : 'Inactiva') + '</div>' +
+                  '</div>' +
+                  '<label class="switch">' +
+                    '<input type="checkbox" ' + (a.activa ? "checked" : "") + ' onchange="cambiarEstadoArea(' + a.id + ', this.checked)" />' +
+                    '<span class="switch-track"></span><span class="switch-thumb"></span>' +
+                  '</label>' +
                 '</div>' +
-                '<label class="switch">' +
-                  '<input type="checkbox" ' + (a.activa ? "checked" : "") + ' onchange="cambiarEstado(' + a.id + ', this.checked)" />' +
-                  '<span class="switch-track"></span><span class="switch-thumb"></span>' +
-                '</label>' +
-              '</div>' +
-              '<button class="btn-qr" onclick="mostrarQR(' + a.id + ', \'' + a.nombre.replace(/'/g, "\\'") + '\', \'' + edificio.replace(/'/g, "\\'") + '\')">Generar código QR</button>' +
-            '</div>';
-        });
+                '<button class="btn-qr" onclick="mostrarQR(' + a.id + ', \'' + a.nombre.replace(/'/g, "\\'") + '\', \'' + nombreEd.replace(/'/g, "\\'") + '\')">Generar código QR</button>' +
+              '</div>';
+          });
+        }
 
-        // El primer edificio arranca abierto, los demás cerrados
         var claseAbierto = idx === 0 ? " abierto" : "";
+        var claseInactivo = edi.activo ? "" : " edificio-inactivo";
+        var estadoTexto = edi.activo ? "" : " · Inactivo";
 
         var grupo = document.createElement("div");
-        grupo.className = "grupo-edificio" + claseAbierto;
+        grupo.className = "grupo-edificio" + claseAbierto + claseInactivo;
         grupo.innerHTML =
-          '<div class="grupo-cabecera" onclick="this.parentElement.classList.toggle(\'abierto\')">' +
-            '<div class="grupo-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg></div>' +
-            '<div class="grupo-info">' +
-              '<div class="grupo-nombre">' + edificio + '</div>' +
-              '<div class="grupo-conteo">' + areas.length + ' área' + (areas.length !== 1 ? 's' : '') + ' · ' + activas + ' activa' + (activas !== 1 ? 's' : '') + '</div>' +
+          '<div class="grupo-cabecera">' +
+            '<div class="grupo-ico" onclick="toggleGrupo(this)"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg></div>' +
+            '<div class="grupo-info" onclick="toggleGrupo(this)">' +
+              '<div class="grupo-nombre">' + nombreEd + estadoTexto + '</div>' +
+              '<div class="grupo-conteo">' + areasEd.length + ' área' + (areasEd.length !== 1 ? 's' : '') + ' · ' + activas + ' activa' + (activas !== 1 ? 's' : '') + '</div>' +
             '</div>' +
-            '<div class="grupo-flecha">▶</div>' +
+            '<div class="grupo-acciones">' +
+              '<button class="btn-icono editar" title="Editar edificio" onclick="abrirEditarEdificio(' + edi.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"></path></svg></button>' +
+              '<label class="switch" title="Activar/desactivar edificio">' +
+                '<input type="checkbox" ' + (edi.activo ? "checked" : "") + ' onchange="cambiarEstadoEdificio(' + edi.id + ', this.checked)" />' +
+                '<span class="switch-track"></span><span class="switch-thumb"></span>' +
+              '</label>' +
+              '<div class="grupo-flecha" onclick="toggleGrupo(this)">▶</div>' +
+            '</div>' +
           '</div>' +
           '<div class="grupo-cuerpo">' + areasHTML + '</div>';
         cont.appendChild(grupo);
       });
     }
 
-    async function cambiarEstado(id, nuevoEstado) {
+    function toggleGrupo(el) {
+      var grupo = el.closest(".grupo-edificio");
+      grupo.classList.toggle("abierto");
+    }
+
+    async function cambiarEstadoArea(id, nuevoEstado) {
       const { error } = await db.from("areas").update({ activa: nuevoEstado }).eq("id", id);
       if (error) alert("No se pudo cambiar: " + error.message);
       cargarAreas();
+    }
+
+    async function cambiarEstadoEdificio(id, nuevoEstado) {
+      const { error } = await db.from("edificios").update({ activo: nuevoEstado }).eq("id", id);
+      if (error) alert("No se pudo cambiar: " + error.message);
+      cargarAreas();
+    }
+
+    // ===== EDITAR EDIFICIO =====
+    function abrirEditarEdificio(id) {
+      var edi = edificiosCache.find(function(e){ return e.id === id; });
+      if (!edi) return;
+      editandoEdificioId = id;
+      document.getElementById("ee-nombre").value = edi.nombre || "";
+      document.getElementById("ee-direccion").value = edi.direccion || "";
+      document.getElementById("ee-contacto").value = edi.contacto || "";
+      document.getElementById("ee-telefono").value = edi.telefono || "";
+      document.getElementById("ee-email").value = edi.email || "";
+      document.getElementById("ee-pisos").value = edi.pisos || "";
+      document.getElementById("ee-notas").value = edi.notas || "";
+      document.getElementById("mensaje-editar-edificio").className = "mensaje";
+      document.getElementById("modal-editar-edificio").classList.add("abierto");
+    }
+
+    var editandoEdificioId = null;
+
+    async function guardarEdicionEdificio() {
+      var nombre = document.getElementById("ee-nombre").value.trim();
+      var msg = document.getElementById("mensaje-editar-edificio");
+      if (!nombre) { msg.textContent = "El nombre del edificio es obligatorio."; msg.className = "mensaje error"; return; }
+
+      document.getElementById("btn-guardar-editar-edificio").disabled = true;
+      msg.textContent = "Guardando..."; msg.className = "mensaje"; msg.style.display = "block";
+
+      const { error } = await db.from("edificios").update({
+        nombre: nombre,
+        direccion: document.getElementById("ee-direccion").value.trim(),
+        contacto: document.getElementById("ee-contacto").value.trim(),
+        telefono: document.getElementById("ee-telefono").value.trim(),
+        email: document.getElementById("ee-email").value.trim(),
+        pisos: document.getElementById("ee-pisos").value.trim(),
+        notas: document.getElementById("ee-notas").value.trim()
+      }).eq("id", editandoEdificioId);
+
+      document.getElementById("btn-guardar-editar-edificio").disabled = false;
+      if (error) {
+        msg.textContent = "Error: " + error.message; msg.className = "mensaje error";
+      } else {
+        cerrar("modal-editar-edificio");
+        cargarAreas();
+      }
     }
 
     // ===== QR =====
