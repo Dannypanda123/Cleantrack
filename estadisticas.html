@@ -6,6 +6,7 @@
   <title>CleanTrack — Estadísticas</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 
   <style>
     :root {
@@ -31,7 +32,6 @@
     .top-botones { display: flex; gap: 8px; }
     .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
 
-    /* Selector de edificio */
     .selector-cont { margin-bottom: 22px; }
     .selector-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-texto); margin-bottom: 8px; }
     .selector { width: 100%; padding: 14px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: var(--blanco); color: var(--texto); outline: none; cursor: pointer; }
@@ -44,20 +44,12 @@
     .metrica .valor { font-size: 26px; font-weight: 600; }
 
     .tarjeta { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
-    .tarjeta h2 { font-size: 15px; font-weight: 600; margin-bottom: 18px; }
+    .tarjeta h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+    .grafico-cont { position: relative; width: 100%; }
 
-    .grafica-dias { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding-top: 10px; }
-    .barra-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
-    .barra { width: 100%; max-width: 40px; background: var(--azul); border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.4s; }
-    .barra-valor { font-size: 12px; font-weight: 600; color: var(--azul); }
-    .barra-dia { font-size: 11px; color: var(--gris-texto); }
-
-    .rank-fila { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-    .rank-fila:last-child { margin-bottom: 0; }
-    .rank-nombre { font-size: 14px; flex-shrink: 0; width: 38%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .rank-barra-fondo { flex: 1; height: 24px; background: var(--gris-fondo); border-radius: 6px; overflow: hidden; }
-    .rank-barra { height: 100%; border-radius: 6px; min-width: 2px; }
-    .rank-valor { font-size: 13px; font-weight: 600; color: var(--gris-texto); width: 30px; text-align: right; flex-shrink: 0; }
+    .leyenda { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; font-size: 12px; color: var(--gris-texto); }
+    .leyenda span { display: flex; align-items: center; gap: 5px; }
+    .leyenda .punto { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
 
     .vacio { text-align: center; color: var(--gris-texto); padding: 20px; font-size: 14px; }
     .cargando { text-align: center; color: var(--gris-texto); padding: 40px; font-size: 14px; }
@@ -106,13 +98,16 @@
     } catch (e) { console.error(e); }
 
     var todosLosRegistros = [];
+    var chartDias = null, chartAreas = null, chartEmp = null;
+
+    // Paleta para la dona
+    var PALETA = ["#185FA5", "#378ADD", "#85B7EB", "#1D9E75", "#5DCAA5", "#9FE1CB", "#B4B2A9"];
 
     async function verificarAcceso() {
       if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
 
-      // Verificar que la compañía tenga plan Pro (esta función es solo Pro)
       try {
         const { data: planData, error } = await db.rpc("mi_plan");
         var plan = (!error && planData) ? String(planData).toLowerCase().trim() : "basico";
@@ -138,12 +133,8 @@
       if (error) { console.error(error); return; }
       todosLosRegistros = data || [];
 
-      // Sacar lista de edificios únicos
       var edificios = {};
-      todosLosRegistros.forEach(function(r){
-        var e = r.edificio || "Sin edificio";
-        edificios[e] = true;
-      });
+      todosLosRegistros.forEach(function(r){ edificios[r.edificio || "Sin edificio"] = true; });
       var listaEdificios = Object.keys(edificios).sort();
 
       var sel = document.getElementById("selector-edificio");
@@ -156,12 +147,9 @@
       sel.innerHTML = "";
       listaEdificios.forEach(function(e){
         var opt = document.createElement("option");
-        opt.value = e;
-        opt.textContent = e;
-        sel.appendChild(opt);
+        opt.value = e; opt.textContent = e; sel.appendChild(opt);
       });
 
-      // Mostrar el primero por defecto
       mostrarEdificio();
     }
 
@@ -177,21 +165,7 @@
       var conFoto = regs.filter(function(r){ return r.con_foto; }).length;
       var pctFoto = total > 0 ? Math.round((conFoto / total) * 100) : 0;
 
-      // Gráfica 7 días
-      var dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
-      var conteoDias = []; var maxDia = 1;
-      for (var i = 6; i >= 0; i--) {
-        var d = new Date(); d.setDate(d.getDate() - i);
-        var c = regs.filter(function(r){ return mismoDia(new Date(r.created_at), d); }).length;
-        conteoDias.push({ etiqueta: dias[d.getDay()], valor: c });
-        if (c > maxDia) maxDia = c;
-      }
-      var barrasHTML = "";
-      conteoDias.forEach(function(d){
-        var altura = Math.round((d.valor / maxDia) * 130);
-        barrasHTML += '<div class="barra-col"><div class="barra-valor">' + d.valor + '</div><div class="barra" style="height:' + altura + 'px;"></div><div class="barra-dia">' + d.etiqueta + '</div></div>';
-      });
-
+      // Estructura de la pantalla
       var cont = document.getElementById("contenido-edificio");
       cont.innerHTML =
         '<div class="titulo-edificio"><svg viewBox="0 0 24 24" fill="none" stroke="#5F7268" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;flex-shrink:0;"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg>' + edificio + '</div>' +
@@ -202,31 +176,90 @@
           '<div class="metrica"><div class="label">Esta semana</div><div class="valor">' + nSemana + '</div></div>' +
           '<div class="metrica"><div class="label">% con foto</div><div class="valor">' + pctFoto + '%</div></div>' +
         '</div>' +
-        '<div class="tarjeta"><h2>Actividad últimos 7 días</h2><div class="grafica-dias">' + barrasHTML + '</div></div>' +
-        '<div class="tarjeta"><h2>Áreas más atendidas</h2><div id="rank-areas"></div></div>' +
-        '<div class="tarjeta"><h2>Actividad por empleado</h2><div id="rank-empleados"></div></div>';
+        '<div class="tarjeta"><h2>Actividad últimos 7 días</h2><div class="grafico-cont" style="height:200px;"><canvas id="cv-dias"></canvas></div></div>' +
+        '<div class="tarjeta"><h2>Áreas más atendidas</h2><div id="leyenda-areas" class="leyenda"></div><div class="grafico-cont" style="height:240px;"><canvas id="cv-areas"></canvas></div></div>' +
+        '<div class="tarjeta"><h2>Actividad por empleado</h2><div class="grafico-cont" id="cont-emp"><canvas id="cv-emp"></canvas></div></div>';
 
-      pintarRanking(regs, "area", "rank-areas", "#185FA5");
-      pintarRanking(regs, "nombre_empleado", "rank-empleados", "#1D9E75");
+      // Destruir gráficos previos si existen
+      if (chartDias) { chartDias.destroy(); chartDias = null; }
+      if (chartAreas) { chartAreas.destroy(); chartAreas = null; }
+      if (chartEmp) { chartEmp.destroy(); chartEmp = null; }
+
+      if (total === 0) {
+        cont.querySelector("#cont-emp").parentElement.parentElement.parentElement.innerHTML += '';
+        return;
+      }
+
+      pintarGraficos(regs);
     }
 
-    function pintarRanking(regs, campo, contId, color) {
-      var conteo = {};
-      regs.forEach(function(r){
-        var k = r[campo] || "Sin dato";
-        conteo[k] = (conteo[k] || 0) + 1;
-      });
-      var arr = Object.keys(conteo).map(function(k){ return { nombre: k, valor: conteo[k] }; });
-      arr.sort(function(a,b){ return b.valor - a.valor; });
-      arr = arr.slice(0, 6);
+    function pintarGraficos(regs) {
+      if (!window.Chart) { setTimeout(function(){ pintarGraficos(regs); }, 120); return; }
+      Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
+      Chart.defaults.font.size = 12;
+      var tt = { backgroundColor: "#2C2C2A", padding: 10, cornerRadius: 8 };
 
-      var cont = document.getElementById(contId);
-      if (arr.length === 0) { cont.innerHTML = '<div class="vacio">Sin datos</div>'; return; }
-      var max = arr[0].valor;
-      cont.innerHTML = "";
-      arr.forEach(function(item){
-        var pct = Math.round((item.valor / max) * 100);
-        cont.innerHTML += '<div class="rank-fila"><div class="rank-nombre">' + item.nombre + '</div><div class="rank-barra-fondo"><div class="rank-barra" style="width:' + pct + '%; background:' + color + ';"></div></div><div class="rank-valor">' + item.valor + '</div></div>';
+      // ===== LÍNEA: últimos 7 días =====
+      var dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+      var etiquetas = [], valores = [];
+      for (var i = 6; i >= 0; i--) {
+        var d = new Date(); d.setDate(d.getDate() - i);
+        var c = regs.filter(function(r){ return mismoDia(new Date(r.created_at), d); }).length;
+        etiquetas.push(dias[d.getDay()]); valores.push(c);
+      }
+      chartDias = new Chart(document.getElementById("cv-dias"), {
+        type: "line",
+        data: { labels: etiquetas, datasets: [{ label: "Limpiezas", data: valores, borderColor: "#185FA5", backgroundColor: "rgba(24,95,165,0.12)", borderWidth: 3, tension: 0.35, fill: true, pointRadius: 4, pointBackgroundColor: "#185FA5" }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: tt }, scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#EFEEE8" } }, x: { grid: { display: false } } }, animation: { duration: 800 } }
+      });
+
+      // ===== DONA: áreas (top 6 + "Otras") =====
+      var conteoA = {};
+      regs.forEach(function(r){ var k = r.area || "Sin área"; conteoA[k] = (conteoA[k] || 0) + 1; });
+      var arrA = Object.keys(conteoA).map(function(k){ return { nombre: k, valor: conteoA[k] }; });
+      arrA.sort(function(a,b){ return b.valor - a.valor; });
+      var topA = arrA.slice(0, 6);
+      var restoA = arrA.slice(6);
+      if (restoA.length > 0) {
+        var sumaResto = restoA.reduce(function(s,x){ return s + x.valor; }, 0);
+        topA.push({ nombre: "Otras", valor: sumaResto });
+      }
+      var totalA = topA.reduce(function(s,x){ return s + x.valor; }, 0);
+      var labelsA = topA.map(function(x){ return x.nombre; });
+      var dataA = topA.map(function(x){ return x.valor; });
+      var coloresA = topA.map(function(x, idx){ return PALETA[idx % PALETA.length]; });
+
+      // Leyenda personalizada
+      var leyendaHTML = "";
+      topA.forEach(function(x, idx){
+        var pct = totalA > 0 ? Math.round((x.valor / totalA) * 100) : 0;
+        leyendaHTML += '<span><span class="punto" style="background:' + coloresA[idx] + ';"></span>' + x.nombre + ' ' + pct + '%</span>';
+      });
+      document.getElementById("leyenda-areas").innerHTML = leyendaHTML;
+
+      chartAreas = new Chart(document.getElementById("cv-areas"), {
+        type: "doughnut",
+        data: { labels: labelsA, datasets: [{ data: dataA, backgroundColor: coloresA, borderWidth: 2, borderColor: "#fff" }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: "60%", plugins: { legend: { display: false }, tooltip: tt }, animation: { duration: 800 } }
+      });
+
+      // ===== BARRAS HORIZONTALES: empleados (top 6) =====
+      var conteoE = {};
+      regs.forEach(function(r){ var k = r.nombre_empleado || "Sin dato"; conteoE[k] = (conteoE[k] || 0) + 1; });
+      var arrE = Object.keys(conteoE).map(function(k){ return { nombre: k, valor: conteoE[k] }; });
+      arrE.sort(function(a,b){ return b.valor - a.valor; });
+      arrE = arrE.slice(0, 6);
+      var labelsE = arrE.map(function(x){ return x.nombre; });
+      var dataE = arrE.map(function(x){ return x.valor; });
+
+      // Altura dinámica según número de empleados
+      var alturaEmp = Math.max(arrE.length * 40 + 40, 120);
+      document.getElementById("cont-emp").style.height = alturaEmp + "px";
+
+      chartEmp = new Chart(document.getElementById("cv-emp"), {
+        type: "bar",
+        data: { labels: labelsE, datasets: [{ label: "Limpiezas", data: dataE, backgroundColor: "#1D9E75", borderRadius: 6, maxBarThickness: 26 }] },
+        options: { indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: tt }, scales: { x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#EFEEE8" } }, y: { grid: { display: false } } }, animation: { duration: 800 } }
       });
     }
 
