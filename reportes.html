@@ -87,7 +87,8 @@
 
       <div id="cont-fecha" style="display:none;">
         <label for="sel-fecha">Día del informe</label>
-        <input type="date" id="sel-fecha" />
+        <input type="date" id="sel-fecha" min="2020-01-01" max="2040-12-31" />
+        <!-- El max se ajusta automaticamente a hoy al cargar (ver script) -->
       </div>
 
       <button class="btn-generar" id="btn-generar" onclick="generar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> Generar PDF</button>
@@ -99,7 +100,7 @@
       <div class="preview-metricas">
         <div class="pm"><div class="v" id="pv-total">—</div><div class="l">Áreas limpiadas</div></div>
         <div class="pm"><div class="v" id="pv-foto">—</div><div class="l">Con foto</div></div>
-        <div class="pm"><div class="v" id="pv-dias">—</div><div class="l">Días activos</div></div>
+        <div class="pm"><div class="v" id="pv-dias">—</div><div class="l" id="lbl-dias">Días activos</div></div>
         <div class="pm"><div class="v inc" id="pv-inc">—</div><div class="l">Incidencias</div></div>
       </div>
     </div>
@@ -134,7 +135,10 @@
       document.getElementById("contenedor").style.display = "block";
       // Fecha de hoy por defecto en el selector de día
       var hoy = new Date();
-      document.getElementById("sel-fecha").value = hoy.getFullYear() + "-" + String(hoy.getMonth()+1).padStart(2,"0") + "-" + String(hoy.getDate()).padStart(2,"0");
+      var hoyStr = hoy.getFullYear() + "-" + String(hoy.getMonth()+1).padStart(2,"0") + "-" + String(hoy.getDate()).padStart(2,"0");
+      var campoFecha = document.getElementById("sel-fecha");
+      campoFecha.value = hoyStr;
+      campoFecha.max = hoyStr;
       cambioPeriodo();
       cargarTodo();
     }
@@ -149,11 +153,15 @@
       document.getElementById("cont-fecha").style.display = (periodo === "diario") ? "block" : "none";
     }
 
+    var todasAreas = [];
+
     async function cargarTodo() {
       const reg = await db.from("registros").select("*").order("created_at", { ascending: false });
       todosRegistros = (reg.data) || [];
       const inc = await db.from("incidencias").select("*").order("created_at", { ascending: false });
       todasIncidencias = (inc.data) || [];
+      const ar = await db.from("areas").select("*");
+      todasAreas = (ar.data) || [];
 
       var edificios = {};
       todosRegistros.forEach(function(r){ edificios[r.edificio || "Sin edificio"] = true; });
@@ -235,9 +243,27 @@
       regs.forEach(function(x){ var f = new Date(x.created_at); dias[f.getFullYear()+"-"+f.getMonth()+"-"+f.getDate()] = true; });
       var nDias = Object.keys(dias).length;
 
+      // Empleados únicos que trabajaron (para informe diario)
+      var emps = {};
+      regs.forEach(function(x){ if (x.nombre_empleado) emps[x.nombre_empleado] = true; });
+      var nEmps = Object.keys(emps).length;
+
+      var esDiario = (periodo === "diario");
+      var esSemanal = (periodo === "7-dias");
+      var esMensual = (periodo === "mes-actual" || periodo === "mes-pasado");
+
+      // Datos extra para el semanal
+      var areasCubiertas = {};
+      regs.forEach(function(x){ if (x.area) areasCubiertas[x.area] = true; });
+      var nAreasCubiertas = Object.keys(areasCubiertas).length;
+      var areasDelEdificio = todasAreas.filter(function(a){ return (a.edificio || "") === edificio; });
+      var nAreasTotal = areasDelEdificio.length;
+      var incResueltas = incs.filter(function(i){ return i.resuelto; }).length;
+
       document.getElementById("pv-total").textContent = total;
       document.getElementById("pv-foto").textContent = conFoto;
-      document.getElementById("pv-dias").textContent = nDias;
+      document.getElementById("pv-dias").textContent = esDiario ? nEmps : nDias;
+      document.getElementById("lbl-dias").textContent = esDiario ? "Empleados" : "Días activos";
       document.getElementById("pv-inc").textContent = incs.length;
       document.getElementById("preview").style.display = "block";
 
@@ -247,12 +273,308 @@
 
       msg.textContent = "Generando PDF..."; msg.className = "mensaje cargando";
       try {
-        crearPDF(edificio, periodo, regs, incs, { total: total, conFoto: conFoto, nDias: nDias });
+        var datos = { total: total, conFoto: conFoto, nDias: nDias, nEmps: nEmps, esDiario: esDiario,
+                      nAreasCubiertas: nAreasCubiertas, nAreasTotal: nAreasTotal, incResueltas: incResueltas };
+        if (esSemanal) {
+          crearPDFSemanal(edificio, periodo, regs, incs, datos);
+        } else if (esMensual) {
+          crearPDFMensual(edificio, periodo, regs, incs, datos);
+        } else {
+          crearPDF(edificio, periodo, regs, incs, datos);
+        }
         msg.textContent = "✓ PDF generado y descargado"; msg.className = "mensaje ok";
       } catch (e) {
         console.error(e);
         msg.textContent = "Error al generar el PDF: " + e.message; msg.className = "mensaje error";
       }
+    }
+
+    function crearPDFMensual(edificio, periodo, regs, incs, datos) {
+      var jsPDF = window.jspdf.jsPDF;
+      var doc = new jsPDF();
+      var pageW = doc.internal.pageSize.getWidth();
+      var y = 0;
+
+      // ENCABEZADO celebratorio (verde)
+      doc.setFillColor(29, 158, 117);
+      doc.rect(0, 0, pageW, 46, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(13); doc.setFont(undefined, "bold");
+      doc.text("CleanTrack", 14, 16);
+      doc.setFontSize(22); doc.setFont(undefined, "bold");
+      doc.text("Resumen del mes", 14, 30);
+      doc.setFontSize(13); doc.setFont(undefined, "normal");
+      doc.text(edificio + "  ·  " + nombrePeriodo(periodo), 14, 40);
+
+      // Mensaje positivo destacado
+      y = 56;
+      var pctInc = incs.length > 0 ? Math.round((datos.incResueltas / incs.length) * 100) : 100;
+      doc.setFillColor(234, 243, 222);
+      doc.roundedRect(14, y, pageW - 28, 16, 3, 3, "F");
+      doc.setTextColor(15, 110, 86);
+      doc.setFontSize(10.5); doc.setFont(undefined, "bold");
+      var msjPos = "Un mes de servicio dedicado: " + datos.total + " limpiezas realizadas y " + pctInc + "% de incidencias resueltas.";
+      doc.text(msjPos, pageW/2, y + 10, { align: "center" });
+
+      // TARJETAS GRANDES de logros (2x2)
+      y += 26;
+      function tarjeta(x, yy, w, h, color, valor, etiqueta) {
+        doc.setFillColor(color[0], color[1], color[2]);
+        doc.roundedRect(x, yy, w, h, 3, 3, "F");
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(26); doc.setFont(undefined, "bold");
+        doc.text(String(valor), x + w/2, yy + h/2 + 1, { align: "center" });
+        doc.setFontSize(9); doc.setFont(undefined, "normal");
+        doc.text(etiqueta, x + w/2, yy + h - 6, { align: "center" });
+      }
+      var gap = 8;
+      var cardW = (pageW - 28 - gap) / 2;
+      var cardH = 30;
+      tarjeta(14, y, cardW, cardH, [24,95,165], datos.total, "Limpiezas realizadas");
+      tarjeta(14 + cardW + gap, y, cardW, cardH, [29,158,117], datos.nDias, "Días trabajados");
+      y += cardH + gap;
+      var cobertura = datos.nAreasTotal > 0 ? (datos.nAreasCubiertas + " / " + datos.nAreasTotal) : String(datos.nAreasCubiertas);
+      tarjeta(14, y, cardW, cardH, [186,117,23], cobertura, "Áreas cubiertas");
+      tarjeta(14 + cardW + gap, y, cardW, cardH, [83,74,183], datos.incResueltas + " / " + incs.length, "Incidencias resueltas");
+
+      // TENDENCIA POR SEMANA
+      y += cardH + 16;
+      doc.setTextColor(44, 44, 42);
+      doc.setFontSize(13); doc.setFont(undefined, "bold");
+      doc.text("Actividad por semana", 14, y);
+      y += 10;
+      // Agrupar registros en semanas del mes (bloques de 7 días desde el inicio)
+      var r = rangoFechas(periodo);
+      var semanas = [];
+      var ini = new Date(r.inicio); ini.setHours(0,0,0,0);
+      var finMes = new Date(r.fin);
+      var idx = 1;
+      var cur = new Date(ini);
+      while (cur <= finMes) {
+        var desde = new Date(cur);
+        var hasta = new Date(cur); hasta.setDate(hasta.getDate() + 6); hasta.setHours(23,59,59);
+        semanas.push({ sem: "Semana " + idx, desde: desde, hasta: hasta, count: 0 });
+        cur.setDate(cur.getDate() + 7);
+        idx++;
+      }
+      regs.forEach(function(reg){
+        var f = new Date(reg.created_at);
+        for (var i = 0; i < semanas.length; i++) {
+          if (f >= semanas[i].desde && f <= semanas[i].hasta) { semanas[i].count++; break; }
+        }
+      });
+      var maxSem = Math.max.apply(null, semanas.map(function(s){ return s.count; }));
+      if (maxSem === 0) maxSem = 1;
+      var barMax = pageW - 90;
+      semanas.forEach(function(s){
+        doc.setFontSize(9.5); doc.setFont(undefined, "normal"); doc.setTextColor(44, 44, 42);
+        doc.text(s.sem, 16, y + 4);
+        var w = s.count === 0 ? 0 : (s.count / maxSem) * barMax;
+        if (w > 0) { doc.setFillColor(29, 158, 117); doc.roundedRect(48, y, w, 7, 1, 1, "F"); }
+        if (w > 16) { doc.setTextColor(255,255,255); doc.setFontSize(8.5); doc.setFont(undefined, "bold"); doc.text(String(s.count), 48 + w - 8, y + 5); }
+        else { doc.setTextColor(107,106,100); doc.setFontSize(8.5); doc.text(String(s.count), 48 + w + 3, y + 5); }
+        y += 12;
+      });
+
+      // AREAS MAS ATENDIDAS
+      y += 6;
+      doc.setTextColor(44, 44, 42);
+      doc.setFontSize(13); doc.setFont(undefined, "bold");
+      doc.text("Áreas más atendidas", 14, y);
+      y += 9;
+      var conteoAreas = {};
+      regs.forEach(function(reg){ var a = reg.area || "Sin área"; conteoAreas[a] = (conteoAreas[a] || 0) + 1; });
+      var topAreas = Object.keys(conteoAreas).map(function(k){ return { area: k, veces: conteoAreas[k] }; });
+      topAreas.sort(function(a,b){ return b.veces - a.veces; });
+      topAreas = topAreas.slice(0, 5);
+      if (topAreas.length === 0) {
+        doc.setFontSize(9.5); doc.setFont(undefined, "normal"); doc.setTextColor(107,106,100);
+        doc.text("Sin datos de áreas en este período.", 16, y); y += 8;
+      } else {
+        topAreas.forEach(function(a, i){
+          doc.setFontSize(9.5); doc.setFont(undefined, "normal");
+          doc.setTextColor(60, 60, 58);
+          doc.text((i+1) + ".  " + a.area.substring(0,40), 16, y + 3);
+          doc.setTextColor(107, 106, 100);
+          doc.text(a.veces + (a.veces === 1 ? " vez" : " veces"), pageW - 40, y + 3);
+          y += 8;
+        });
+      }
+
+      // ===== PAGINA 2: incidencias + feedback =====
+      doc.addPage();
+      y = 24;
+      doc.setTextColor(44, 44, 42);
+      doc.setFontSize(14); doc.setFont(undefined, "bold");
+      doc.text("Incidencias del mes", 14, y);
+      y += 10;
+      if (incs.length === 0) {
+        doc.setFontSize(10); doc.setFont(undefined, "normal"); doc.setTextColor(107,106,100);
+        doc.text("No se reportaron incidencias este mes.", 16, y); y += 8;
+      } else {
+        doc.setFontSize(10); doc.setFont(undefined, "normal"); doc.setTextColor(60,60,58);
+        doc.text("Se detectaron " + incs.length + " incidencia(s) y se resolvieron " + datos.incResueltas + " (" + pctInc + "%).", 16, y);
+        y += 9;
+        incs.forEach(function(inc){
+          if (y > 275) { doc.addPage(); y = 20; }
+          var esInsumo = inc.tipo === "insumo";
+          if (inc.resuelto) doc.setTextColor(15, 110, 86); else doc.setTextColor(133, 79, 11);
+          doc.setFontSize(9.5);
+          var txt = "• " + (esInsumo ? "Falta insumo" : "Problema") + ": " + (inc.descripcion || "");
+          if (inc.area) txt += " (" + inc.area + ")";
+          txt += " - " + (inc.resuelto ? "Resuelta" : "Pendiente");
+          var lineas = doc.splitTextToSize(txt, pageW - 36);
+          doc.text(lineas, 18, y);
+          y += lineas.length * 5 + 1;
+        });
+      }
+
+      // ESPACIO PARA FEEDBACK DEL PROPERTY MANAGER
+      y += 12;
+      if (y > 235) { doc.addPage(); y = 20; }
+      doc.setDrawColor(200, 198, 190);
+      doc.setFillColor(250, 249, 245);
+      doc.roundedRect(14, y, pageW - 28, 40, 3, 3, "FD");
+      doc.setTextColor(107, 106, 100);
+      doc.setFontSize(11); doc.setFont(undefined, "bold");
+      doc.text("Sus comentarios sobre el servicio:", 18, y + 9);
+      doc.setDrawColor(210, 208, 200);
+      doc.line(18, y + 20, pageW - 18, y + 20);
+      doc.line(18, y + 30, pageW - 18, y + 30);
+
+      // Pie
+      y += 50;
+      if (y > 285) { doc.addPage(); y = 20; }
+      doc.setTextColor(107, 106, 100); doc.setFontSize(8);
+      doc.text("Informe generado por CleanTrack — " + nombrePeriodo(periodo), 14, y);
+
+      doc.save("Informe_mensual_" + edificio.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf");
+    }
+
+    function crearPDFSemanal(edificio, periodo, regs, incs, datos) {
+      var jsPDF = window.jspdf.jsPDF;
+      var doc = new jsPDF();
+      var pageW = doc.internal.pageSize.getWidth();
+      var y = 0;
+
+      // Encabezado
+      doc.setFillColor(24, 95, 165);
+      doc.rect(0, 0, pageW, 38, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(20); doc.setFont(undefined, "bold");
+      doc.text("CleanTrack", 14, 18);
+      doc.setFontSize(11); doc.setFont(undefined, "normal");
+      doc.text("Informe semanal de limpieza", 14, 27);
+
+      y = 50;
+      doc.setTextColor(44, 44, 42);
+      doc.setFontSize(15); doc.setFont(undefined, "bold");
+      doc.text(edificio, 14, y);
+      y += 7;
+      doc.setFontSize(11); doc.setFont(undefined, "normal");
+      doc.setTextColor(107, 106, 100);
+      doc.text("Período: " + nombrePeriodo(periodo), 14, y);
+      y += 5;
+      doc.text("Generado: " + new Date().toLocaleDateString("es"), 14, y);
+
+      // Panel de desempeño (4 indicadores)
+      y += 14;
+      doc.setFillColor(245, 244, 239);
+      doc.roundedRect(14, y, pageW - 28, 26, 3, 3, "F");
+      var colW = (pageW - 28) / 4;
+      doc.setFontSize(16); doc.setFont(undefined, "bold");
+      doc.setTextColor(15, 110, 86);
+      doc.text(String(datos.nDias), 14 + colW*0.5, y + 11, { align: "center" });
+      doc.setTextColor(24, 95, 165);
+      doc.text(String(datos.total), 14 + colW*1.5, y + 11, { align: "center" });
+      doc.text((datos.nAreasTotal > 0 ? (datos.nAreasCubiertas + " / " + datos.nAreasTotal) : String(datos.nAreasCubiertas)), 14 + colW*2.5, y + 11, { align: "center" });
+      doc.setTextColor(133, 79, 11);
+      doc.text((datos.incResueltas + " / " + incs.length), 14 + colW*3.5, y + 11, { align: "center" });
+      doc.setTextColor(107, 106, 100);
+      doc.setFontSize(8); doc.setFont(undefined, "normal");
+      doc.text("Días trabajados", 14 + colW*0.5, y + 19, { align: "center" });
+      doc.text("Limpiezas", 14 + colW*1.5, y + 19, { align: "center" });
+      doc.text("Áreas cubiertas", 14 + colW*2.5, y + 19, { align: "center" });
+      doc.text("Incid. resueltas", 14 + colW*3.5, y + 19, { align: "center" });
+
+      // Actividad por día
+      y += 38;
+      doc.setTextColor(44, 44, 42);
+      doc.setFontSize(12); doc.setFont(undefined, "bold");
+      doc.text("Actividad por día", 14, y);
+      y += 9;
+
+      // Construir conteo por día (7 días del rango)
+      var r = rangoFechas(periodo);
+      var diasArr = [];
+      var nombresDia = ["dom","lun","mar","mié","jue","vie","sáb"];
+      var cursor = new Date(r.inicio); cursor.setHours(0,0,0,0);
+      for (var i = 0; i < 7; i++) {
+        var key = cursor.getFullYear()+"-"+cursor.getMonth()+"-"+cursor.getDate();
+        var etiqueta = nombresDia[cursor.getDay()] + " " + cursor.getDate();
+        diasArr.push({ key: key, etiqueta: etiqueta, count: 0 });
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      regs.forEach(function(reg){
+        var f = new Date(reg.created_at);
+        var key = f.getFullYear()+"-"+f.getMonth()+"-"+f.getDate();
+        var d = diasArr.find(function(x){ return x.key === key; });
+        if (d) d.count++;
+      });
+      var maxLimp = Math.max.apply(null, diasArr.map(function(d){ return d.count; }));
+      if (maxLimp === 0) maxLimp = 1;
+      var barMax = pageW - 80;
+      diasArr.forEach(function(d){
+        doc.setFontSize(9); doc.setFont(undefined, "normal"); doc.setTextColor(44, 44, 42);
+        doc.text(d.etiqueta, 16, y + 3);
+        var w = d.count === 0 ? 0 : (d.count / maxLimp) * barMax;
+        if (w > 0) { doc.setFillColor(24, 95, 165); doc.roundedRect(40, y - 1, w, 5, 1, 1, "F"); }
+        doc.setTextColor(107, 106, 100);
+        doc.text(d.count === 0 ? "Sin actividad" : (d.count + (d.count === 1 ? " limpieza" : " limpiezas")), 40 + w + 3, y + 3);
+        y += 9;
+      });
+
+      // Incidencias de la semana
+      y += 6;
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setTextColor(44, 44, 42);
+      doc.setFontSize(12); doc.setFont(undefined, "bold");
+      doc.text("Incidencias de la semana", 14, y);
+      y += 8;
+      doc.setFontSize(9.5); doc.setFont(undefined, "normal");
+      if (incs.length === 0) {
+        doc.setTextColor(107, 106, 100);
+        doc.text("No se reportaron incidencias esta semana.", 16, y); y += 6;
+      } else {
+        doc.setTextColor(60, 60, 58);
+        doc.text("Se detectaron " + incs.length + " incidencia(s) y se resolvieron " + datos.incResueltas + ".", 16, y);
+        y += 7;
+        incs.forEach(function(inc){
+          if (y > 275) { doc.addPage(); y = 20; }
+          var esInsumo = inc.tipo === "insumo";
+          var estado = inc.resuelto ? "Resuelta" : "Pendiente";
+          if (inc.resuelto) doc.setTextColor(15, 110, 86); else doc.setTextColor(133, 79, 11);
+          doc.setFontSize(9);
+          var txt = "• " + (esInsumo ? "Falta insumo" : "Problema") + ": " + (inc.descripcion || "");
+          if (inc.area) txt += " (" + inc.area + ")";
+          txt += " - " + estado;
+          var lineas = doc.splitTextToSize(txt, pageW - 36);
+          doc.text(lineas, 18, y);
+          y += lineas.length * 5 + 1;
+        });
+      }
+
+      // Pie
+      y += 8;
+      if (y > 282) { doc.addPage(); y = 20; }
+      doc.setDrawColor(226, 224, 216);
+      doc.line(14, y, pageW - 14, y);
+      y += 6;
+      doc.setTextColor(107, 106, 100);
+      doc.setFontSize(8);
+      doc.text("Informe generado por CleanTrack", 14, y);
+
+      doc.save("Informe_semanal_" + edificio.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf");
     }
 
     function crearPDF(edificio, periodo, regs, incs, resumen) {
@@ -291,14 +613,14 @@
       doc.setFontSize(16); doc.setFont(undefined, "bold");
       doc.text(String(resumen.total), 14 + colW*0.5, y + 11, { align: "center" });
       doc.text(String(resumen.conFoto), 14 + colW*1.5, y + 11, { align: "center" });
-      doc.text(String(resumen.nDias), 14 + colW*2.5, y + 11, { align: "center" });
+      doc.text(String(resumen.esDiario ? resumen.nEmps : resumen.nDias), 14 + colW*2.5, y + 11, { align: "center" });
       doc.setTextColor(133, 79, 11);
       doc.text(String(incs.length), 14 + colW*3.5, y + 11, { align: "center" });
       doc.setTextColor(107, 106, 100);
       doc.setFontSize(8); doc.setFont(undefined, "normal");
       doc.text("Áreas limpiadas", 14 + colW*0.5, y + 19, { align: "center" });
       doc.text("Con foto", 14 + colW*1.5, y + 19, { align: "center" });
-      doc.text("Días activos", 14 + colW*2.5, y + 19, { align: "center" });
+      doc.text(resumen.esDiario ? "Empleados" : "Días activos", 14 + colW*2.5, y + 19, { align: "center" });
       doc.text("Incidencias", 14 + colW*3.5, y + 19, { align: "center" });
 
       // Tabla de limpiezas
