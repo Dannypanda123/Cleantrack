@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CleanTrack — Panel de administración</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --verde-accion: #377D37;
+      --verde-claro: #E7F1E7;
+      --verde-texto: #2A5F2A;
+      --gris-verde-700: #798C81;
+      --gris-fondo: #ECEBE4;
+      --gris-texto: #6B6A64;
+      --gris-borde: #E2E0D8;
+      --texto: #1F2A37;
+      --blanco: #FFFFFF;
+      --ambar-claro: #FAEEDA;
+      --ambar-texto: #854F0B;
+      --azul-claro: #E6F1FB;
+      --azul-texto: #185FA5;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
+    .contenedor { max-width: 680px; margin: 0 auto; display: none; }
+    .verificando { max-width: 680px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+    .sin-acceso { max-width: 680px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; display: none; }
+
+    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
+    .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
+    .top-botones { display: flex; gap: 8px; }
+    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+
+    .seccion { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 22px; margin-bottom: 18px; }
+    .seccion-titulo { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-texto); margin-bottom: 16px; }
+
+    /* Suscripción */
+    .sub-fila { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--gris-fondo); }
+    .sub-fila:last-child { border-bottom: none; }
+    .sub-label { font-size: 14px; color: var(--gris-texto); }
+    .sub-valor { font-size: 15px; font-weight: 600; }
+    .badge { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 10px; }
+    .badge-pro { background: #FAC775; color: #633806; }
+    .badge-basico { background: var(--gris-verde-700); color: #fff; }
+    .badge-activa { background: var(--verde-claro); color: var(--verde-texto); }
+    .badge-prueba { background: var(--azul-claro); color: var(--azul-texto); }
+    .badge-vencida { background: #F5C4B3; color: #712B13; }
+
+    /* Resumen */
+    .resumen { display: flex; gap: 12px; }
+    .resumen .caja { flex: 1; background: var(--gris-fondo); border-radius: 12px; padding: 16px; text-align: center; }
+    .resumen .num { font-size: 26px; font-weight: 600; color: var(--verde-accion); }
+    .resumen .lbl { font-size: 11px; color: var(--gris-texto); margin-top: 2px; }
+
+    /* Equipo */
+    .sup-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--gris-fondo); }
+    .sup-item:last-child { border-bottom: none; }
+    .sup-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--verde-claro); color: var(--verde-texto); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+    .sup-info { flex: 1; min-width: 0; }
+    .sup-nombre { font-size: 15px; font-weight: 600; }
+    .sup-email { font-size: 13px; color: var(--gris-texto); }
+    .sup-rol { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 8px; }
+    .sup-rol.admin { background: #FAC775; color: #633806; }
+    .sup-rol.supervisor { background: var(--gris-fondo); color: var(--gris-texto); }
+
+    .nota-futuro { background: var(--azul-claro); border-radius: 12px; padding: 14px; font-size: 13px; color: var(--azul-texto); margin-top: 4px; }
+    .cargando { text-align: center; color: var(--gris-texto); padding: 20px; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <div class="verificando" id="verificando">Verificando acceso...</div>
+
+  <div class="sin-acceso" id="sin-acceso">
+    Esta sección es solo para el administrador de la empresa.<br><br>
+    <a class="btn-salir" href="inicio.html">← Volver al inicio</a>
+  </div>
+
+  <div class="contenedor" id="contenedor">
+
+    <div class="top">
+      <div>
+        <div class="marca">CleanTrack</div>
+        <h1>Panel de administración</h1>
+      </div>
+      <div class="top-botones">
+        <a class="btn-salir" href="inicio.html">← Inicio</a>
+      </div>
+    </div>
+
+    <!-- SUSCRIPCIÓN -->
+    <div class="seccion">
+      <div class="seccion-titulo">Tu suscripción</div>
+      <div id="sub-contenido"><div class="cargando">Cargando...</div></div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="seccion">
+      <div class="seccion-titulo">Resumen de tu empresa</div>
+      <div class="resumen">
+        <div class="caja"><div class="num" id="r-edificios">—</div><div class="lbl">Edificios</div></div>
+        <div class="caja"><div class="num" id="r-empleados">—</div><div class="lbl">Empleados</div></div>
+        <div class="caja"><div class="num" id="r-registros">—</div><div class="lbl">Registros del mes</div></div>
+      </div>
+    </div>
+
+    <!-- EQUIPO -->
+    <div class="seccion">
+      <div class="seccion-titulo">Tu equipo de supervisores</div>
+      <div id="equipo-contenido"><div class="cargando">Cargando...</div></div>
+      <div class="nota-futuro">Para agregar o quitar supervisores, contacta a soporte técnico por ahora. Pronto podrás gestionarlos directamente desde aquí.</div>
+    </div>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
+
+    let db = null;
+    try {
+      const { createClient } = supabase;
+      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (e) { console.error(e); }
+
+    async function verificarAcceso() {
+      if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
+      const { data } = await db.auth.getSession();
+      if (!data.session) { window.location.href = "login.html"; return; }
+
+      // Solo admins entran a este panel
+      try {
+        const { data: esAdmin, error } = await db.rpc("soy_admin");
+        if (error || esAdmin !== true) {
+          document.getElementById("verificando").style.display = "none";
+          document.getElementById("sin-acceso").style.display = "block";
+          return;
+        }
+      } catch (e) {
+        document.getElementById("verificando").style.display = "none";
+        document.getElementById("sin-acceso").style.display = "block";
+        return;
+      }
+
+      document.getElementById("verificando").style.display = "none";
+      document.getElementById("contenedor").style.display = "block";
+      cargarTodo();
+    }
+
+    function fmtFecha(f) {
+      if (!f) return "—";
+      var d = new Date(f + "T00:00:00");
+      return d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
+    }
+
+    async function cargarTodo() {
+      cargarSuscripcion();
+      cargarResumen();
+      cargarEquipo();
+    }
+
+    async function cargarSuscripcion() {
+      const cont = document.getElementById("sub-contenido");
+      // La compañía del admin (RLS ya filtra a la suya)
+      const { data, error } = await db.from("companias").select("*").limit(1);
+      if (error || !data || data.length === 0) {
+        cont.innerHTML = '<div class="cargando">No se pudo cargar la suscripción.</div>';
+        return;
+      }
+      var c = data[0];
+      var plan = (c.plan || "basico").toLowerCase();
+      var planBadge = plan === "pro"
+        ? '<span class="badge badge-pro">PRO</span>'
+        : '<span class="badge badge-basico">BÁSICO</span>';
+
+      // Estado según fechas de prueba
+      var estadoBadge = '<span class="badge badge-activa">Activa</span>';
+      var hoy = new Date(); hoy.setHours(0,0,0,0);
+      if (c.fecha_fin_prueba) {
+        var fin = new Date(c.fecha_fin_prueba + "T00:00:00");
+        if (fin >= hoy) estadoBadge = '<span class="badge badge-prueba">En prueba gratis</span>';
+      }
+      if (c.activa === false) estadoBadge = '<span class="badge badge-vencida">Suspendida</span>';
+
+      cont.innerHTML =
+        '<div class="sub-fila"><span class="sub-label">Empresa</span><span class="sub-valor">' + (c.nombre || "—") + '</span></div>' +
+        '<div class="sub-fila"><span class="sub-label">Plan</span>' + planBadge + '</div>' +
+        '<div class="sub-fila"><span class="sub-label">Estado</span>' + estadoBadge + '</div>' +
+        '<div class="sub-fila"><span class="sub-label">Inicio de prueba</span><span class="sub-valor">' + fmtFecha(c.fecha_inicio_prueba) + '</span></div>' +
+        '<div class="sub-fila"><span class="sub-label">Fin de prueba</span><span class="sub-valor">' + fmtFecha(c.fecha_fin_prueba) + '</span></div>' +
+        '<div class="sub-fila"><span class="sub-label">Precio mensual</span><span class="sub-valor">' + (c.precio_mensual != null ? ("$" + c.precio_mensual) : "—") + '</span></div>';
+    }
+
+    async function cargarResumen() {
+      // Edificios activos
+      const ed = await db.from("edificios").select("id", { count: "exact", head: true });
+      document.getElementById("r-edificios").textContent = (ed.count != null) ? ed.count : "0";
+      // Empleados
+      const em = await db.from("empleados").select("id", { count: "exact", head: true });
+      document.getElementById("r-empleados").textContent = (em.count != null) ? em.count : "0";
+      // Registros del mes actual
+      var ahora = new Date();
+      var primero = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString();
+      const rg = await db.from("registros").select("id", { count: "exact", head: true }).gte("created_at", primero);
+      document.getElementById("r-registros").textContent = (rg.count != null) ? rg.count : "0";
+    }
+
+    async function cargarEquipo() {
+      const cont = document.getElementById("equipo-contenido");
+      const { data, error } = await db.from("supervisores").select("*").order("created_at", { ascending: true });
+      if (error || !data || data.length === 0) {
+        cont.innerHTML = '<div class="cargando">No hay supervisores registrados.</div>';
+        return;
+      }
+      cont.innerHTML = "";
+      data.forEach(function(s) {
+        var nombre = s.nombre || "Supervisor";
+        var inicial = nombre.charAt(0).toUpperCase();
+        var rol = (s.rol === "admin") ? "admin" : "supervisor";
+        var rolTxt = (rol === "admin") ? "Administrador" : "Supervisor";
+        var item = document.createElement("div");
+        item.className = "sup-item";
+        item.innerHTML =
+          '<div class="sup-avatar">' + inicial + '</div>' +
+          '<div class="sup-info"><div class="sup-nombre">' + nombre + '</div><div class="sup-email">' + (s.email || "") + '</div></div>' +
+          '<span class="sup-rol ' + rol + '">' + rolTxt + '</span>';
+        cont.appendChild(item);
+      });
+    }
+
+    verificarAcceso();
+  </script>
+</body>
+</html>
