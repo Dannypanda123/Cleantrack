@@ -21,107 +21,54 @@
       --blanco: #FFFFFF;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--gris-fondo);
-      color: var(--texto);
-      min-height: 100vh;
-      padding: 20px;
-    }
-    /* Oculto hasta confirmar sesión, para no mostrar datos antes de verificar */
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
     .contenedor { max-width: 720px; margin: 0 auto; display: none; }
-    .verificando {
-      max-width: 720px; margin: 60px auto; text-align: center;
-      color: var(--gris-texto); font-size: 15px;
-    }
+    .verificando { max-width: 720px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
 
-    .top {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
-    }
-    .top .marca {
-      font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--gris-texto); font-weight: 600;
-    }
+    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
     .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
     .top-botones { display: flex; gap: 8px; }
-    .btn-refrescar {
-      background: linear-gradient(135deg, #798C81, #5F7268); color: #fff; border: none;
-      padding: 10px 18px; border-radius: 12px; font-size: 14px;
-      font-weight: 600; cursor: pointer;
-      box-shadow: 0 4px 12px rgba(121,140,129,0.3);
-    }
-    .btn-salir {
-      background: transparent; color: var(--gris-texto);
-      border: 1.5px solid var(--gris-borde);
-      padding: 10px 18px; border-radius: 12px; font-size: 14px;
-      font-weight: 600; cursor: pointer;
-    }
+    .btn-refrescar { background: linear-gradient(135deg, #798C81, #5F7268); color: #fff; border: none; padding: 10px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(121,140,129,0.3); }
+    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
     .btn-refrescar:active, .btn-salir:active { transform: scale(0.97); }
 
-    .metricas {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 12px; margin-bottom: 24px;
-    }
-    .metrica {
-      background: var(--blanco); border: 1px solid var(--gris-borde);
-      border-radius: 14px; padding: 18px;
-    }
+    /* Selector de edificio */
+    .selector-cont { margin-bottom: 22px; }
+    .selector-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-texto); margin-bottom: 8px; }
+    .selector { width: 100%; padding: 14px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: var(--blanco); color: var(--texto); outline: none; cursor: pointer; }
+    .selector:focus { border-color: var(--verde); }
+
+    .metricas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+    .metrica { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 18px; }
     .metrica .label { font-size: 12px; color: var(--gris-texto); margin-bottom: 6px; }
     .metrica .valor { font-size: 28px; font-weight: 600; }
 
-    .seccion-titulo {
-      font-size: 13px; font-weight: 600; color: var(--gris-texto);
-      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;
-    }
+    .seccion-titulo { font-size: 13px; font-weight: 600; color: var(--gris-texto); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .punto-vivo { width: 8px; height: 8px; border-radius: 50%; background: #3C993C; display: inline-block; animation: latir 1.6s ease-in-out infinite; }
+    @keyframes latir { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
     .lista { display: flex; flex-direction: column; gap: 10px; }
-    .registro {
-      background: var(--blanco); border: 1px solid var(--gris-borde);
-      border-radius: 14px; padding: 16px;
-      display: flex; align-items: center; gap: 14px;
-    }
-    .miniatura {
-      width: 54px; height: 54px; border-radius: 12px;
-      object-fit: cover; flex-shrink: 0; cursor: pointer;
-      border: 1px solid var(--gris-borde);
-    }
-    .icono {
-      width: 54px; height: 54px; border-radius: 12px;
-      background: var(--verde-claro); flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center; font-size: 22px;
-    }
+    .registro { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 14px; }
+    .miniatura { width: 54px; height: 54px; border-radius: 12px; object-fit: cover; flex-shrink: 0; cursor: pointer; border: 1px solid var(--gris-borde); }
+    .icono { width: 54px; height: 54px; border-radius: 12px; background: var(--verde-claro); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
     .registro .info { flex: 1; min-width: 0; }
     .registro .area { font-size: 15px; font-weight: 600; }
     .registro .detalle { font-size: 13px; color: var(--gris-texto); margin-top: 2px; }
     .registro .hora { font-size: 13px; color: var(--gris-texto); text-align: right; flex-shrink: 0; }
 
-    .badge {
-      display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600;
-      padding: 3px 9px; border-radius: 8px; margin-top: 4px;
-    }
+    .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 8px; margin-top: 4px; }
     .badge svg { width: 13px; height: 13px; }
     .badge-foto { background: var(--azul-claro); color: var(--azul); }
     .badge-sinfoto { background: var(--verde-claro); color: var(--verde-texto); }
 
-    .vacio {
-      background: var(--blanco); border: 1px dashed var(--gris-borde);
-      border-radius: 14px; padding: 40px 20px; text-align: center;
-      color: var(--gris-texto); font-size: 14px;
-    }
+    .vacio { background: var(--blanco); border: 1px dashed var(--gris-borde); border-radius: 14px; padding: 40px 20px; text-align: center; color: var(--gris-texto); font-size: 14px; }
     .cargando { text-align: center; color: var(--gris-texto); padding: 40px; font-size: 14px; }
 
-    .modal {
-      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.85); z-index: 100;
-      align-items: center; justify-content: center; padding: 20px;
-    }
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
     .modal.abierto { display: flex; }
     .modal img { max-width: 100%; max-height: 90vh; border-radius: 12px; }
-    .modal-cerrar {
-      position: absolute; top: 20px; right: 24px; color: #fff;
-      font-size: 32px; cursor: pointer; font-weight: 300;
-    }
+    .modal-cerrar { position: absolute; top: 20px; right: 24px; color: #fff; font-size: 32px; cursor: pointer; font-weight: 300; }
   </style>
 </head>
 <body>
@@ -133,31 +80,29 @@
     <div class="top">
       <div>
         <div class="marca">CleanTrack</div>
-        <h1>Panel del supervisor</h1>
+        <h1>Registros de limpieza</h1>
       </div>
       <div class="top-botones">
-        <a class="btn-salir" href="inicio.html" style="text-decoration:none; display:inline-block;">← Inicio</a>
+        <a class="btn-salir" href="inicio.html">← Inicio</a>
         <button class="btn-refrescar" onclick="cargar()">Actualizar</button>
         <button class="btn-salir" onclick="salir()">Salir</button>
       </div>
     </div>
 
-    <div class="metricas">
-      <div class="metrica">
-        <div class="label">Registros hoy</div>
-        <div class="valor" id="m-hoy">—</div>
-      </div>
-      <div class="metrica">
-        <div class="label">Con foto</div>
-        <div class="valor" id="m-foto">—</div>
-      </div>
-      <div class="metrica">
-        <div class="label">Total histórico</div>
-        <div class="valor" id="m-total">—</div>
-      </div>
+    <div class="selector-cont">
+      <div class="selector-label">Edificio</div>
+      <select class="selector" id="selector-edificio" onchange="mostrar()">
+        <option value="">Cargando edificios...</option>
+      </select>
     </div>
 
-    <div class="seccion-titulo">Registros recientes</div>
+    <div class="metricas">
+      <div class="metrica"><div class="label">Registros hoy</div><div class="valor" id="m-hoy">—</div></div>
+      <div class="metrica"><div class="label">Con foto</div><div class="valor" id="m-foto">—</div></div>
+      <div class="metrica"><div class="label">Total histórico</div><div class="valor" id="m-total">—</div></div>
+    </div>
+
+    <div class="seccion-titulo"><span class="punto-vivo"></span> Registros en tiempo real</div>
     <div class="lista" id="lista">
       <div class="cargando">Cargando registros...</div>
     </div>
@@ -177,23 +122,14 @@
     try {
       const { createClient } = supabase;
       db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) {
-      console.error("No se pudo conectar a Supabase:", e);
-    }
+    } catch (e) { console.error(e); }
 
-    // ===== PROTECCIÓN: si no hay sesión, mandar al login =====
+    var todosRegistros = [];
+
     async function verificarAcceso() {
-      if (!db) {
-        document.getElementById("verificando").textContent = "Sin conexión a la base de datos.";
-        return;
-      }
+      if (!db) { document.getElementById("verificando").textContent = "Sin conexión a la base de datos."; return; }
       const { data } = await db.auth.getSession();
-      if (!data.session) {
-        // No hay sesión: fuera, al login
-        window.location.href = "login.html";
-        return;
-      }
-      // Hay sesión: mostrar el dashboard y cargar datos
+      if (!data.session) { window.location.href = "login.html"; return; }
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
       cargar();
@@ -205,18 +141,14 @@
     }
 
     function esHoy(fechaISO) {
-      var f = new Date(fechaISO);
-      var hoy = new Date();
-      return f.getFullYear() === hoy.getFullYear()
-        && f.getMonth() === hoy.getMonth()
-        && f.getDate() === hoy.getDate();
+      var f = new Date(fechaISO), hoy = new Date();
+      return f.getFullYear() === hoy.getFullYear() && f.getMonth() === hoy.getMonth() && f.getDate() === hoy.getDate();
     }
 
     function formatHora(fechaISO) {
       var f = new Date(fechaISO);
       var h = f.getHours(), m = f.getMinutes();
-      var ampm = h >= 12 ? "pm" : "am";
-      h = h % 12; if (h === 0) h = 12;
+      var ampm = h >= 12 ? "pm" : "am"; h = h % 12; if (h === 0) h = 12;
       m = m < 10 ? "0" + m : m;
       return h + ":" + m + " " + ampm;
     }
@@ -225,56 +157,69 @@
       document.getElementById("modal-img").src = url;
       document.getElementById("modal").classList.add("abierto");
     }
-    function cerrarModal() {
-      document.getElementById("modal").classList.remove("abierto");
-    }
+    function cerrarModal() { document.getElementById("modal").classList.remove("abierto"); }
 
     async function cargar() {
-      var lista = document.getElementById("lista");
-      lista.innerHTML = '<div class="cargando">Cargando registros...</div>';
-
-      if (!db) {
-        lista.innerHTML = '<div class="vacio">Sin conexión a la base de datos.</div>';
-        return;
-      }
-
-      const { data, error } = await db
-        .from("registros")
-        .select("*")
-        .order("created_at", { ascending: false });
-
+      if (!db) return;
+      const { data, error } = await db.from("registros").select("*").order("created_at", { ascending: false });
       if (error) {
-        lista.innerHTML = '<div class="vacio">Error al cargar: ' + error.message + '</div>';
-        console.error(error);
+        document.getElementById("lista").innerHTML = '<div class="vacio">Error al cargar: ' + error.message + '</div>';
         return;
       }
+      todosRegistros = data || [];
 
-      var total = data.length;
-      var hoy = data.filter(function(r){ return esHoy(r.created_at); }).length;
-      var conFoto = data.filter(function(r){ return r.con_foto; }).length;
+      // Llenar el selector de edificios (conservando la selección actual)
+      var sel = document.getElementById("selector-edificio");
+      var seleccionActual = sel.value;
 
+      var edificios = {};
+      todosRegistros.forEach(function(r){ edificios[r.edificio || "Sin edificio"] = true; });
+      var lista = Object.keys(edificios).sort();
+
+      if (lista.length === 0) {
+        sel.innerHTML = '<option value="">No hay datos aún</option>';
+      } else {
+        sel.innerHTML = '<option value="">Todos los edificios</option>';
+        lista.forEach(function(e){
+          var o = document.createElement("option"); o.value = e; o.textContent = e; sel.appendChild(o);
+        });
+        // Restaurar selección previa si sigue existiendo
+        if (seleccionActual && (seleccionActual === "" || lista.indexOf(seleccionActual) !== -1)) {
+          sel.value = seleccionActual;
+        }
+      }
+
+      mostrar();
+    }
+
+    function mostrar() {
+      var edificio = document.getElementById("selector-edificio").value;
+      var regs = edificio ? todosRegistros.filter(function(r){ return (r.edificio || "Sin edificio") === edificio; }) : todosRegistros;
+
+      var total = regs.length;
+      var hoy = regs.filter(function(r){ return esHoy(r.created_at); }).length;
+      var conFoto = regs.filter(function(r){ return r.con_foto; }).length;
       document.getElementById("m-total").textContent = total;
       document.getElementById("m-hoy").textContent = hoy;
       document.getElementById("m-foto").textContent = conFoto;
 
+      var lista = document.getElementById("lista");
       if (total === 0) {
-        lista.innerHTML = '<div class="vacio">Aún no hay registros. Cuando un empleado registre un área, aparecerá aquí.</div>';
+        lista.innerHTML = '<div class="vacio">' + (edificio ? "Aún no hay registros en este edificio." : "Aún no hay registros. Cuando un empleado registre un área, aparecerá aquí.") + '</div>';
         return;
       }
 
       lista.innerHTML = "";
-      data.forEach(function(r) {
+      regs.forEach(function(r) {
         var badge = r.con_foto
           ? '<span class="badge badge-foto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>Con foto</span>'
           : '<span class="badge badge-sinfoto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Registrado</span>';
-
         var visual;
         if (r.foto_url) {
           visual = '<img class="miniatura" src="' + r.foto_url + '" alt="Foto" onclick="abrirModal(\'' + r.foto_url + '\')" />';
         } else {
           visual = '<div class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="#5F7268" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>';
         }
-
         var div = document.createElement("div");
         div.className = "registro";
         div.innerHTML =
@@ -289,7 +234,6 @@
       });
     }
 
-    // Arranca verificando el acceso (no carga datos hasta confirmar sesión)
     verificarAcceso();
     setInterval(function(){
       if (document.getElementById("contenedor").style.display === "block") cargar();
