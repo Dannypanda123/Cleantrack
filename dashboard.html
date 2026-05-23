@@ -49,6 +49,10 @@
     @keyframes latir { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
     .lista { display: flex; flex-direction: column; gap: 10px; }
+    .separador-fecha { display: flex; align-items: center; gap: 12px; margin: 8px 2px 2px; }
+    .separador-fecha:first-child { margin-top: 0; }
+    .separador-fecha .texto { font-size: 12px; font-weight: 700; color: var(--gris-texto); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+    .separador-fecha .linea { flex: 1; height: 1px; background: var(--gris-borde); }
     .registro { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 14px; }
     .miniatura { width: 54px; height: 54px; border-radius: 12px; object-fit: cover; flex-shrink: 0; cursor: pointer; border: 1px solid var(--gris-borde); }
     .icono { width: 54px; height: 54px; border-radius: 12px; background: var(--verde-claro); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
@@ -153,6 +157,36 @@
       return h + ":" + m + " " + ampm;
     }
 
+    // Clave única del día (para agrupar) y etiqueta legible
+    function claveDia(fechaISO) {
+      var f = new Date(fechaISO);
+      return f.getFullYear() + "-" + f.getMonth() + "-" + f.getDate();
+    }
+
+    function etiquetaDia(fechaISO) {
+      var dias = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+      var meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+      var f = new Date(fechaISO);
+      var hoy = new Date();
+      var ayer = new Date(); ayer.setDate(ayer.getDate() - 1);
+
+      if (claveDia(fechaISO) === claveDia(hoy.toISOString())) return "Hoy";
+      if (claveDia(fechaISO) === claveDia(ayer.toISOString())) return "Ayer";
+
+      // Diferencia en días
+      var f0 = new Date(f.getFullYear(), f.getMonth(), f.getDate());
+      var h0 = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+      var difDias = Math.round((h0 - f0) / 86400000);
+
+      if (difDias > 1 && difDias < 7) {
+        // Día de la semana, con primera letra mayúscula
+        var d = dias[f.getDay()];
+        return d.charAt(0).toUpperCase() + d.slice(1);
+      }
+      // Fecha completa: "18 de mayo"
+      return f.getDate() + " de " + meses[f.getMonth()];
+    }
+
     function abrirModal(url) {
       document.getElementById("modal-img").src = url;
       document.getElementById("modal").classList.add("abierto");
@@ -210,7 +244,18 @@
       }
 
       lista.innerHTML = "";
+      var diaActual = null;
       regs.forEach(function(r) {
+        // Insertar separador cuando cambia el día
+        var clave = claveDia(r.created_at);
+        if (clave !== diaActual) {
+          diaActual = clave;
+          var sep = document.createElement("div");
+          sep.className = "separador-fecha";
+          sep.innerHTML = '<span class="texto">' + etiquetaDia(r.created_at) + '</span><span class="linea"></span>';
+          lista.appendChild(sep);
+        }
+
         var badge = r.con_foto
           ? '<span class="badge badge-foto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>Con foto</span>'
           : '<span class="badge badge-sinfoto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Registrado</span>';
