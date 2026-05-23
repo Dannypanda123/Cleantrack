@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CleanTrack — Buzón de soporte</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --verde: #377D37;
+      --verde-claro: #E7F1E7;
+      --verde-texto: #2A5F2A;
+      --gris-verde-700: #798C81;
+      --gris-fondo: #ECEBE4;
+      --gris-texto: #6B6A64;
+      --gris-borde: #E2E0D8;
+      --texto: #1F2A37;
+      --blanco: #FFFFFF;
+      --ambar-claro: #FAEEDA;
+      --ambar-texto: #854F0B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
+    .contenedor { max-width: 640px; margin: 0 auto; display: none; }
+    .verificando { max-width: 640px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+
+    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
+    .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
+    .top-botones { display: flex; gap: 8px; }
+    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+
+    .resumen { display: flex; gap: 12px; margin-bottom: 22px; }
+    .resumen .caja { flex: 1; background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 16px; text-align: center; }
+    .resumen .num { font-size: 26px; font-weight: 600; }
+    .resumen .num.pendientes { color: var(--ambar-texto); }
+    .resumen .num.resueltas { color: var(--verde); }
+    .resumen .lbl { font-size: 12px; color: var(--gris-texto); margin-top: 2px; }
+
+    .filtros { display: flex; gap: 8px; margin-bottom: 18px; }
+    .filtro { flex: 1; padding: 10px; border: 1.5px solid var(--gris-borde); background: var(--blanco); border-radius: 11px; font-size: 14px; font-weight: 600; color: var(--gris-texto); cursor: pointer; }
+    .filtro.activo { background: var(--verde); color: #fff; border-color: var(--verde); }
+
+    .pregunta-card { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 18px; margin-bottom: 12px; }
+    .pregunta-card.resuelta { opacity: 0.7; }
+    .pregunta-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .pregunta-email { font-size: 13px; font-weight: 600; color: var(--gris-verde-700); word-break: break-all; }
+    .pregunta-fecha { font-size: 12px; color: var(--gris-texto); white-space: nowrap; flex-shrink: 0; }
+    .pregunta-texto { font-size: 15px; line-height: 1.5; margin-bottom: 14px; }
+
+    .badge-estado { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 8px; }
+    .badge-pendiente { background: var(--ambar-claro); color: var(--ambar-texto); }
+    .badge-resuelto { background: var(--verde-claro); color: var(--verde-texto); }
+
+    .acciones-card { display: flex; gap: 8px; margin-top: 12px; align-items: center; justify-content: space-between; }
+    .btn-resolver { padding: 9px 16px; border: none; border-radius: 10px; background: var(--verde); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-resolver:active { transform: scale(0.97); }
+    .btn-reabrir { padding: 9px 16px; border: 1.5px solid var(--gris-borde); border-radius: 10px; background: transparent; color: var(--gris-texto); font-size: 13px; font-weight: 600; cursor: pointer; }
+
+    .vacio { text-align: center; color: var(--gris-texto); padding: 40px 20px; font-size: 14px; }
+    .cargando { text-align: center; color: var(--gris-texto); padding: 40px; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <div class="verificando" id="verificando">Verificando sesión...</div>
+
+  <div class="contenedor" id="contenedor">
+
+    <div class="top">
+      <div>
+        <div class="marca">CleanTrack</div>
+        <h1>Buzón de soporte</h1>
+      </div>
+      <div class="top-botones">
+        <a class="btn-salir" href="inicio.html">← Inicio</a>
+        <button class="btn-salir" onclick="salir()">Salir</button>
+      </div>
+    </div>
+
+    <div class="resumen">
+      <div class="caja"><div class="num pendientes" id="n-pendientes">—</div><div class="lbl">Pendientes</div></div>
+      <div class="caja"><div class="num resueltas" id="n-resueltas">—</div><div class="lbl">Resueltas</div></div>
+      <div class="caja"><div class="num" id="n-total">—</div><div class="lbl">Total</div></div>
+    </div>
+
+    <div class="filtros">
+      <button class="filtro activo" id="f-pendientes" onclick="filtrar('pendientes')">Pendientes</button>
+      <button class="filtro" id="f-resueltas" onclick="filtrar('resueltas')">Resueltas</button>
+      <button class="filtro" id="f-todas" onclick="filtrar('todas')">Todas</button>
+    </div>
+
+    <div id="lista"><div class="cargando">Cargando preguntas...</div></div>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
+
+    let db = null;
+    try {
+      const { createClient } = supabase;
+      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (e) { console.error(e); }
+
+    var todas = [];
+    var filtroActual = "pendientes";
+
+    async function verificarAcceso() {
+      if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
+      const { data } = await db.auth.getSession();
+      if (!data.session) { window.location.href = "login.html"; return; }
+      document.getElementById("verificando").style.display = "none";
+      document.getElementById("contenedor").style.display = "block";
+      cargar();
+    }
+
+    async function salir() {
+      if (db) await db.auth.signOut();
+      window.location.href = "login.html";
+    }
+
+    async function cargar() {
+      const { data, error } = await db.from("soporte").select("*").order("created_at", { ascending: false });
+      if (error) {
+        document.getElementById("lista").innerHTML = '<div class="vacio">Error al cargar: ' + error.message + '</div>';
+        return;
+      }
+      todas = data || [];
+
+      var pend = todas.filter(function(p){ return !p.resuelto; }).length;
+      var resu = todas.filter(function(p){ return p.resuelto; }).length;
+      document.getElementById("n-pendientes").textContent = pend;
+      document.getElementById("n-resueltas").textContent = resu;
+      document.getElementById("n-total").textContent = todas.length;
+
+      pintar();
+    }
+
+    function filtrar(f) {
+      filtroActual = f;
+      document.getElementById("f-pendientes").classList.toggle("activo", f === "pendientes");
+      document.getElementById("f-resueltas").classList.toggle("activo", f === "resueltas");
+      document.getElementById("f-todas").classList.toggle("activo", f === "todas");
+      pintar();
+    }
+
+    function fmtFecha(iso) {
+      var f = new Date(iso);
+      var dd = f.getDate(), mm = f.getMonth() + 1, yy = f.getFullYear();
+      var hh = f.getHours(), mi = f.getMinutes();
+      var ampm = hh >= 12 ? "pm" : "am"; hh = hh % 12; if (hh === 0) hh = 12;
+      return dd + "/" + mm + "/" + yy + " " + hh + ":" + (mi < 10 ? "0" : "") + mi + ampm;
+    }
+
+    function pintar() {
+      var lista = document.getElementById("lista");
+      var items = todas;
+      if (filtroActual === "pendientes") items = todas.filter(function(p){ return !p.resuelto; });
+      else if (filtroActual === "resueltas") items = todas.filter(function(p){ return p.resuelto; });
+
+      if (items.length === 0) {
+        var msg = filtroActual === "pendientes" ? "No hay preguntas pendientes. ¡Todo al día!" : (filtroActual === "resueltas" ? "Aún no hay preguntas resueltas." : "Aún no hay preguntas.");
+        lista.innerHTML = '<div class="vacio">' + msg + '</div>';
+        return;
+      }
+
+      lista.innerHTML = "";
+      items.forEach(function(p) {
+        var card = document.createElement("div");
+        card.className = "pregunta-card" + (p.resuelto ? " resuelta" : "");
+        var badge = p.resuelto
+          ? '<span class="badge-estado badge-resuelto">Resuelta</span>'
+          : '<span class="badge-estado badge-pendiente">Pendiente</span>';
+        var boton = p.resuelto
+          ? '<button class="btn-reabrir" onclick="cambiarEstado(' + p.id + ', false)">Reabrir</button>'
+          : '<button class="btn-resolver" onclick="cambiarEstado(' + p.id + ', true)">Marcar como resuelta</button>';
+        card.innerHTML =
+          '<div class="pregunta-top">' +
+            '<div class="pregunta-email">' + (p.email_usuario || "Sin correo") + '</div>' +
+            '<div class="pregunta-fecha">' + fmtFecha(p.created_at) + '</div>' +
+          '</div>' +
+          '<div class="pregunta-texto">' + p.pregunta + '</div>' +
+          '<div class="acciones-card">' + badge + boton + '</div>';
+        lista.appendChild(card);
+      });
+    }
+
+    async function cambiarEstado(id, resuelto) {
+      const { error } = await db.from("soporte").update({ resuelto: resuelto }).eq("id", id);
+      if (error) { alert("No se pudo actualizar: " + error.message); return; }
+      cargar();
+    }
+
+    verificarAcceso();
+  </script>
+</body>
+</html>
