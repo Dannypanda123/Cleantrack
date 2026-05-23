@@ -270,7 +270,7 @@
       console.error("No se pudo conectar a Supabase:", e);
     }
 
-    var datosArea = { id: null, area: "Cargando área...", edificio: "" };
+    var datosArea = { id: null, area: "Cargando área...", edificio: "", compania_id: null };
     var pin = "";
     var empleadoNombre = null;
     var pideFoto = false;
@@ -299,6 +299,7 @@
       datosArea.id = a.id;
       datosArea.area = a.nombre;
       datosArea.edificio = a.edificio;
+      datosArea.compania_id = a.compania_id;
       pideFoto = a.requiere_foto;
       document.getElementById("area-nombre").textContent = a.nombre;
       document.getElementById("area-edificio").textContent = a.edificio;
@@ -439,7 +440,8 @@
           area: datosArea.area,
           edificio: datosArea.edificio,
           con_foto: conFoto,
-          foto_url: fotoUrl
+          foto_url: fotoUrl,
+          compania_id: datosArea.compania_id
         }]);
         if (error) {
           estado.className = "estado-guardado estado-error";
@@ -568,7 +570,8 @@
           edificio: datosArea.edificio,
           nombre_empleado: empleadoNombre || "Empleado",
           foto_url: fotoUrl,
-          resuelto: false
+          resuelto: false,
+          compania_id: datosArea.compania_id
         }]);
         if (error) {
           estado.className = "estado-guardado estado-error";
