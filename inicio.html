@@ -77,6 +77,8 @@
     .ico-reportes svg { stroke: #633806; }
     .ico-soporte { background: #9FE1CB; }
     .ico-soporte svg { stroke: #085041; }
+    .ico-admin { background: #D9C9F0; }
+    .ico-admin svg { stroke: #4B2E83; }
 
     .tarjeta h3 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
     .tarjeta p { font-size: 13px; color: var(--gris-texto); line-height: 1.4; }
@@ -92,6 +94,14 @@
 
     /* Tarjetas Pro se ocultan por defecto; se muestran si el plan lo permite */
     .solo-pro { display: none; }
+    /* Tarjeta de admin oculta por defecto; solo para administradores */
+    .solo-admin { display: none; }
+    .etiqueta-admin {
+      position: absolute; top: 16px; right: 16px;
+      background: #D9C9F0; color: #4B2E83;
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; padding: 4px 9px; border-radius: 8px;
+    }
   </style>
 </head>
 <body>
@@ -156,6 +166,13 @@
         <p>Contacto y ayuda con el uso de la plataforma</p>
       </a>
 
+      <a class="tarjeta solo-admin" id="card-admin" href="panel.html">
+        <span class="etiqueta-admin">Admin</span>
+        <div class="ico ico-admin"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6z"></path><path d="M9 12l2 2 4-4"></path></svg></div>
+        <h3>Administración</h3>
+        <p>Suscripción, equipo y resumen de tu empresa</p>
+      </a>
+
     </div>
 
   </div>
@@ -192,9 +209,23 @@
       }
 
       await aplicarPlan();
+      await aplicarAdmin();
 
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+    }
+
+    async function aplicarAdmin() {
+      try {
+        const { data, error } = await db.rpc("soy_admin");
+        if (!error && data === true) {
+          document.querySelectorAll(".solo-admin").forEach(function(el) {
+            el.style.display = "block";
+          });
+        }
+      } catch (e) {
+        console.error("No se pudo verificar admin:", e);
+      }
     }
 
     async function aplicarPlan() {
