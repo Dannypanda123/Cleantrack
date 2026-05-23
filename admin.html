@@ -57,6 +57,11 @@
     .sug-item:last-child { border-bottom: none; }
     .sug-item:hover { background: var(--gris-fondo); }
     .sug-item svg { width: 16px; height: 16px; stroke: var(--gris-texto); flex-shrink: 0; }
+    .sug-sin-asignar { background: #FAEEDA; border-bottom: 1px solid #EAD9B5; }
+    .sug-sin-asignar:hover { background: #F5E4C5; }
+    .sug-sin-asignar svg { stroke: #854F0B; }
+    .sug-sin-asignar span { color: #854F0B; font-weight: 600; }
+    .sug-hint { font-weight: 400; font-size: 12px; color: #9C7B3A; }
     .sug-vacio { padding: 12px 13px; font-size: 13px; color: var(--gris-texto); }
 
     .btn-agregar { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: var(--verde-accion); color: #fff; }
@@ -277,24 +282,52 @@
         return seleccion[tipo].indexOf(n) === -1 && n.toLowerCase().indexOf(texto) !== -1;
       });
 
+      sug.innerHTML = "";
+
+      // "Sin asignar" como primera opción (solo al editar, y solo si no estás buscando algo específico)
+      var mostrarSinAsignar = (tipo === "edit") && (texto === "" || "sin asignar".indexOf(texto) !== -1);
+      if (mostrarSinAsignar) {
+        var itemSin = document.createElement("div");
+        itemSin.className = "sug-item sug-sin-asignar";
+        itemSin.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="17" y1="8" x2="22" y2="13"></line><line x1="22" y1="8" x2="17" y2="13"></line></svg><span>Sin asignar <span class="sug-hint">— quitar de todos los edificios</span></span>';
+        itemSin.onmousedown = function(e) {
+          e.preventDefault();
+          var tieneEdificios = seleccion[tipo].length > 0;
+          if (tieneEdificios) {
+            if (!confirm("¿Quitar a este empleado de todos sus edificios? Quedará en el grupo 'Sin asignar' (sigue activo en la compañía).")) {
+              buscador.focus();
+              return;
+            }
+          }
+          seleccion[tipo] = [];
+          buscador.value = "";
+          pintarChips(tipo);
+          pintarSugerencias(tipo);
+          buscador.focus();
+        };
+        sug.appendChild(itemSin);
+      }
+
       if (listaEdificios.length === 0) {
-        sug.innerHTML = '<div class="sug-vacio">No hay edificios. Créalos primero en "Edificios y áreas".</div>';
+        if (!mostrarSinAsignar) {
+          sug.innerHTML = '<div class="sug-vacio">No hay edificios. Créalos primero en "Edificios y áreas".</div>';
+        }
         sug.classList.add("visible");
         return;
       }
-      if (disponibles.length === 0) {
+
+      if (disponibles.length === 0 && !mostrarSinAsignar) {
         sug.innerHTML = '<div class="sug-vacio">' + (texto ? "Sin coincidencias." : "Ya agregaste todos los edificios.") + '</div>';
         sug.classList.add("visible");
         return;
       }
 
-      sug.innerHTML = "";
       disponibles.forEach(function(nombre) {
         var item = document.createElement("div");
         item.className = "sug-item";
         item.innerHTML = iconoEdificioSVG + '<span>' + nombre + '</span>';
         item.onmousedown = function(e) {
-          e.preventDefault(); // evita que el blur cierre antes del clic
+          e.preventDefault();
           seleccion[tipo].push(nombre);
           buscador.value = "";
           pintarChips(tipo);
