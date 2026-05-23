@@ -10,6 +10,7 @@
   <style>
     :root {
       --verde-accion: #377D37;
+      --verde-accion-claro: #E7F1E7;
       --gris-verde-700: #798C81;
       --gris-verde-900: #5F7268;
       --gris-verde-claro: #EAEEEB;
@@ -39,16 +40,24 @@
     .tarjeta h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
 
     label { display: block; font-size: 13px; font-weight: 600; color: var(--gris-texto); margin-bottom: 6px; }
-    input { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 14px; outline: none; }
-    input:focus { border-color: var(--gris-verde-700); }
+    input.campo-texto { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 14px; outline: none; }
+    input.campo-texto:focus { border-color: var(--gris-verde-700); }
 
-    .edificios-label { margin-bottom: 8px; }
-    .edificios-lista { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; max-height: 200px; overflow-y: auto; }
-    .check-edificio { display: flex; align-items: center; gap: 10px; padding: 11px 13px; border: 1.5px solid var(--gris-borde); border-radius: 11px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
-    .check-edificio input { width: 18px; height: 18px; margin: 0; accent-color: var(--verde-accion); }
-    .check-edificio span { font-size: 14px; }
-    .check-edificio.marcado { border-color: var(--verde-accion); background: var(--verde-claro); }
-    .sin-edificios { font-size: 13px; color: var(--gris-texto); padding: 10px 0; }
+    /* Selector de edificios con chips + buscador */
+    .selector-edificios { margin-bottom: 16px; }
+    .chips-caja { background: var(--blanco); border: 1.5px solid var(--gris-borde); border-radius: 12px; padding: 8px; min-height: 48px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; cursor: text; }
+    .chips-caja.focus { border-color: var(--gris-verde-700); }
+    .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--verde-accion-claro); color: var(--verde-texto); font-size: 13px; padding: 5px 10px; border-radius: 9px; font-weight: 600; }
+    .chip .quitar { cursor: pointer; font-size: 16px; line-height: 1; opacity: 0.7; }
+    .chip .quitar:hover { opacity: 1; }
+    .chips-input { flex: 1; min-width: 130px; border: none; outline: none; background: transparent; font-size: 15px; padding: 5px; margin: 0; }
+    .sugerencias { margin-top: 6px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: var(--blanco); max-height: 170px; overflow-y: auto; display: none; }
+    .sugerencias.visible { display: block; }
+    .sug-item { padding: 11px 13px; font-size: 14px; cursor: pointer; border-bottom: 1px solid var(--gris-fondo); display: flex; align-items: center; gap: 9px; }
+    .sug-item:last-child { border-bottom: none; }
+    .sug-item:hover { background: var(--gris-fondo); }
+    .sug-item svg { width: 16px; height: 16px; stroke: var(--gris-texto); flex-shrink: 0; }
+    .sug-vacio { padding: 12px 13px; font-size: 13px; color: var(--gris-texto); }
 
     .btn-agregar { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: var(--verde-accion); color: #fff; }
     .btn-agregar:active { transform: scale(0.98); }
@@ -75,7 +84,7 @@
     .emp-pin { font-size: 13px; color: var(--gris-texto); }
     .emp-inactivo .emp-nombre, .emp-inactivo .emp-pin { opacity: 0.45; }
 
-    .emp-acciones { display: flex; gap: 6px; flex-shrink: 0; }
+    .emp-acciones { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
     .btn-icono { width: 34px; height: 34px; border-radius: 9px; border: 1.5px solid var(--gris-borde); background: var(--blanco); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
     .btn-icono svg { width: 16px; height: 16px; }
     .btn-icono.editar svg { stroke: var(--gris-verde-900); }
@@ -94,7 +103,6 @@
     .mensaje.error { background: var(--rojo-claro); color: var(--rojo); display: block; }
     .cargando { text-align: center; color: var(--gris-texto); padding: 20px; font-size: 14px; }
 
-    /* Modal de edición */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
     .modal.abierto { display: flex; }
     .modal-caja { background: #fff; border-radius: 18px; padding: 26px; max-width: 420px; width: 100%; margin: auto; }
@@ -125,13 +133,19 @@
     <div class="tarjeta">
       <h2>Agregar empleado</h2>
       <label for="nombre">Nombre completo</label>
-      <input type="text" id="nombre" placeholder="Ej. Ana Torres" />
+      <input type="text" class="campo-texto" id="nombre" placeholder="Ej. Ana Torres" />
       <label for="pin">PIN (4 dígitos)</label>
-      <input type="text" id="pin" placeholder="Ej. 4892" inputmode="numeric" maxlength="4" />
-      <label class="edificios-label">Edificios donde trabaja</label>
-      <div class="edificios-lista" id="edificios-lista">
-        <div class="sin-edificios">Cargando edificios...</div>
+      <input type="text" class="campo-texto" id="pin" placeholder="Ej. 4892" inputmode="numeric" maxlength="4" />
+
+      <label>Edificios donde trabaja</label>
+      <div class="selector-edificios">
+        <div class="chips-caja" id="add-chips-caja" onclick="document.getElementById('add-buscador').focus()">
+          <div id="add-chips" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+          <input type="text" class="chips-input" id="add-buscador" placeholder="Buscar y agregar edificio..." autocomplete="off" />
+        </div>
+        <div class="sugerencias" id="add-sugerencias"></div>
       </div>
+
       <button class="btn-agregar" id="btn-agregar" onclick="agregarEmpleado()">Agregar empleado</button>
       <div class="mensaje" id="mensaje-agregar"></div>
     </div>
@@ -150,11 +164,19 @@
     <div class="modal-caja">
       <div class="modal-titulo">Editar empleado</div>
       <label for="edit-nombre">Nombre completo</label>
-      <input type="text" id="edit-nombre" />
+      <input type="text" class="campo-texto" id="edit-nombre" />
       <label for="edit-pin">PIN (4 dígitos)</label>
-      <input type="text" id="edit-pin" inputmode="numeric" maxlength="4" />
-      <label class="edificios-label">Edificios donde trabaja</label>
-      <div class="edificios-lista" id="edit-edificios-lista"></div>
+      <input type="text" class="campo-texto" id="edit-pin" inputmode="numeric" maxlength="4" />
+
+      <label>Edificios donde trabaja</label>
+      <div class="selector-edificios">
+        <div class="chips-caja" id="edit-chips-caja" onclick="document.getElementById('edit-buscador').focus()">
+          <div id="edit-chips" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+          <input type="text" class="chips-input" id="edit-buscador" placeholder="Buscar y agregar edificio..." autocomplete="off" />
+        </div>
+        <div class="sugerencias" id="edit-sugerencias"></div>
+      </div>
+
       <div class="mensaje" id="mensaje-editar"></div>
       <div class="modal-botones">
         <button class="btn-cancelar" onclick="cerrarEditar()">Cancelar</button>
@@ -173,9 +195,14 @@
       db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     } catch (e) { console.error(e); }
 
-    var listaEdificios = [];
+    var listaEdificios = [];   // nombres de edificios disponibles
     var empleadosCache = [];
     var editandoId = null;
+
+    // Estado de selección para cada selector (agregar / editar)
+    var seleccion = { add: [], edit: [] };
+
+    var iconoEdificioSVG = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg>';
 
     async function verificarAcceso() {
       if (!db) { document.getElementById("verificando").textContent = "Sin conexión a la base de datos."; return; }
@@ -183,8 +210,10 @@
       if (!data.session) { window.location.href = "login.html"; return; }
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
-      cargarEdificios();
+      await cargarEdificios();
       cargarEmpleados();
+      configurarSelector("add");
+      configurarSelector("edit");
     }
 
     async function salir() {
@@ -200,28 +229,79 @@
 
     async function cargarEdificios() {
       const { data, error } = await db.from("edificios").select("*").eq("activo", true).order("nombre", { ascending: true });
-      var cont = document.getElementById("edificios-lista");
-      if (error || !data || data.length === 0) {
-        cont.innerHTML = '<div class="sin-edificios">No hay edificios. Crea edificios primero en "Edificios y áreas".</div>';
-        listaEdificios = [];
-        return;
-      }
-      listaEdificios = data;
-      cont.innerHTML = "";
-      data.forEach(function(e) {
-        cont.appendChild(crearCasilla(e.nombre, false));
+      if (error || !data) { listaEdificios = []; return; }
+      listaEdificios = data.map(function(e){ return e.nombre; });
+    }
+
+    // ===== SELECTOR DE CHIPS + BUSCADOR (reutilizable) =====
+    function configurarSelector(tipo) {
+      var buscador = document.getElementById(tipo + "-buscador");
+      var caja = document.getElementById(tipo + "-chips-caja");
+      buscador.addEventListener("input", function(){ pintarSugerencias(tipo); });
+      buscador.addEventListener("focus", function(){ caja.classList.add("focus"); pintarSugerencias(tipo); });
+      buscador.addEventListener("blur", function(){
+        caja.classList.remove("focus");
+        // Cerrar sugerencias con un pequeño retraso para permitir el clic
+        setTimeout(function(){ document.getElementById(tipo + "-sugerencias").classList.remove("visible"); }, 180);
       });
     }
 
-    function crearCasilla(nombreEdificio, marcado) {
-      var label = document.createElement("label");
-      label.className = "check-edificio" + (marcado ? " marcado" : "");
-      label.innerHTML =
-        '<input type="checkbox" value="' + nombreEdificio.replace(/"/g, "&quot;") + '" ' + (marcado ? "checked" : "") + ' onchange="this.parentElement.classList.toggle(\'marcado\', this.checked)" />' +
-        '<span>' + nombreEdificio + '</span>';
-      return label;
+    function pintarChips(tipo) {
+      var cont = document.getElementById(tipo + "-chips");
+      cont.innerHTML = "";
+      seleccion[tipo].forEach(function(nombre) {
+        var chip = document.createElement("span");
+        chip.className = "chip";
+        chip.innerHTML = nombre + ' <span class="quitar">&times;</span>';
+        chip.querySelector(".quitar").onclick = function(e) {
+          e.stopPropagation();
+          seleccion[tipo] = seleccion[tipo].filter(function(x){ return x !== nombre; });
+          pintarChips(tipo);
+          pintarSugerencias(tipo);
+        };
+        cont.appendChild(chip);
+      });
     }
 
+    function pintarSugerencias(tipo) {
+      var buscador = document.getElementById(tipo + "-buscador");
+      var sug = document.getElementById(tipo + "-sugerencias");
+      var texto = buscador.value.toLowerCase().trim();
+
+      var disponibles = listaEdificios.filter(function(n){
+        return seleccion[tipo].indexOf(n) === -1 && n.toLowerCase().indexOf(texto) !== -1;
+      });
+
+      if (listaEdificios.length === 0) {
+        sug.innerHTML = '<div class="sug-vacio">No hay edificios. Créalos primero en "Edificios y áreas".</div>';
+        sug.classList.add("visible");
+        return;
+      }
+      if (disponibles.length === 0) {
+        sug.innerHTML = '<div class="sug-vacio">' + (texto ? "Sin coincidencias." : "Ya agregaste todos los edificios.") + '</div>';
+        sug.classList.add("visible");
+        return;
+      }
+
+      sug.innerHTML = "";
+      disponibles.forEach(function(nombre) {
+        var item = document.createElement("div");
+        item.className = "sug-item";
+        item.innerHTML = iconoEdificioSVG + '<span>' + nombre + '</span>';
+        item.onmousedown = function(e) {
+          e.preventDefault(); // evita que el blur cierre antes del clic
+          seleccion[tipo].push(nombre);
+          buscador.value = "";
+          pintarChips(tipo);
+          pintarSugerencias(tipo);
+          buscador.focus();
+        };
+        sug.appendChild(item);
+      });
+      sug.classList.add("visible");
+    }
+
+    // ===== LISTA DE EMPLEADOS AGRUPADA =====
     async function cargarEmpleados() {
       var cont = document.getElementById("lista-empleados");
       cont.innerHTML = '<div class="cargando">Cargando...</div>';
@@ -270,7 +350,7 @@
         grupo.className = "grupo-edificio" + claseAbierto;
         grupo.innerHTML =
           '<div class="grupo-cabecera" onclick="this.parentElement.classList.toggle(\'abierto\')">' +
-            '<div class="grupo-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg></div>' +
+            '<div class="grupo-ico">' + iconoEdificioSVG + '</div>' +
             '<div class="grupo-info">' +
               '<div class="grupo-nombre">' + edificio + '</div>' +
               '<div class="grupo-conteo">' + emps.length + ' empleado' + (emps.length !== 1 ? 's' : '') + ' · ' + activos + ' activo' + (activos !== 1 ? 's' : '') + '</div>' +
@@ -286,21 +366,17 @@
       var nombre = document.getElementById("nombre").value.trim();
       var pin = document.getElementById("pin").value.trim();
       var msg = document.getElementById("mensaje-agregar");
-      var marcados = [];
-      document.querySelectorAll("#edificios-lista input:checked").forEach(function(c){ marcados.push(c.value); });
 
       if (!nombre || !pin) { msg.textContent = "Escribe el nombre y el PIN."; msg.className = "mensaje error"; return; }
       if (pin.length !== 4 || isNaN(pin)) { msg.textContent = "El PIN debe ser 4 dígitos numéricos."; msg.className = "mensaje error"; return; }
-      if (marcados.length === 0) { msg.textContent = "Selecciona al menos un edificio."; msg.className = "mensaje error"; return; }
-
-      // Evitar PIN duplicado
+      if (seleccion.add.length === 0) { msg.textContent = "Agrega al menos un edificio."; msg.className = "mensaje error"; return; }
       var pinExiste = empleadosCache.some(function(e){ return e.pin === pin; });
       if (pinExiste) { msg.textContent = "Ese PIN ya está en uso por otro empleado."; msg.className = "mensaje error"; return; }
 
       document.getElementById("btn-agregar").disabled = true;
       msg.textContent = "Agregando..."; msg.className = "mensaje"; msg.style.display = "block";
 
-      const { error } = await db.from("empleados").insert([{ nombre: nombre, pin: pin, activo: true, edificios: marcados.join(", ") }]);
+      const { error } = await db.from("empleados").insert([{ nombre: nombre, pin: pin, activo: true, edificios: seleccion.add.join(", ") }]);
 
       if (error) {
         msg.textContent = "Error: " + error.message; msg.className = "mensaje error";
@@ -308,13 +384,13 @@
         msg.textContent = "✓ Empleado agregado"; msg.className = "mensaje ok";
         document.getElementById("nombre").value = "";
         document.getElementById("pin").value = "";
-        document.querySelectorAll("#edificios-lista input:checked").forEach(function(c){ c.checked = false; c.parentElement.classList.remove("marcado"); });
+        seleccion.add = [];
+        pintarChips("add");
         cargarEmpleados();
       }
       document.getElementById("btn-agregar").disabled = false;
     }
 
-    // ===== EDITAR =====
     function abrirEditar(id) {
       var emp = empleadosCache.find(function(e){ return e.id === id; });
       if (!emp) return;
@@ -322,18 +398,11 @@
       document.getElementById("edit-nombre").value = emp.nombre;
       document.getElementById("edit-pin").value = emp.pin;
       document.getElementById("mensaje-editar").className = "mensaje";
+      document.getElementById("edit-buscador").value = "";
 
-      var edificiosEmp = (emp.edificios || "").split(",").map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
-      var cont = document.getElementById("edit-edificios-lista");
-      cont.innerHTML = "";
-      if (listaEdificios.length === 0) {
-        cont.innerHTML = '<div class="sin-edificios">No hay edificios disponibles.</div>';
-      } else {
-        listaEdificios.forEach(function(e) {
-          var marcado = edificiosEmp.indexOf(e.nombre) !== -1;
-          cont.appendChild(crearCasilla(e.nombre, marcado));
-        });
-      }
+      seleccion.edit = (emp.edificios || "").split(",").map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+      pintarChips("edit");
+      document.getElementById("edit-sugerencias").classList.remove("visible");
       document.getElementById("modal-editar").classList.add("abierto");
     }
 
@@ -346,21 +415,17 @@
       var nombre = document.getElementById("edit-nombre").value.trim();
       var pin = document.getElementById("edit-pin").value.trim();
       var msg = document.getElementById("mensaje-editar");
-      var marcados = [];
-      document.querySelectorAll("#edit-edificios-lista input:checked").forEach(function(c){ marcados.push(c.value); });
 
       if (!nombre || !pin) { msg.textContent = "Escribe el nombre y el PIN."; msg.className = "mensaje error"; return; }
       if (pin.length !== 4 || isNaN(pin)) { msg.textContent = "El PIN debe ser 4 dígitos numéricos."; msg.className = "mensaje error"; return; }
-      if (marcados.length === 0) { msg.textContent = "Selecciona al menos un edificio."; msg.className = "mensaje error"; return; }
-
-      // PIN duplicado (excepto él mismo)
+      if (seleccion.edit.length === 0) { msg.textContent = "Agrega al menos un edificio."; msg.className = "mensaje error"; return; }
       var pinExiste = empleadosCache.some(function(e){ return e.pin === pin && e.id !== editandoId; });
       if (pinExiste) { msg.textContent = "Ese PIN ya está en uso por otro empleado."; msg.className = "mensaje error"; return; }
 
       document.getElementById("btn-guardar-edit").disabled = true;
       msg.textContent = "Guardando..."; msg.className = "mensaje"; msg.style.display = "block";
 
-      const { error } = await db.from("empleados").update({ nombre: nombre, pin: pin, edificios: marcados.join(", ") }).eq("id", editandoId);
+      const { error } = await db.from("empleados").update({ nombre: nombre, pin: pin, edificios: seleccion.edit.join(", ") }).eq("id", editandoId);
 
       document.getElementById("btn-guardar-edit").disabled = false;
       if (error) {
