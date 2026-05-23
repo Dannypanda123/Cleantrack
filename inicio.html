@@ -81,13 +81,17 @@
     .tarjeta h3 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
     .tarjeta p { font-size: 13px; color: var(--gris-texto); line-height: 1.4; }
 
-    .etiqueta-pronto {
+    /* Etiqueta para funciones del plan Pro */
+    .etiqueta-pro {
       position: absolute; top: 16px; right: 16px;
-      background: var(--gris-fondo); color: var(--gris-texto);
+      background: #FAC775; color: #633806;
       font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.05em; padding: 4px 9px; border-radius: 8px;
     }
     .seccion-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gris-texto); margin: 28px 0 12px; }
+
+    /* Tarjetas Pro se ocultan por defecto; se muestran si el plan lo permite */
+    .solo-pro { display: none; }
   </style>
 </head>
 <body>
@@ -100,7 +104,6 @@
     <div class="top">
       <div>
         <h1 id="titulo-saludo">Hola</h1>
-        
       </div>
       <button class="btn-salir" onclick="salir()">Salir</button>
     </div>
@@ -108,17 +111,7 @@
 
     <div class="seccion-label">Disponible</div>
     <div class="grid">
-  
-      <a class="tarjeta" href="estadisticas.html">
-        <div class="ico ico-estadisticas"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
-        <h3>Estadísticas</h3>
-        <p>Cumplimiento, áreas más atendidas y tendencias</p>
-      </a>
-      <a class="tarjeta" href="areas.html">
-        <div class="ico ico-edificios"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><line x1="9" y1="9" x2="9" y2="9.01"></line><line x1="9" y1="12" x2="9" y2="12.01"></line><line x1="9" y1="15" x2="9" y2="15.01"></line></svg></div>
-        <h3>Edificios y áreas</h3>
-        <p>Gestionar espacios y generar códigos QR por área</p>
-      </a>
+
       <a class="tarjeta" href="dashboard.html">
         <div class="ico ico-registros"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg></div>
         <h3>Registros</h3>
@@ -131,29 +124,37 @@
         <p>Agregar, activar o desactivar al personal de limpieza</p>
       </a>
 
+      <a class="tarjeta" href="areas.html">
+        <div class="ico ico-edificios"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><line x1="9" y1="9" x2="9" y2="9.01"></line><line x1="9" y1="12" x2="9" y2="12.01"></line><line x1="9" y1="15" x2="9" y2="15.01"></line></svg></div>
+        <h3>Edificios y áreas</h3>
+        <p>Gestionar espacios y generar códigos QR por área</p>
+      </a>
+
       <a class="tarjeta" href="incidencias.html">
         <div class="ico ico-empleados"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg></div>
         <h3>Incidencias</h3>
         <p>Reportes de insumos faltantes y problemas en cada edificio</p>
       </a>
 
-      <a class="tarjeta" href="reportes.html">
+      <a class="tarjeta solo-pro" id="card-estadisticas" href="estadisticas.html">
+        <span class="etiqueta-pro">Pro</span>
+        <div class="ico ico-estadisticas"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
+        <h3>Estadísticas</h3>
+        <p>Cumplimiento, áreas más atendidas y tendencias</p>
+      </a>
+
+      <a class="tarjeta solo-pro" id="card-reportes" href="reportes.html">
+        <span class="etiqueta-pro">Pro</span>
         <div class="ico ico-reportes"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
         <h3>Reportes</h3>
         <p>Informe mensual en PDF para presentar al cliente</p>
+      </a>
 
-        <a class="tarjeta" href="soporte.html">
+      <a class="tarjeta" href="soporte.html">
         <div class="ico ico-soporte"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12" y2="17.01"></line></svg></div>
         <h3>Soporte técnico</h3>
         <p>Contacto y ayuda con el uso de la plataforma</p>
       </a>
-
-      </a>
-
-    </div>
-
-    <div class="seccion-label">Próximamente</div>
-    <div class="grid">
 
     </div>
 
@@ -181,17 +182,33 @@
         window.location.href = "login.html";
         return;
       }
-      // Mostrar el email del supervisor en el saludo (parte antes del @)
       var email = data.session.user.email || "";
-      var nombre = email.split("@")[0];        // "daniel.obandoo2002"
-      nombre = nombre.split(".")[0];           // "daniel" (toma antes del primer punto)
-      nombre = nombre.replace(/[0-9]/g, "");   // quita números por si quedaron
+      var nombre = email.split("@")[0];
+      nombre = nombre.split(".")[0];
+      nombre = nombre.replace(/[0-9]/g, "");
       if (nombre) {
-        nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1);  // "Daniel"
+        nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1);
         document.getElementById("titulo-saludo").textContent = "Hola, " + nombre;
       }
+
+      await aplicarPlan();
+
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+    }
+
+    async function aplicarPlan() {
+      try {
+        const { data, error } = await db.rpc("mi_plan");
+        var plan = (!error && data) ? String(data).toLowerCase().trim() : "basico";
+        if (plan === "pro") {
+          document.querySelectorAll(".solo-pro").forEach(function(el) {
+            el.style.display = "block";
+          });
+        }
+      } catch (e) {
+        console.error("No se pudo leer el plan:", e);
+      }
     }
 
     async function salir() {
