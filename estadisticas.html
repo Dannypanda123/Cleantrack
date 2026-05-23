@@ -111,6 +111,14 @@
       if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
+
+      // Verificar que la compañía tenga plan Pro (esta función es solo Pro)
+      try {
+        const { data: planData, error } = await db.rpc("mi_plan");
+        var plan = (!error && planData) ? String(planData).toLowerCase().trim() : "basico";
+        if (plan !== "pro") { window.location.href = "inicio.html"; return; }
+      } catch (e) { window.location.href = "inicio.html"; return; }
+
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
       cargarDatos();
