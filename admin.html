@@ -3,33 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CleanTrack — Administración</title>
+  <title>CleanTrack — Empleados</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
-      --verde: #1D9E75;
-      --verde-claro: #EAF3DE;
-      --verde-texto: #0F6E56;
-      --azul: #185FA5;
-      --azul-claro: #E6F1FB;
-      --gris-fondo: #F5F4EF;
+      --verde-accion: #377D37;
+      --gris-verde-700: #798C81;
+      --gris-verde-900: #5F7268;
+      --gris-verde-claro: #EAEEEB;
+      --verde-claro: #E7F1E7;
+      --verde-texto: #2A5F2A;
+      --gris-fondo: #ECEBE4;
       --gris-texto: #6B6A64;
       --gris-borde: #E2E0D8;
-      --texto: #2C2C2A;
+      --texto: #1F2A37;
       --blanco: #FFFFFF;
       --rojo: #A32D2D;
       --rojo-claro: #FCEBEB;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--gris-fondo);
-      color: var(--texto);
-      min-height: 100vh;
-      padding: 20px;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
     .contenedor { max-width: 600px; margin: 0 auto; display: none; }
     .verificando { max-width: 600px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
 
@@ -37,23 +32,46 @@
     .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
     .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
     .top-botones { display: flex; gap: 8px; }
-    .btn-link { background: transparent; color: var(--azul); border: 1.5px solid var(--azul-claro); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
-    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-link { background: transparent; color: var(--gris-verde-900); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
 
     .tarjeta { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
     .tarjeta h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
 
     label { display: block; font-size: 13px; font-weight: 600; color: var(--gris-texto); margin-bottom: 6px; }
     input { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 14px; outline: none; }
-    input:focus { border-color: var(--azul); }
+    input:focus { border-color: var(--gris-verde-700); }
 
-    .btn-agregar { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: #377D37; color: #fff; }
+    .edificios-label { margin-bottom: 8px; }
+    .edificios-lista { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; max-height: 200px; overflow-y: auto; }
+    .check-edificio { display: flex; align-items: center; gap: 10px; padding: 11px 13px; border: 1.5px solid var(--gris-borde); border-radius: 11px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+    .check-edificio:hover { border-color: var(--gris-verde-500, #8A9D92); }
+    .check-edificio input { width: auto; margin: 0; accent-color: var(--verde-accion); width: 18px; height: 18px; }
+    .check-edificio span { font-size: 14px; }
+    .check-edificio.marcado { border-color: var(--verde-accion); background: var(--verde-claro); }
+    .sin-edificios { font-size: 13px; color: var(--gris-texto); padding: 10px 0; }
+
+    .btn-agregar { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: var(--verde-accion); color: #fff; }
     .btn-agregar:active { transform: scale(0.98); }
     .btn-agregar:disabled { opacity: 0.6; }
 
+    /* Acordeón por edificio */
+    .grupo-edificio { border: 1px solid var(--gris-borde); border-radius: 14px; margin-bottom: 12px; overflow: hidden; background: var(--blanco); }
+    .grupo-cabecera { display: flex; align-items: center; gap: 12px; padding: 16px; cursor: pointer; user-select: none; }
+    .grupo-cabecera:hover { background: var(--gris-fondo); }
+    .grupo-ico { width: 40px; height: 40px; border-radius: 10px; background: var(--gris-verde-claro); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .grupo-ico svg { width: 20px; height: 20px; stroke: #5F7268; }
+    .grupo-info { flex: 1; min-width: 0; }
+    .grupo-nombre { font-size: 15px; font-weight: 600; }
+    .grupo-conteo { font-size: 12px; color: var(--gris-texto); margin-top: 2px; }
+    .grupo-flecha { font-size: 14px; color: var(--gris-texto); transition: transform 0.2s; flex-shrink: 0; }
+    .grupo-edificio.abierto .grupo-flecha { transform: rotate(90deg); }
+    .grupo-cuerpo { display: none; padding: 0 16px 8px; border-top: 1px solid var(--gris-borde); }
+    .grupo-edificio.abierto .grupo-cuerpo { display: block; }
+
     .empleado { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--gris-borde); }
     .empleado:last-child { border-bottom: none; }
-    .emp-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--azul-claro); color: var(--azul); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; flex-shrink: 0; }
+    .emp-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--gris-verde-claro); color: var(--gris-verde-900); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; flex-shrink: 0; }
     .emp-info { flex: 1; min-width: 0; }
     .emp-nombre { font-size: 15px; font-weight: 600; }
     .emp-pin { font-size: 13px; color: var(--gris-texto); }
@@ -62,7 +80,7 @@
     .switch { position: relative; width: 52px; height: 30px; flex-shrink: 0; cursor: pointer; }
     .switch input { display: none; }
     .switch-track { position: absolute; inset: 0; background: var(--gris-borde); border-radius: 99px; transition: background 0.2s; }
-    .switch input:checked + .switch-track { background: #377D37; }
+    .switch input:checked + .switch-track { background: var(--verde-accion); }
     .switch-thumb { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; background: #fff; border-radius: 50%; transition: transform 0.2s; }
     .switch input:checked ~ .switch-thumb { transform: translateX(22px); }
 
@@ -81,10 +99,10 @@
     <div class="top">
       <div>
         <div class="marca">CleanTrack</div>
-        <h1>Administración</h1>
+        <h1>Empleados</h1>
       </div>
       <div class="top-botones">
-        <a class="btn-salir" href="inicio.html" style="text-decoration:none; display:inline-block;">← Inicio</a>
+        <a class="btn-salir" href="inicio.html">← Inicio</a>
         <a class="btn-link" href="dashboard.html">Ver registros</a>
         <button class="btn-salir" onclick="salir()">Salir</button>
       </div>
@@ -96,12 +114,16 @@
       <input type="text" id="nombre" placeholder="Ej. Ana Torres" />
       <label for="pin">PIN (4 dígitos)</label>
       <input type="text" id="pin" placeholder="Ej. 4892" inputmode="numeric" maxlength="4" />
+      <label class="edificios-label">Edificios donde trabaja</label>
+      <div class="edificios-lista" id="edificios-lista">
+        <div class="sin-edificios">Cargando edificios...</div>
+      </div>
       <button class="btn-agregar" id="btn-agregar" onclick="agregarEmpleado()">Agregar empleado</button>
       <div class="mensaje" id="mensaje-agregar"></div>
     </div>
 
     <div class="tarjeta">
-      <h2>Empleados</h2>
+      <h2>Empleados por edificio</h2>
       <div id="lista-empleados">
         <div class="cargando">Cargando...</div>
       </div>
@@ -117,22 +139,17 @@
     try {
       const { createClient } = supabase;
       db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) {
-      console.error("No se pudo conectar a Supabase:", e);
-    }
+    } catch (e) { console.error(e); }
+
+    var listaEdificios = [];
 
     async function verificarAcceso() {
-      if (!db) {
-        document.getElementById("verificando").textContent = "Sin conexión a la base de datos.";
-        return;
-      }
+      if (!db) { document.getElementById("verificando").textContent = "Sin conexión a la base de datos."; return; }
       const { data } = await db.auth.getSession();
-      if (!data.session) {
-        window.location.href = "login.html";
-        return;
-      }
+      if (!data.session) { window.location.href = "login.html"; return; }
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+      cargarEdificios();
       cargarEmpleados();
     }
 
@@ -147,42 +164,80 @@
       return (partes[0][0] + partes[partes.length-1][0]).toUpperCase();
     }
 
+    // Cargar edificios para las casillas
+    async function cargarEdificios() {
+      const { data, error } = await db.from("edificios").select("*").eq("activo", true).order("nombre", { ascending: true });
+      var cont = document.getElementById("edificios-lista");
+      if (error || !data || data.length === 0) {
+        cont.innerHTML = '<div class="sin-edificios">No hay edificios. Crea edificios primero en "Edificios y áreas".</div>';
+        listaEdificios = [];
+        return;
+      }
+      listaEdificios = data;
+      cont.innerHTML = "";
+      data.forEach(function(e, i) {
+        var label = document.createElement("label");
+        label.className = "check-edificio";
+        label.innerHTML =
+          '<input type="checkbox" value="' + e.nombre.replace(/"/g, "&quot;") + '" onchange="this.parentElement.classList.toggle(\'marcado\', this.checked)" />' +
+          '<span>' + e.nombre + '</span>';
+        cont.appendChild(label);
+      });
+    }
+
+    // Agrupar empleados por edificio
     async function cargarEmpleados() {
       var cont = document.getElementById("lista-empleados");
       cont.innerHTML = '<div class="cargando">Cargando...</div>';
+      const { data, error } = await db.from("empleados").select("*").order("created_at", { ascending: true });
+      if (error) { cont.innerHTML = '<div class="mensaje error" style="display:block">Error: ' + error.message + '</div>'; return; }
+      if (!data || data.length === 0) { cont.innerHTML = '<div class="cargando">Aún no hay empleados. Agrega el primero arriba.</div>'; return; }
 
-      const { data, error } = await db
-        .from("empleados")
-        .select("*")
-        .order("created_at", { ascending: true });
-
-      if (error) {
-        cont.innerHTML = '<div class="mensaje error" style="display:block">Error: ' + error.message + '</div>';
-        console.error(error);
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        cont.innerHTML = '<div class="cargando">Aún no hay empleados. Agrega el primero arriba.</div>';
-        return;
-      }
-
-      cont.innerHTML = "";
+      // Agrupar: cada empleado puede estar en varios edificios
+      var grupos = {};
       data.forEach(function(emp) {
-        var div = document.createElement("div");
-        div.className = "empleado" + (emp.activo ? "" : " emp-inactivo");
-        div.innerHTML =
-          '<div class="emp-avatar">' + iniciales(emp.nombre) + '</div>' +
-          '<div class="emp-info">' +
-            '<div class="emp-nombre">' + emp.nombre + '</div>' +
-            '<div class="emp-pin">PIN: ' + emp.pin + ' · ' + (emp.activo ? "Activo" : "Inactivo") + '</div>' +
+        var edificiosEmp = (emp.edificios || "").split(",").map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+        if (edificiosEmp.length === 0) edificiosEmp = ["Sin edificio asignado"];
+        edificiosEmp.forEach(function(ed) {
+          if (!grupos[ed]) grupos[ed] = [];
+          grupos[ed].push(emp);
+        });
+      });
+
+      var nombresEdificios = Object.keys(grupos).sort();
+      cont.innerHTML = "";
+      nombresEdificios.forEach(function(edificio, idx) {
+        var emps = grupos[edificio];
+        var activos = emps.filter(function(e){ return e.activo; }).length;
+        var empsHTML = "";
+        emps.forEach(function(emp) {
+          empsHTML +=
+            '<div class="empleado' + (emp.activo ? "" : " emp-inactivo") + '">' +
+              '<div class="emp-avatar">' + iniciales(emp.nombre) + '</div>' +
+              '<div class="emp-info">' +
+                '<div class="emp-nombre">' + emp.nombre + '</div>' +
+                '<div class="emp-pin">PIN: ' + emp.pin + ' · ' + (emp.activo ? "Activo" : "Inactivo") + '</div>' +
+              '</div>' +
+              '<label class="switch">' +
+                '<input type="checkbox" ' + (emp.activo ? "checked" : "") + ' onchange="cambiarEstado(' + emp.id + ', this.checked)" />' +
+                '<span class="switch-track"></span><span class="switch-thumb"></span>' +
+              '</label>' +
+            '</div>';
+        });
+        var claseAbierto = idx === 0 ? " abierto" : "";
+        var grupo = document.createElement("div");
+        grupo.className = "grupo-edificio" + claseAbierto;
+        grupo.innerHTML =
+          '<div class="grupo-cabecera" onclick="this.parentElement.classList.toggle(\'abierto\')">' +
+            '<div class="grupo-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg></div>' +
+            '<div class="grupo-info">' +
+              '<div class="grupo-nombre">' + edificio + '</div>' +
+              '<div class="grupo-conteo">' + emps.length + ' empleado' + (emps.length !== 1 ? 's' : '') + ' · ' + activos + ' activo' + (activos !== 1 ? 's' : '') + '</div>' +
+            '</div>' +
+            '<div class="grupo-flecha">▶</div>' +
           '</div>' +
-          '<label class="switch">' +
-            '<input type="checkbox" ' + (emp.activo ? "checked" : "") + ' onchange="cambiarEstado(' + emp.id + ', this.checked)" />' +
-            '<span class="switch-track"></span>' +
-            '<span class="switch-thumb"></span>' +
-          '</label>';
-        cont.appendChild(div);
+          '<div class="grupo-cuerpo">' + empsHTML + '</div>';
+        cont.appendChild(grupo);
       });
     }
 
@@ -191,51 +246,34 @@
       var pin = document.getElementById("pin").value.trim();
       var msg = document.getElementById("mensaje-agregar");
 
-      if (!nombre || !pin) {
-        msg.textContent = "Escribe el nombre y el PIN.";
-        msg.className = "mensaje error";
-        return;
-      }
-      if (pin.length !== 4 || isNaN(pin)) {
-        msg.textContent = "El PIN debe ser 4 dígitos numéricos.";
-        msg.className = "mensaje error";
-        return;
-      }
+      var marcados = [];
+      document.querySelectorAll("#edificios-lista input:checked").forEach(function(c){ marcados.push(c.value); });
+
+      if (!nombre || !pin) { msg.textContent = "Escribe el nombre y el PIN."; msg.className = "mensaje error"; return; }
+      if (pin.length !== 4 || isNaN(pin)) { msg.textContent = "El PIN debe ser 4 dígitos numéricos."; msg.className = "mensaje error"; return; }
+      if (marcados.length === 0) { msg.textContent = "Selecciona al menos un edificio."; msg.className = "mensaje error"; return; }
 
       document.getElementById("btn-agregar").disabled = true;
-      msg.textContent = "Agregando...";
-      msg.className = "mensaje";
-      msg.style.display = "block";
+      msg.textContent = "Agregando..."; msg.className = "mensaje"; msg.style.display = "block";
 
-      const { error } = await db
-        .from("empleados")
-        .insert([{ nombre: nombre, pin: pin, activo: true }]);
+      const { error } = await db.from("empleados").insert([{ nombre: nombre, pin: pin, activo: true, edificios: marcados.join(", ") }]);
 
       if (error) {
-        msg.textContent = "Error: " + error.message;
-        msg.className = "mensaje error";
+        msg.textContent = "Error: " + error.message; msg.className = "mensaje error";
       } else {
-        msg.textContent = "✓ Empleado agregado";
-        msg.className = "mensaje ok";
+        msg.textContent = "✓ Empleado agregado"; msg.className = "mensaje ok";
         document.getElementById("nombre").value = "";
         document.getElementById("pin").value = "";
+        document.querySelectorAll("#edificios-lista input:checked").forEach(function(c){ c.checked = false; c.parentElement.classList.remove("marcado"); });
         cargarEmpleados();
       }
       document.getElementById("btn-agregar").disabled = false;
     }
 
     async function cambiarEstado(id, nuevoEstado) {
-      const { error } = await db
-        .from("empleados")
-        .update({ activo: nuevoEstado })
-        .eq("id", id);
-
-      if (error) {
-        alert("No se pudo cambiar el estado: " + error.message);
-        cargarEmpleados();
-      } else {
-        cargarEmpleados();
-      }
+      const { error } = await db.from("empleados").update({ activo: nuevoEstado }).eq("id", id);
+      if (error) alert("No se pudo cambiar el estado: " + error.message);
+      cargarEmpleados();
     }
 
     verificarAcceso();
