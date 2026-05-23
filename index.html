@@ -139,6 +139,18 @@
     .estado-ok { background: var(--gris-verde-claro); color: var(--gris-verde-900); }
     .estado-error { background: var(--rojo-claro); color: var(--rojo); }
     .estado-cargando { background: #EEF1EF; color: var(--gris-verde-700); }
+
+    .exito-nota { text-align: center; font-size: 12px; color: var(--gris-texto); margin-top: 14px; line-height: 1.5; }
+    .inc-titulo { text-align: center; font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+    .inc-sub { text-align: center; font-size: 13px; color: var(--gris-texto); margin-bottom: 20px; }
+    .inc-tipos { display: flex; gap: 10px; margin-bottom: 20px; }
+    .inc-tipo { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 10px; border: 1.5px solid var(--gris-borde); border-radius: 14px; background: var(--blanco); cursor: pointer; font-size: 13px; font-weight: 600; color: var(--gris-texto); }
+    .inc-tipo svg { width: 26px; height: 26px; stroke: var(--gris-verde-700); }
+    .inc-tipo.activo { border-color: #377D37; background: #E7F1E7; color: #2A5F2A; }
+    .inc-tipo.activo svg { stroke: #377D37; }
+    .inc-label { display: block; font-size: 13px; font-weight: 600; color: var(--gris-texto); margin-bottom: 6px; }
+    .inc-desc { width: 100%; min-height: 90px; padding: 13px; font-size: 15px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 16px; outline: none; resize: vertical; font-family: inherit; }
+    .inc-desc:focus { border-color: var(--gris-verde-700); }
   </style>
 </head>
 <body>
@@ -211,7 +223,36 @@
         <div class="exito-dato" id="exito-area">—</div>
         <img class="exito-foto" id="exito-foto" alt="Foto registrada" />
         <div class="estado-guardado" id="estado-guardado"></div>
-        <button class="btn btn-fantasma" style="margin-top:22px" onclick="reiniciar()">Registrar otra área</button>
+        <button class="btn btn-fantasma" style="margin-top:22px" onclick="abrirIncidencia()">Reportar una incidencia</button>
+        <div class="exito-nota">Escanea el código de la siguiente área cuando termines de limpiarla.</div>
+      </div>
+
+      <!-- PANTALLA REPORTAR INCIDENCIA -->
+      <div class="pantalla" id="p-incidencia">
+        <div class="inc-titulo">Reportar incidencia</div>
+        <div class="inc-sub" id="inc-area-info">—</div>
+
+        <div class="inc-tipos">
+          <button class="inc-tipo" id="tipo-insumo" onclick="elegirTipo('insumo')">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+            <span>Falta un insumo</span>
+          </button>
+          <button class="inc-tipo" id="tipo-problema" onclick="elegirTipo('problema')">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>
+            <span>Hay un problema</span>
+          </button>
+        </div>
+
+        <label class="inc-label">Descripción</label>
+        <textarea class="inc-desc" id="inc-desc" placeholder="Ej. Se acabó el jabón en el dispensador / El inodoro está tapado"></textarea>
+
+        <img class="preview-foto" id="inc-preview" alt="Foto de la incidencia" />
+        <input type="file" id="inc-input-foto" accept="image/*" capture="environment" onchange="incFotoTomada(event)" />
+        <button class="btn btn-fantasma" id="inc-btn-foto" onclick="document.getElementById('inc-input-foto').click()">Agregar foto (opcional)</button>
+
+        <button class="btn" id="inc-btn-enviar" onclick="enviarIncidencia()">Enviar reporte</button>
+        <button class="btn btn-fantasma" onclick="reiniciar()">Cancelar</button>
+        <div class="estado-guardado" id="inc-estado"></div>
       </div>
 
     </div>
@@ -441,6 +482,108 @@
       document.getElementById("estado-guardado").textContent = "";
       document.getElementById("estado-guardado").className = "estado-guardado";
       ir("p-pin");
+    }
+
+    // ===== INCIDENCIAS =====
+    var incTipo = null;
+    var incFotoArchivo = null;
+    var incFotoDataURL = null;
+
+    function abrirIncidencia() {
+      incTipo = null;
+      incFotoArchivo = null;
+      incFotoDataURL = null;
+      document.getElementById("inc-desc").value = "";
+      document.getElementById("inc-preview").style.display = "none";
+      document.getElementById("inc-input-foto").value = "";
+      document.getElementById("inc-btn-foto").textContent = "Agregar foto (opcional)";
+      document.getElementById("tipo-insumo").classList.remove("activo");
+      document.getElementById("tipo-problema").classList.remove("activo");
+      document.getElementById("inc-estado").textContent = "";
+      document.getElementById("inc-estado").className = "estado-guardado";
+      document.getElementById("inc-area-info").textContent = datosArea.area + " · " + datosArea.edificio;
+      document.getElementById("inc-btn-enviar").disabled = false;
+      ir("p-incidencia");
+    }
+
+    function elegirTipo(tipo) {
+      incTipo = tipo;
+      document.getElementById("tipo-insumo").classList.toggle("activo", tipo === "insumo");
+      document.getElementById("tipo-problema").classList.toggle("activo", tipo === "problema");
+    }
+
+    function incFotoTomada(event) {
+      var archivo = event.target.files[0];
+      if (!archivo) return;
+      incFotoArchivo = archivo;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        incFotoDataURL = e.target.result;
+        var prev = document.getElementById("inc-preview");
+        prev.src = incFotoDataURL;
+        prev.style.display = "block";
+        document.getElementById("inc-btn-foto").textContent = "Cambiar foto";
+      };
+      reader.readAsDataURL(archivo);
+    }
+
+    async function enviarIncidencia() {
+      var desc = document.getElementById("inc-desc").value.trim();
+      var estado = document.getElementById("inc-estado");
+
+      if (!incTipo) { estado.className = "estado-guardado estado-error"; estado.textContent = "Elige el tipo: falta de insumo o problema."; return; }
+      if (!desc) { estado.className = "estado-guardado estado-error"; estado.textContent = "Describe la incidencia."; return; }
+
+      document.getElementById("inc-btn-enviar").disabled = true;
+      estado.className = "estado-guardado estado-cargando";
+
+      var fotoUrl = null;
+      if (incFotoArchivo) {
+        estado.textContent = "Subiendo foto...";
+        try {
+          var nombreArchivo = "incidencia_" + Date.now() + "_" + Math.random().toString(36).substring(2,8) + ".jpg";
+          const { error: errSubida } = await db.storage.from("fotos").upload(nombreArchivo, incFotoArchivo, { contentType: incFotoArchivo.type });
+          if (errSubida) {
+            estado.className = "estado-guardado estado-error";
+            estado.textContent = "Error al subir foto: " + errSubida.message;
+            document.getElementById("inc-btn-enviar").disabled = false;
+            return;
+          }
+          const { data: urlData } = db.storage.from("fotos").getPublicUrl(nombreArchivo);
+          fotoUrl = urlData.publicUrl;
+        } catch (e) {
+          estado.className = "estado-guardado estado-error";
+          estado.textContent = "Error al subir foto: " + e.message;
+          document.getElementById("inc-btn-enviar").disabled = false;
+          return;
+        }
+      }
+
+      estado.textContent = "Enviando reporte...";
+      try {
+        const { error } = await db.from("incidencias").insert([{
+          tipo: incTipo,
+          descripcion: desc,
+          area: datosArea.area,
+          edificio: datosArea.edificio,
+          nombre_empleado: empleadoNombre || "Empleado",
+          foto_url: fotoUrl,
+          resuelto: false
+        }]);
+        if (error) {
+          estado.className = "estado-guardado estado-error";
+          estado.textContent = "No se pudo enviar: " + error.message;
+          document.getElementById("inc-btn-enviar").disabled = false;
+        } else {
+          estado.className = "estado-guardado estado-ok";
+          estado.textContent = "✓ Reporte enviado. ¡Gracias!";
+          setTimeout(function(){ reiniciar(); }, 1400);
+        }
+      } catch (e) {
+        estado.className = "estado-guardado estado-error";
+        estado.textContent = "Error: " + e.message;
+        document.getElementById("inc-btn-enviar").disabled = false;
+      }
     }
 
     cargarArea();
