@@ -86,9 +86,9 @@
       cursor: pointer; transition: transform 0.08s, background 0.12s, box-shadow 0.12s;
       touch-action: manipulation; -webkit-user-select: none; user-select: none;
     }
-    .key:active { transform: scale(0.94); background: var(--gris-verde-claro); box-shadow: inset 0 2px 8px rgba(95,114,104,0.15); }
+    .key:active, .key.key-press { transform: scale(0.94); background: var(--gris-verde-claro); box-shadow: inset 0 2px 8px rgba(95,114,104,0.15); }
     .key.accion { background: transparent; border-color: transparent; font-size: 14px; color: var(--gris-texto); font-weight: 600; box-shadow: none; }
-    .key.accion:active { background: var(--gris-fondo); }
+    .key.accion:active, .key.accion.key-press { background: var(--gris-fondo); transform: scale(0.94); }
     .key:disabled { opacity: 0.4; }
 
     .pantalla { display: none; }
@@ -327,6 +327,21 @@
       if (verificando) return;
       pin = pin.slice(0, -1);
       pintarDots();
+    }
+
+    // Feedback visual consistente al tocar cualquier tecla (funciona en todos los móviles)
+    function activarFeedbackTeclas() {
+      var teclas = document.querySelectorAll("#keypad .key");
+      teclas.forEach(function(tecla) {
+        function presionar() { tecla.classList.add("key-press"); }
+        function soltar() { tecla.classList.remove("key-press"); }
+        tecla.addEventListener("touchstart", presionar, { passive: true });
+        tecla.addEventListener("touchend", soltar);
+        tecla.addEventListener("touchcancel", soltar);
+        tecla.addEventListener("mousedown", presionar);
+        tecla.addEventListener("mouseup", soltar);
+        tecla.addEventListener("mouseleave", soltar);
+      });
     }
     function pintarDots(conError) {
       for (var i = 1; i <= 4; i++) {
@@ -603,6 +618,7 @@
     }
 
     cargarArea();
+    activarFeedbackTeclas();
   </script>
 </body>
 </html>
