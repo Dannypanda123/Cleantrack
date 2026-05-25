@@ -358,6 +358,26 @@
     // ===== LISTA DE EDIFICIOS (todos) CON SUS ÁREAS =====
     var edificiosCache = [];
     var todasLasAreas = [];
+    var nombreCompania = "";
+
+    // Cargar el nombre de la compañía (para las iniciales en los QR)
+    async function cargarNombreCompania() {
+      try {
+        var res = await db.from("companias").select("nombre").limit(1);
+        if (res.data && res.data.length > 0 && res.data[0].nombre) {
+          nombreCompania = res.data[0].nombre;
+        }
+      } catch (e) { /* si falla, se queda vacío y usamos un fallback */ }
+    }
+
+    // Generar iniciales a partir del nombre de la empresa (máx 2 letras)
+    function inicialesDe(nombre) {
+      if (!nombre) return "CT";
+      var palabras = nombre.trim().split(/\s+/).filter(function(p){ return p.length > 0 && !/^(s\.?a\.?|s\.?a\.?s\.?|ltda\.?|inc\.?|llc\.?|de|del|la|el|y|&)$/i.test(p); });
+      if (palabras.length === 0) palabras = nombre.trim().split(/\s+/);
+      if (palabras.length === 1) return palabras[0].substring(0, 2).toUpperCase();
+      return (palabras[0][0] + palabras[1][0]).toUpperCase();
+    }
 
     async function cargarAreas() {
       var cont = document.getElementById("lista-areas");
@@ -366,6 +386,7 @@
       // Traer edificios y áreas en paralelo
       var resEd = await db.from("edificios").select("*").order("nombre", { ascending: true });
       var resAr = await db.from("areas").select("*").order("created_at", { ascending: true });
+      if (!nombreCompania) { await cargarNombreCompania(); }
 
       if (resEd.error) { cont.innerHTML = '<div class="mensaje error" style="display:block">Error: ' + resEd.error.message + '</div>'; return; }
 
@@ -542,6 +563,9 @@
       var areasEd = todasLasAreas.filter(function(a){ return a.edificio === nombreEd; });
       if (areasEd.length === 0) { alert("Este edificio no tiene áreas para generar códigos."); return; }
 
+      var empresa = nombreCompania || "CleanTrack";
+      var ini = inicialesDe(empresa);
+
       // Generar cada QR como imagen en un contenedor temporal oculto
       var temp = document.createElement("div");
       temp.style.position = "absolute"; temp.style.left = "-9999px";
@@ -551,45 +575,68 @@
       areasEd.forEach(function(a){
         var div = document.createElement("div");
         temp.appendChild(div);
-        new QRCode(div, { text: BASE_URL + "/?area=" + a.id, width: 200, height: 200, colorDark: "#185FA5", colorLight: "#ffffff" });
+        new QRCode(div, { text: BASE_URL + "/?area=" + a.id, width: 240, height: 240, colorDark: "#185FA5", colorLight: "#ffffff" });
         imagenes.push({ div: div, nombre: a.nombre });
       });
 
       // Esperar a que los QR se rendericen, luego construir la hoja
       setTimeout(function(){
-        var tarjetas = "";
+        function escapar(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+        var celdas = [];
         imagenes.forEach(function(item){
           var img = item.div.querySelector("img") || item.div.querySelector("canvas");
           var src = img ? (img.tagName === "IMG" ? img.src : img.toDataURL("image/png")) : "";
-          tarjetas +=
-            '<div class="qr-card">' +
+          celdas.push(
+            '<div class="ref">&#8627; ' + escapar(item.nombre) + '</div>' +
+            '<div class="tarjeta">' +
+              '<div class="marca-cliente"><span class="ini">' + escapar(ini) + '</span><span class="nom-cliente">' + escapar(empresa) + '</span></div>' +
               '<img src="' + src + '" />' +
-              '<div class="qr-card-nombre">' + item.nombre + '</div>' +
-            '</div>';
+              '<div class="mensaje">This space is cleaned &amp; verified</div>' +
+              '<div class="pie">Powered by CleanTrack</div>' +
+            '</div>'
+          );
         });
+        // Armar filas de 3 columnas con tabla (compatible con todos los navegadores al imprimir)
+        var tarjetas = "";
+        for (var i = 0; i < celdas.length; i += 3) {
+          tarjetas += '<tr>' +
+            '<td>' + (celdas[i] || "") + '</td>' +
+            '<td>' + (celdas[i+1] || "") + '</td>' +
+            '<td>' + (celdas[i+2] || "") + '</td>' +
+          '</tr>';
+        }
 
         var html =
-          '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Códigos QR — ' + nombreEd + '</title>' +
+          '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>QR codes — ' + escapar(nombreEd) + '</title>' +
           '<style>' +
           '* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; }' +
-          'body { padding: 32px; color: #1F2A37; }' +
-          '.hoja-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #185FA5; padding-bottom: 14px; margin-bottom: 24px; }' +
-          '.marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #1D9E75; font-weight: 600; }' +
-          '.edificio-nombre { font-size: 22px; font-weight: 700; color: #1F2A37; }' +
-          '.header-der { text-align: right; font-size: 12px; color: #888780; }' +
-          '.qr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }' +
-          '.qr-card { border: 1px solid #E2E0D8; border-radius: 10px; padding: 14px; text-align: center; page-break-inside: avoid; }' +
-          '.qr-card img { width: 100%; max-width: 170px; height: auto; }' +
-          '.qr-card-nombre { font-size: 14px; font-weight: 600; color: #1F2A37; margin-top: 8px; }' +
-          '.hoja-footer { text-align: center; font-size: 11px; color: #9A9890; margin-top: 26px; border-top: 1px solid #EFEEE8; padding-top: 12px; }' +
-          '@media print { body { padding: 0; } .qr-card { border-color: #ccc; } }' +
+          'body { padding: 28px; color: #1F2A37; }' +
+          '.hoja-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #185FA5; padding-bottom: 12px; margin-bottom: 18px; }' +
+          '.h-izq { display: flex; align-items: center; gap: 11px; }' +
+          '.h-logo { width: 44px; height: 44px; border-radius: 10px; background: #185FA5; color: #fff; font-weight: 700; font-size: 18px; display: flex; align-items: center; justify-content: center; }' +
+          '.h-empresa { font-size: 17px; font-weight: 700; color: #1F2A37; }' +
+          '.h-sub { font-size: 11px; color: #888780; }' +
+          '.h-der { text-align: right; font-size: 10px; color: #B0AEA6; }' +
+          '.qr-tabla { width: 100%; border-collapse: separate; border-spacing: 16px 6px; }' +
+          '.qr-tabla td { width: 33.33%; vertical-align: top; }' +
+          '.ref { font-size: 10px; color: #B0AEA6; font-style: italic; padding: 4px 2px 3px; }' +
+          '.tarjeta { border: 1px dashed #C0BEB6; border-radius: 12px; padding: 16px 10px; text-align: center; page-break-inside: avoid; }' +
+          '.marca-cliente { text-align: center; margin-bottom: 12px; }' +
+          '.marca-cliente .ini { display: inline-block; width: 24px; height: 24px; border-radius: 6px; background: #185FA5; color: #fff; font-weight: 700; font-size: 10px; line-height: 24px; vertical-align: middle; }' +
+          '.marca-cliente .nom-cliente { font-size: 11px; font-weight: 600; color: #1F2A37; vertical-align: middle; margin-left: 6px; }' +
+          '.tarjeta img { width: 100%; max-width: 130px; height: auto; }' +
+          '.mensaje { font-size: 11px; font-weight: 600; color: #1F2A37; margin-top: 9px; line-height: 1.3; }' +
+          '.pie { font-size: 8px; color: #C0BEB6; margin-top: 9px; border-top: 0.5px solid #EFEEE8; padding-top: 6px; }' +
+          '@media print { body { padding: 0; } }' +
           '</style></head><body>' +
           '<div class="hoja-header">' +
-            '<div><div class="marca">CleanTrack</div><div class="edificio-nombre">' + nombreEd + '</div></div>' +
-            '<div class="header-der">Códigos QR<br>de áreas</div>' +
+            '<div class="h-izq">' +
+              '<div class="h-logo">' + escapar(ini) + '</div>' +
+              '<div><div class="h-empresa">' + escapar(empresa) + '</div><div class="h-sub">' + escapar(nombreEd) + ' &middot; QR codes</div></div>' +
+            '</div>' +
+            '<div class="h-der">Cut along the<br>dotted line &#9986;</div>' +
           '</div>' +
-          '<div class="qr-grid">' + tarjetas + '</div>' +
-          '<div class="hoja-footer">Recorta cada código y pégalo en su área · CleanTrack</div>' +
+          '<table class="qr-tabla"><tbody>' + tarjetas + '</tbody></table>' +
           '</body></html>';
 
         var ventana = window.open("", "_blank");
@@ -597,8 +644,7 @@
         ventana.document.close();
         document.body.removeChild(temp);
 
-        // Dar un instante para que carguen las imágenes y abrir el diálogo de impresión
-        setTimeout(function(){ ventana.focus(); ventana.print(); }, 400);
+        setTimeout(function(){ ventana.focus(); ventana.print(); }, 450);
       }, 500);
     }
 
