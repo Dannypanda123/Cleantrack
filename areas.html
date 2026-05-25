@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CleanTrack — Edificios y áreas</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&display=swap" rel="stylesheet">
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
@@ -112,12 +116,16 @@
     .mensaje.error { background: var(--rojo-claro); color: var(--rojo); display: block; }
 
     /* Modal QR */
-    .modal-qr-caja { background: #fff; border-radius: 18px; padding: 28px; max-width: 360px; width: 100%; text-align: center; margin: auto; }
-    .marca-qr { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
-    .qr-edificio { font-size: 13px; color: var(--gris-texto); margin-top: 12px; }
-    .qr-nombre { font-size: 19px; font-weight: 600; color: var(--azul); margin-bottom: 16px; }
-    #qr-canvas { display: flex; justify-content: center; margin: 0 auto 16px; }
-    .modal-instr { font-size: 13px; color: var(--gris-texto); margin-bottom: 18px; }
+    .modal-qr-caja { background: #fff; border-radius: 18px; padding: 24px; max-width: 320px; width: 100%; text-align: center; margin: auto; }
+    .qr-ref-area { font-size: 13px; color: var(--gris-texto); margin-bottom: 14px; font-weight: 500; }
+    .tarjeta-preview { border: 1px dashed #C0BEB6; border-radius: 14px; padding: 20px 18px; text-align: center; margin-bottom: 18px; }
+    .tarjeta-preview .tp-marca { text-align: center; margin-bottom: 12px; }
+    .tarjeta-preview .tp-ini { display: inline-block; width: 26px; height: 26px; border-radius: 7px; background: #185FA5; color: #fff; font-weight: 700; font-size: 11px; line-height: 26px; vertical-align: middle; }
+    .tarjeta-preview .tp-nom { font-size: 12px; font-weight: 600; color: var(--texto); vertical-align: middle; margin-left: 7px; }
+    #qr-canvas { display: flex; justify-content: center; margin: 0 auto; }
+    #qr-canvas img, #qr-canvas canvas { width: 100% !important; height: auto !important; max-width: 200px; }
+    .tarjeta-preview .tp-mensaje { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 15px; color: var(--texto); margin-top: 12px; line-height: 1.28; }
+    .tarjeta-preview .tp-pie { font-size: 9px; color: #C0BEB6; margin-top: 11px; border-top: 0.5px solid #EFEEE8; padding-top: 7px; letter-spacing: 0.03em; }
   </style>
 </head>
 <body>
@@ -227,14 +235,16 @@
   <!-- MODAL QR -->
   <div class="modal" id="modal-qr">
     <div class="modal-qr-caja">
-      <div class="marca-qr">CleanTrack</div>
-      <div class="qr-edificio" id="qr-edificio">Edificio</div>
-      <div class="qr-nombre" id="qr-nombre">Área</div>
-      <div id="qr-canvas"></div>
-      <div class="modal-instr">Escanea al terminar de limpiar esta área</div>
+      <div class="qr-ref-area" id="qr-ref-area">Área</div>
+      <div class="tarjeta-preview" id="tarjeta-preview">
+        <div class="tp-marca"><span class="tp-ini" id="tp-ini">CT</span><span class="tp-nom" id="tp-nom">Empresa</span></div>
+        <div id="qr-canvas"></div>
+        <div class="tp-mensaje">This space is cleaned &amp; verified</div>
+        <div class="tp-pie">Powered by CleanTrack</div>
+      </div>
       <div class="modal-botones">
         <button class="btn-cancelar" onclick="cerrar('modal-qr')">Cerrar</button>
-        <button class="btn-guardar verde" onclick="descargarQR()">Descargar QR</button>
+        <button class="btn-guardar verde" onclick="imprimirUnaTarjeta()">Imprimir tarjeta</button>
       </div>
     </div>
   </div>
@@ -539,23 +549,62 @@
       }
     }
 
-    // ===== QR =====
+    // ===== QR individual =====
+    var areaActualId = null;
     function mostrarQR(id, nombre, edificio) {
-      document.getElementById("qr-edificio").textContent = edificio;
-      document.getElementById("qr-nombre").textContent = nombre;
+      areaActualId = id;
       nombreAreaActual = nombre;
+      var empresa = nombreCompania || "CleanTrack";
+      var ini = inicialesDe(empresa);
+      document.getElementById("qr-ref-area").textContent = "↳ " + nombre;
+      document.getElementById("tp-ini").textContent = ini;
+      document.getElementById("tp-nom").textContent = empresa;
       var cont = document.getElementById("qr-canvas");
       cont.innerHTML = "";
-      new QRCode(cont, { text: BASE_URL + "/?area=" + id, width: 220, height: 220, colorDark: "#185FA5", colorLight: "#ffffff" });
+      new QRCode(cont, { text: BASE_URL + "/?area=" + id, width: 240, height: 240, colorDark: "#185FA5", colorLight: "#ffffff" });
       document.getElementById("modal-qr").classList.add("abierto");
     }
-    function descargarQR() {
+
+    // Imprimir UNA sola tarjeta, con el mismo diseño bonito que la hoja
+    function imprimirUnaTarjeta() {
       var img = document.querySelector("#qr-canvas img") || document.querySelector("#qr-canvas canvas");
       if (!img) { alert("Espera a que el QR cargue."); return; }
       var src = img.tagName === "IMG" ? img.src : img.toDataURL("image/png");
-      var a = document.createElement("a");
-      a.href = src; a.download = "QR_" + nombreAreaActual.replace(/[^a-zA-Z0-9]/g, "_") + ".png";
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      var empresa = nombreCompania || "CleanTrack";
+      var ini = inicialesDe(empresa);
+      function escapar(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+      var html =
+        '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>QR — ' + escapar(nombreAreaActual) + '</title>' +
+        '<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&display=swap" rel="stylesheet">' +
+        '<style>' +
+        '* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; }' +
+        'body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }' +
+        '.ref { font-size: 11px; color: #B0AEA6; font-style: italic; text-align: center; margin-bottom: 8px; }' +
+        '.tarjeta { border: 1px dashed #C0BEB6; border-radius: 16px; padding: 26px 22px; text-align: center; width: 300px; }' +
+        '.marca-cliente { text-align: center; margin-bottom: 16px; }' +
+        '.marca-cliente .ini { display: inline-block; width: 30px; height: 30px; border-radius: 8px; background: #185FA5; color: #fff; font-weight: 700; font-size: 13px; line-height: 30px; vertical-align: middle; }' +
+        '.marca-cliente .nom-cliente { font-size: 13px; font-weight: 600; color: #1F2A37; vertical-align: middle; margin-left: 8px; }' +
+        '.tarjeta img { width: 100%; height: auto; display: block; }' +
+        '.mensaje { font-family: "Fraunces", Georgia, serif; font-style: italic; font-weight: 500; font-size: 17px; color: #1F2A37; margin-top: 14px; line-height: 1.28; }' +
+        '.pie { font-size: 9px; color: #C0BEB6; margin-top: 13px; border-top: 0.5px solid #EFEEE8; padding-top: 8px; letter-spacing: 0.03em; }' +
+        '@media print { body { padding: 0; } }' +
+        '</style></head><body>' +
+        '<div>' +
+          '<div class="ref">&#8627; ' + escapar(nombreAreaActual) + '</div>' +
+          '<div class="tarjeta">' +
+            '<div class="marca-cliente"><span class="ini">' + escapar(ini) + '</span><span class="nom-cliente">' + escapar(empresa) + '</span></div>' +
+            '<img src="' + src + '" />' +
+            '<div class="mensaje">This space is cleaned &amp; verified</div>' +
+            '<div class="pie">Powered by CleanTrack</div>' +
+          '</div>' +
+        '</div>' +
+        '</body></html>';
+
+      var ventana = window.open("", "_blank");
+      ventana.document.write(html);
+      ventana.document.close();
+      setTimeout(function(){ ventana.focus(); ventana.print(); }, 450);
     }
 
     // ===== Imprimir TODOS los QR de un edificio =====
