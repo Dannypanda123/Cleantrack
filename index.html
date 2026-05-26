@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>CleanTrack — Registro de área</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Fraunces:ital,opsz,wght@1,9..144,500&display=swap" rel="stylesheet">
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -48,11 +52,13 @@
     .cabecera {
       background: linear-gradient(135deg, var(--gris-verde-700), var(--gris-verde-900));
       padding: 20px 24px;
-      display: flex; align-items: center; gap: 10px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
       justify-content: center;
     }
-    .cabecera img { height: 50px; width: auto; border-radius: 12px; }
-    .cabecera .marca-texto { color: #fff; font-size: 17px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+    .cabecera img { height: 90px; width: auto; border-radius: 12px; }
+    .cabecera .marca-bloque { text-align: center; }
+    .cabecera .marca-texto { font-family: 'Sora', -apple-system, sans-serif; color: #fff; font-size: 22px; font-weight: 700; letter-spacing: 0.04em; display: block; }
+    .cabecera .marca-eslogan { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 13px; color: #E8EDE9; margin-top: 2px; display: block; }
 
     .cuerpo { padding: 24px 24px 30px; }
 
@@ -167,7 +173,10 @@
   <div class="app">
     <div class="cabecera">
       <img src="logo.png" alt="CleanTrack" />
-      <span class="marca-texto">CleanTrack</span>
+      <div class="marca-bloque">
+        <span class="marca-texto">CleanTrack</span>
+        <span class="marca-eslogan">Every cleaning, verified</span>
+      </div>
     </div>
 
     <div class="cuerpo">
