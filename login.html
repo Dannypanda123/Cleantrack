@@ -7,6 +7,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+
   <style>
     :root {
       --azul-900: #0C447C;
@@ -15,6 +19,7 @@
       --azul-claro: #DCE9F5;
       --grafito-900: #2E3640;
       --grafito-700: #3D4654;
+      --verde: #1D9E75;
       --gris-fondo: #ECEBE4;
       --gris-texto: #6B6A64;
       --gris-borde: #E2E0D8;
@@ -68,12 +73,20 @@
       position: relative;
     }
     .logo-img {
-      width: 92px; height: auto; display: block; margin: 0 auto 14px;
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+      width: 64px; height: 64px; object-fit: contain; display: block; margin: 0 auto 10px;
+      filter: drop-shadow(0 6px 18px rgba(0,0,0,0.28));
+    }
+    .marca-nombre {
+      font-family: "Sora", -apple-system, sans-serif;
+      color: #fff; font-size: 26px; font-weight: 700; letter-spacing: 0.01em;
+      text-align: center; line-height: 1;
+    }
+    .marca-linea {
+      width: 38px; height: 3px; background: var(--verde); border-radius: 3px;
+      margin: 12px auto 0;
     }
     .cabecera .titulo { color: #fff; font-size: 17px; font-weight: 600; letter-spacing: 0.01em; }
-    .cabecera .subtitulo { color: rgba(255,255,255,0.75); font-size: 13px; margin-top: 4px; }
+    .cabecera .subtitulo { color: rgba(255,255,255,0.72); font-size: 13px; margin-top: 12px; letter-spacing: 0.02em; }
 
     .cuerpo { padding: 30px 32px 34px; }
 
@@ -108,9 +121,10 @@
 <body>
   <div class="caja">
     <div class="cabecera">
-      <img src="logo.png" alt="CleanTrack" class="logo-img" />
-      <div class="titulo">Panel del supervisor</div>
-      <div class="subtitulo">Gestión profesional de limpieza</div>
+      <img src="logo-simbolo.png" alt="CleanTrack" class="logo-img" />
+      <div class="marca-nombre">CleanTrack</div>
+      <div class="marca-linea"></div>
+      <div class="subtitulo">Panel del supervisor</div>
     </div>
 
     <div class="cuerpo">
