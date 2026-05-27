@@ -88,7 +88,6 @@
       <div id="cont-fecha" style="display:none;">
         <label for="sel-fecha">Día del informe</label>
         <input type="date" id="sel-fecha" min="2020-01-01" max="2040-12-31" />
-        <!-- El max se ajusta automaticamente a hoy al cargar (ver script) -->
       </div>
 
       <button class="btn-generar" id="btn-generar" onclick="generar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> Generar PDF</button>
@@ -119,6 +118,51 @@
 
     var todosRegistros = [];
     var todasIncidencias = [];
+    var todasAreas = [];
+    var logoDataUrl = null;  // se carga al inicio
+
+    // ============================================================
+    // PALETA DE COLORES PARA LOS PDFs (RGB)
+    // ============================================================
+    var PDF_COLORS = {
+      azul:        [24, 95, 165],   // #185FA5
+      azulOsc:     [12, 68, 124],
+      azulClaro:   [230, 241, 251], // #E6F1FB
+      verde:       [29, 158, 117],  // #1D9E75
+      verdeClaro:  [216, 240, 228],
+      verdeTexto:  [15, 110, 86],
+      ambar:       [186, 117, 23],  // amarillo/ámbar para empleados
+      ambarSoft:   [253, 243, 219],
+      rojo:        [186, 59, 59],
+      rojoSoft:    [251, 234, 234],
+      texto:       [27, 39, 51],
+      textoSoft:   [90, 101, 115],
+      gris:        [120, 128, 140],
+      borde:       [226, 224, 216],
+      bordeSuave:  [240, 238, 230],
+      cabeceraBg:  [248, 250, 253], // fondo sutil de tarjetas grandes
+      tablaBg:     [248, 247, 243],
+      panelVerde:  [232, 245, 238], // estado vacío "sin incidencias"
+      blanco:      [255, 255, 255]
+    };
+
+    // ============================================================
+    // CARGAR LOGO COMO BASE64 PARA USAR EN PDFs
+    // ============================================================
+    async function cargarLogoBase64() {
+      try {
+        const res = await fetch('logo-simbolo.png');
+        const blob = await res.blob();
+        return await new Promise(function(resolve) {
+          const reader = new FileReader();
+          reader.onload = function() { resolve(reader.result); };
+          reader.readAsDataURL(blob);
+        });
+      } catch (e) {
+        console.warn("No se pudo cargar logo-simbolo.png para el PDF:", e);
+        return null;
+      }
+    }
 
     async function verificarAcceso() {
       if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
@@ -133,13 +177,14 @@
 
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
-      // Fecha de hoy por defecto en el selector de día
       var hoy = new Date();
       var hoyStr = hoy.getFullYear() + "-" + String(hoy.getMonth()+1).padStart(2,"0") + "-" + String(hoy.getDate()).padStart(2,"0");
       var campoFecha = document.getElementById("sel-fecha");
       campoFecha.value = hoyStr;
       campoFecha.max = hoyStr;
       cambioPeriodo();
+      // Cargar el logo en paralelo a los datos
+      logoDataUrl = await cargarLogoBase64();
       cargarTodo();
     }
 
@@ -152,8 +197,6 @@
       var periodo = document.getElementById("sel-periodo").value;
       document.getElementById("cont-fecha").style.display = (periodo === "diario") ? "block" : "none";
     }
-
-    var todasAreas = [];
 
     async function cargarTodo() {
       const reg = await db.from("registros").select("*").order("created_at", { ascending: false });
@@ -217,6 +260,393 @@
       return (dd<10?"0":"")+dd + "/" + (mm<10?"0":"")+mm + " " + hh + ":" + (mi<10?"0":"")+mi + ampm;
     }
 
+    function fmtFechaCorta() {
+      var f = new Date();
+      return f.getDate() + "/" + (f.getMonth()+1) + "/" + f.getFullYear();
+    }
+
+    // ============================================================
+    //              HELPERS DE DIBUJADO DEL PDF (NUEVO LOOK)
+    // ============================================================
+
+    // Aplicar color de relleno
+    function fillRGB(doc, c) { doc.setFillColor(c[0], c[1], c[2]); }
+    function textRGB(doc, c) { doc.setTextColor(c[0], c[1], c[2]); }
+    function strokeRGB(doc, c) { doc.setDrawColor(c[0], c[1], c[2]); }
+
+    // Cabecera de informe (logo del pin + CleanTrack + subtítulo + bloque de info a la derecha)
+    function dibujarCabecera(doc, subtitulo, infoDerecha) {
+      var pageW = doc.internal.pageSize.getWidth();
+      var y = 18;
+
+      // Logo del pin (si está disponible)
+      if (logoDataUrl) {
+        try {
+          doc.addImage(logoDataUrl, 'PNG', 14, y, 12, 16);
+        } catch (e) {
+          // si falla, dibujamos un círculo verde como placeholder
+          fillRGB(doc, PDF_COLORS.verde);
+          doc.circle(20, y + 8, 6, "F");
+        }
+      } else {
+        // Sin logo cargado: dibujar pin geométrico simple
+        fillRGB(doc, PDF_COLORS.verde);
+        doc.circle(20, y + 8, 6, "F");
+      }
+
+      // "CleanTrack" en azul oscuro
+      textRGB(doc, PDF_COLORS.azulOsc);
+      doc.setFontSize(22); doc.setFont(undefined, "bold");
+      doc.text("CleanTrack", 30, y + 8);
+
+      // Subtítulo en cursiva azul
+      textRGB(doc, PDF_COLORS.azul);
+      doc.setFontSize(11); doc.setFont(undefined, "italic");
+      doc.text(subtitulo, 30, y + 16);
+
+      // Bloque de info a la derecha
+      var infoX = pageW - 14;
+      var infoY = y + 1;
+      textRGB(doc, PDF_COLORS.texto);
+      doc.setFontSize(9.5); doc.setFont(undefined, "normal");
+      infoDerecha.forEach(function(linea, i) {
+        // Cada línea es {icono: 'pin'|'cal'|'reloj', texto: '...'}
+        var lineaY = infoY + i * 6 + 4;
+        // Dibujar icono pequeño (geometría simple)
+        textRGB(doc, PDF_COLORS.azulOsc);
+        if (linea.icono === 'pin') {
+          // pin: pequeño círculo y triangulo
+          doc.circle(infoX - 65, lineaY - 1.5, 1.5, "F");
+        } else if (linea.icono === 'cal') {
+          // Calendario: rectángulo
+          fillRGB(doc, PDF_COLORS.azulOsc);
+          doc.rect(infoX - 67, lineaY - 3, 4, 3.5, "F");
+        } else if (linea.icono === 'reloj') {
+          // Reloj: círculo con manecillas
+          strokeRGB(doc, PDF_COLORS.azulOsc);
+          doc.setLineWidth(0.5);
+          doc.circle(infoX - 65, lineaY - 1.5, 2, "S");
+          doc.line(infoX - 65, lineaY - 1.5, infoX - 65, lineaY - 3); // hora
+          doc.line(infoX - 65, lineaY - 1.5, infoX - 64, lineaY - 1); // minuto
+        }
+        // Texto
+        textRGB(doc, PDF_COLORS.texto);
+        doc.setFont(undefined, "normal");
+        doc.text(linea.texto, infoX - 60, lineaY);
+      });
+
+      // Línea separadora
+      strokeRGB(doc, PDF_COLORS.borde);
+      doc.setLineWidth(0.4);
+      doc.line(14, y + 24, pageW - 14, y + 24);
+
+      return y + 32;  // y donde sigue el contenido
+    }
+
+    // Dibujar las 4 tarjetas grandes de métricas (estilo mockup)
+    // cards = [{icono, color, valor, etiqueta}, ...]
+    // icono: 'escoba'|'camara'|'persona'|'alerta'|'check'|'edificio'|'reloj'
+    function dibujarTarjetasMetricas(doc, y, cards) {
+      var pageW = doc.internal.pageSize.getWidth();
+      var gap = 4;
+      var cardW = (pageW - 28 - gap * (cards.length - 1)) / cards.length;
+      var cardH = 38;
+
+      cards.forEach(function(c, i) {
+        var x = 14 + i * (cardW + gap);
+        // Fondo tarjeta
+        fillRGB(doc, PDF_COLORS.cabeceraBg);
+        doc.roundedRect(x, y, cardW, cardH, 3, 3, "F");
+
+        // Círculo de color con icono
+        var cx = x + cardW / 2;
+        var cy = y + 9;
+        fillRGB(doc, c.color);
+        doc.circle(cx, cy, 4.5, "F");
+        // Dibujar el icono dentro del círculo (color blanco)
+        dibujarIcono(doc, c.icono, cx, cy, PDF_COLORS.blanco);
+
+        // Número grande
+        textRGB(doc, PDF_COLORS.azulOsc);
+        doc.setFontSize(18); doc.setFont(undefined, "bold");
+        doc.text(String(c.valor), cx, y + 22, { align: "center" });
+
+        // Etiqueta
+        textRGB(doc, PDF_COLORS.textoSoft);
+        doc.setFontSize(8); doc.setFont(undefined, "normal");
+        doc.text(c.etiqueta, cx, y + 30, { align: "center" });
+      });
+
+      return y + cardH + 10;
+    }
+
+    // Dibujar iconos pequeños dentro de un círculo (color en RGB)
+    function dibujarIcono(doc, tipo, cx, cy, color) {
+      strokeRGB(doc, color);
+      fillRGB(doc, color);
+      doc.setLineWidth(0.6);
+
+      if (tipo === 'escoba') {
+        // Escoba: rectángulo (cepillo) + línea (palo) + 2 chispas (estrellas pequeñas)
+        // Cepillo - rectángulo
+        doc.rect(cx - 1.8, cy + 0.3, 2.4, 1.2, "F");
+        // Palo
+        doc.setLineWidth(0.7);
+        doc.line(cx + 0.6, cy + 1.5, cx + 2, cy + 2.8);
+        // 2 chispas (asteriscos pequeños)
+        doc.setLineWidth(0.4);
+        doc.line(cx - 2, cy - 1.5, cx - 2, cy - 0.7);
+        doc.line(cx - 2.4, cy - 1.1, cx - 1.6, cy - 1.1);
+        doc.line(cx + 0.4, cy - 2.2, cx + 0.4, cy - 1.5);
+        doc.line(cx + 0, cy - 1.85, cx + 0.8, cy - 1.85);
+      } else if (tipo === 'camara') {
+        // Cámara: rectángulo con lente circular
+        doc.rect(cx - 2.4, cy - 1.2, 4.8, 3.2, "F");
+        // Pequeña parte de arriba (visor)
+        doc.rect(cx - 0.8, cy - 1.8, 1.6, 0.6, "F");
+        // Lente (círculo blanco dentro)
+        textRGB(doc, color);  // dummy
+        // Cambiar relleno temporalmente: usamos el color de fondo del círculo (verde) para "vaciar"
+        // Truco: dibujar dentro de la cámara un círculo en azul oscuro para simular lente
+        doc.setFillColor(255, 255, 255);
+        doc.circle(cx, cy + 0.4, 1.1, "F");
+        // Restaurar fill al color original
+        fillRGB(doc, color);
+      } else if (tipo === 'persona') {
+        // Persona: círculo (cabeza) + arco (hombros)
+        doc.circle(cx, cy - 1.5, 1.2, "F");
+        // Cuerpo: rectángulo redondeado tipo trapecio
+        doc.roundedRect(cx - 2.2, cy + 0.3, 4.4, 2.2, 1.1, 1.1, "F");
+      } else if (tipo === 'alerta') {
+        // Triángulo de alerta con signo
+        var p1x = cx, p1y = cy - 2.5;
+        var p2x = cx - 2.5, p2y = cy + 1.7;
+        var p3x = cx + 2.5, p3y = cy + 1.7;
+        doc.triangle(p1x, p1y, p2x, p2y, p3x, p3y, "F");
+        // signo de exclamación dentro
+        doc.setFillColor(186, 59, 59); // color del fondo (rojo)
+        // Línea vertical (! pequeño)
+        doc.rect(cx - 0.25, cy - 1.2, 0.5, 1.7, "F");
+        doc.circle(cx, cy + 1, 0.35, "F");
+        fillRGB(doc, color);  // restaurar
+      } else if (tipo === 'check') {
+        // Check: línea diagonal de palomita
+        doc.setLineWidth(0.9);
+        doc.line(cx - 1.8, cy + 0.2, cx - 0.4, cy + 1.4);
+        doc.line(cx - 0.4, cy + 1.4, cx + 2, cy - 1.4);
+      } else if (tipo === 'edificio') {
+        // Edificio: rectángulo con ventanas
+        doc.rect(cx - 2, cy - 2, 4, 4.2, "F");
+        // 4 ventanas (puntos)
+        doc.setFillColor(255, 255, 255);
+        doc.rect(cx - 1.4, cy - 1.4, 0.6, 0.6, "F");
+        doc.rect(cx + 0.4, cy - 1.4, 0.6, 0.6, "F");
+        doc.rect(cx - 1.4, cy - 0.2, 0.6, 0.6, "F");
+        doc.rect(cx + 0.4, cy - 0.2, 0.6, 0.6, "F");
+        // Puerta
+        doc.rect(cx - 0.5, cy + 1.0, 1.0, 1.2, "F");
+        fillRGB(doc, color);
+      } else if (tipo === 'reloj') {
+        // Círculo + manecillas
+        strokeRGB(doc, color);
+        doc.setLineWidth(0.6);
+        doc.circle(cx, cy, 2.4, "S");
+        doc.line(cx, cy, cx, cy - 1.6);  // hora
+        doc.line(cx, cy, cx + 1.2, cy);  // minuto
+      }
+    }
+
+    // Título de sección (icono cuadrado azul + título)
+    function dibujarTituloSeccion(doc, y, icono, titulo) {
+      // Cuadrado azul con icono blanco
+      fillRGB(doc, PDF_COLORS.azulOsc);
+      doc.roundedRect(14, y - 5, 7, 7, 1.5, 1.5, "F");
+      // Dibujar icono dentro
+      dibujarIcono(doc, icono, 17.5, y - 1.5, PDF_COLORS.blanco);
+
+      // Título
+      textRGB(doc, PDF_COLORS.azulOsc);
+      doc.setFontSize(13); doc.setFont(undefined, "bold");
+      doc.text(titulo, 24, y);
+
+      return y + 8;
+    }
+
+    // Tabla de limpiezas con cabecera azul y botones "Ver" azules
+    // cols = [{label, width, align?}, ...]
+    // rows = arrays de strings; el botón Ver se maneja aparte
+    function dibujarTablaCabecera(doc, y, cols) {
+      var pageW = doc.internal.pageSize.getWidth();
+      var tableW = pageW - 28;
+      // Cabecera azul redondeada arriba
+      fillRGB(doc, PDF_COLORS.azulOsc);
+      doc.roundedRect(14, y, tableW, 9, 2, 2, "F");
+      // "Bocacuadrar" abajo (rectángulo blanco que pisa solo la parte inferior)
+      // No es estrictamente necesario; dejamos las cuatro esquinas redondas en la cabecera.
+
+      textRGB(doc, PDF_COLORS.blanco);
+      doc.setFontSize(9.5); doc.setFont(undefined, "bold");
+      var cx = 14 + 6;
+      cols.forEach(function(c) {
+        var align = c.align || "left";
+        var tx = cx;
+        if (align === "right") tx = cx + c.width - 4;
+        else if (align === "center") tx = cx + c.width / 2;
+        doc.text(c.label, tx, y + 6, { align: align });
+        cx += c.width;
+      });
+
+      return y + 12;
+    }
+
+    // Dibujar una fila de la tabla con botón "Ver" opcional
+    function dibujarFilaTabla(doc, y, cols, reg) {
+      var pageW = doc.internal.pageSize.getWidth();
+      var tableW = pageW - 28;
+      var rowH = 11;
+
+      // Línea inferior sutil
+      strokeRGB(doc, PDF_COLORS.bordeSuave);
+      doc.setLineWidth(0.3);
+      doc.line(20, y + rowH - 2, pageW - 14, y + rowH - 2);
+
+      textRGB(doc, PDF_COLORS.texto);
+      doc.setFontSize(9.5); doc.setFont(undefined, "normal");
+
+      var cx = 14 + 6;
+      cols.forEach(function(c, i) {
+        var align = c.align || "left";
+        var tx = cx;
+        if (align === "right") tx = cx + c.width - 4;
+        else if (align === "center") tx = cx + c.width / 2;
+
+        if (c.tipo === "boton-ver") {
+          // Dibujar botón "Ver" azul
+          if (reg.con_foto && reg.foto_url) {
+            // Botón con borde azul, fondo blanco
+            strokeRGB(doc, PDF_COLORS.azul);
+            doc.setLineWidth(0.6);
+            doc.setFillColor(255, 255, 255);
+            doc.roundedRect(tx - 9, y + 1, 18, 6, 1.5, 1.5, "FD");
+            textRGB(doc, PDF_COLORS.azul);
+            doc.setFontSize(8); doc.setFont(undefined, "bold");
+            doc.textWithLink("Ver", tx + 1.5, y + 5, { url: reg.foto_url, align: "center" });
+            // Icono de imagen pequeño antes del texto
+            // (cuadradito con esquina diagonal)
+            strokeRGB(doc, PDF_COLORS.azul);
+            doc.setLineWidth(0.5);
+            doc.rect(tx - 6, y + 2.3, 3.5, 2.7, "S");
+            doc.line(tx - 6, y + 4.5, tx - 4.5, y + 3.5);
+            doc.line(tx - 4.5, y + 3.5, tx - 2.5, y + 4.8);
+            doc.setFontSize(9.5);
+          } else {
+            textRGB(doc, PDF_COLORS.gris);
+            doc.text("—", tx, y + 5, { align: "center" });
+          }
+        } else {
+          var valor = String(c.get(reg) || "");
+          // Truncar si es muy largo
+          var maxChars = Math.floor(c.width / 1.8);
+          if (valor.length > maxChars) valor = valor.substring(0, maxChars - 1) + "…";
+          doc.text(valor, tx, y + 5, { align: align });
+        }
+        cx += c.width;
+      });
+
+      return y + rowH;
+    }
+
+    // Estado vacío bonito para incidencias (banner verde con check + texto)
+    function dibujarEstadoVacioVerde(doc, y, texto) {
+      var pageW = doc.internal.pageSize.getWidth();
+      fillRGB(doc, PDF_COLORS.panelVerde);
+      doc.roundedRect(14, y, pageW - 28, 14, 3, 3, "F");
+      // Círculo verde con check
+      var cx = 22, cy = y + 7;
+      strokeRGB(doc, PDF_COLORS.verde);
+      doc.setLineWidth(0.7);
+      doc.circle(cx, cy, 3.5, "S");
+      doc.setLineWidth(0.9);
+      doc.line(cx - 1.5, cy + 0.1, cx - 0.4, cy + 1.2);
+      doc.line(cx - 0.4, cy + 1.2, cx + 1.7, cy - 1.2);
+      // Texto
+      textRGB(doc, PDF_COLORS.verdeTexto);
+      doc.setFontSize(10); doc.setFont(undefined, "normal");
+      doc.text(texto, 30, cy + 1);
+
+      return y + 18;
+    }
+
+    // Fila de incidencia (badge tipo + estado + descripción + fecha)
+    function dibujarFilaIncidencia(doc, y, inc) {
+      var pageW = doc.internal.pageSize.getWidth();
+      var esInsumo = inc.tipo === "insumo";
+
+      // Caja contenedora
+      fillRGB(doc, esInsumo ? PDF_COLORS.azulClaro : PDF_COLORS.ambarSoft);
+      doc.roundedRect(14, y, pageW - 28, 16, 2, 2, "F");
+
+      // Badge tipo
+      fillRGB(doc, esInsumo ? PDF_COLORS.azul : PDF_COLORS.ambar);
+      doc.roundedRect(18, y + 3, esInsumo ? 28 : 22, 5, 1, 1, "F");
+      textRGB(doc, PDF_COLORS.blanco);
+      doc.setFontSize(7); doc.setFont(undefined, "bold");
+      doc.text(esInsumo ? "FALTA INSUMO" : "PROBLEMA", 18 + (esInsumo ? 14 : 11), y + 6.5, { align: "center" });
+
+      // Estado (resuelta / pendiente)
+      var estadoX = 18 + (esInsumo ? 30 : 24) + 2;
+      if (inc.resuelto) textRGB(doc, PDF_COLORS.verdeTexto);
+      else textRGB(doc, PDF_COLORS.ambar);
+      doc.setFontSize(8); doc.setFont(undefined, "bold");
+      doc.text(inc.resuelto ? "Resuelta" : "Pendiente", estadoX, y + 6.5);
+
+      // Fecha a la derecha
+      textRGB(doc, PDF_COLORS.textoSoft);
+      doc.setFontSize(8); doc.setFont(undefined, "normal");
+      doc.text(fmtFecha(inc.created_at), pageW - 18, y + 6.5, { align: "right" });
+
+      // Descripción
+      textRGB(doc, PDF_COLORS.texto);
+      doc.setFontSize(9); doc.setFont(undefined, "normal");
+      var desc = (inc.descripcion || "") + (inc.area ? "  ·  " + inc.area : "");
+      var lineas = doc.splitTextToSize(desc, pageW - 36);
+      doc.text(lineas[0] || "", 18, y + 12.5);
+
+      return y + 20;
+    }
+
+    // Pie del informe
+    function dibujarPie(doc, y, extraTexto) {
+      var pageW = doc.internal.pageSize.getWidth();
+      var pageH = doc.internal.pageSize.getHeight();
+
+      // Si el contenido se acerca al final, mover el pie al fondo
+      var pieY = Math.max(y + 8, pageH - 18);
+
+      // Línea separadora
+      strokeRGB(doc, PDF_COLORS.borde);
+      doc.setLineWidth(0.3);
+      doc.line(14, pieY - 3, pageW - 14, pieY - 3);
+
+      // Icono "i" en círculo
+      strokeRGB(doc, PDF_COLORS.azulOsc);
+      doc.setLineWidth(0.5);
+      doc.circle(18, pieY + 2, 2.5, "S");
+      textRGB(doc, PDF_COLORS.azulOsc);
+      doc.setFontSize(8); doc.setFont(undefined, "bold");
+      doc.text("i", 18, pieY + 3.3, { align: "center" });
+
+      // Texto del pie
+      textRGB(doc, PDF_COLORS.textoSoft);
+      doc.setFontSize(8); doc.setFont(undefined, "normal");
+      var txt = "Informe generado por CleanTrack" + (extraTexto ? " — " + extraTexto : "");
+      doc.text(txt, 23, pieY + 3);
+    }
+
+    // ============================================================
+    //              FLUJO PRINCIPAL DE GENERACIÓN
+    // ============================================================
+
     function generar() {
       var edificio = document.getElementById("sel-edificio").value;
       var periodo = document.getElementById("sel-periodo").value;
@@ -242,8 +672,6 @@
       var dias = {};
       regs.forEach(function(x){ var f = new Date(x.created_at); dias[f.getFullYear()+"-"+f.getMonth()+"-"+f.getDate()] = true; });
       var nDias = Object.keys(dias).length;
-
-      // Empleados únicos que trabajaron (para informe diario)
       var emps = {};
       regs.forEach(function(x){ if (x.nombre_empleado) emps[x.nombre_empleado] = true; });
       var nEmps = Object.keys(emps).length;
@@ -252,7 +680,6 @@
       var esSemanal = (periodo === "7-dias");
       var esMensual = (periodo === "mes-actual" || periodo === "mes-pasado");
 
-      // Datos extra para el semanal
       var areasCubiertas = {};
       regs.forEach(function(x){ if (x.area) areasCubiertas[x.area] = true; });
       var nAreasCubiertas = Object.keys(areasCubiertas).length;
@@ -260,6 +687,7 @@
       var nAreasTotal = areasDelEdificio.length;
       var incResueltas = incs.filter(function(i){ return i.resuelto; }).length;
 
+      // Vista previa en HTML
       document.getElementById("pv-total").textContent = total;
       document.getElementById("pv-foto").textContent = conFoto;
       document.getElementById("pv-dias").textContent = esDiario ? nEmps : nDias;
@@ -289,61 +717,211 @@
       }
     }
 
+    // ============================================================
+    //          INFORME DIARIO (estilo mockup)
+    // ============================================================
+    function crearPDF(edificio, periodo, regs, incs, resumen) {
+      var jsPDF = window.jspdf.jsPDF;
+      var doc = new jsPDF();
+      var pageW = doc.internal.pageSize.getWidth();
+
+      // CABECERA
+      var y = dibujarCabecera(doc, "Informe diario de limpieza", [
+        { icono: 'pin',   texto: edificio },
+        { icono: 'cal',   texto: "Período: " + nombrePeriodo(periodo) },
+        { icono: 'reloj', texto: "Generado: " + fmtFechaCorta() }
+      ]);
+
+      // 4 TARJETAS DE MÉTRICAS (como en el mockup)
+      var cards = [
+        { icono: 'escoba',  color: PDF_COLORS.azul,  valor: resumen.total,    etiqueta: "Áreas limpiadas" },
+        { icono: 'camara',  color: PDF_COLORS.verde, valor: resumen.conFoto,  etiqueta: "Con foto" },
+        { icono: 'persona', color: PDF_COLORS.ambar, valor: resumen.nEmps,    etiqueta: "Empleados" },
+        { icono: 'alerta',  color: PDF_COLORS.rojo,  valor: incs.length,      etiqueta: "Incidencias" }
+      ];
+      y = dibujarTarjetasMetricas(doc, y, cards);
+
+      // DETALLE DE LIMPIEZAS
+      y = dibujarTituloSeccion(doc, y + 4, "edificio", "Detalle de limpiezas");
+
+      var cols = [
+        { label: "Fecha/Hora", width: 40, get: function(r){ return fmtFecha(r.created_at); } },
+        { label: "Área",       width: 55, get: function(r){ return r.area || ""; } },
+        { label: "Empleado",   width: 55, get: function(r){ return r.nombre_empleado || ""; } },
+        { label: "Foto",       width: 32, align: "right", tipo: "boton-ver" }
+      ];
+      y = dibujarTablaCabecera(doc, y, cols);
+
+      if (regs.length === 0) {
+        textRGB(doc, PDF_COLORS.textoSoft);
+        doc.setFontSize(9.5); doc.setFont(undefined, "italic");
+        doc.text("No se registraron limpiezas en este período.", 20, y + 4);
+        y += 12;
+      } else {
+        regs.forEach(function(reg) {
+          if (y > 240) { doc.addPage(); y = 22; }
+          y = dibujarFilaTabla(doc, y, cols, reg);
+        });
+      }
+
+      // INCIDENCIAS REPORTADAS
+      y += 8;
+      if (y > 230) { doc.addPage(); y = 22; }
+      y = dibujarTituloSeccion(doc, y, "alerta", "Incidencias reportadas");
+
+      if (incs.length === 0) {
+        y = dibujarEstadoVacioVerde(doc, y, "No se reportaron incidencias en este período.");
+      } else {
+        incs.forEach(function(inc) {
+          if (y > 240) { doc.addPage(); y = 22; }
+          y = dibujarFilaIncidencia(doc, y, inc);
+        });
+      }
+
+      // PIE
+      dibujarPie(doc, y, "Los enlaces 'Ver' abren la foto del registro.");
+
+      var nombreArch = "Informe_diario_" + edificio.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf";
+      doc.save(nombreArch);
+    }
+
+    // ============================================================
+    //          INFORME SEMANAL (estilo mockup)
+    // ============================================================
+    function crearPDFSemanal(edificio, periodo, regs, incs, datos) {
+      var jsPDF = window.jspdf.jsPDF;
+      var doc = new jsPDF();
+      var pageW = doc.internal.pageSize.getWidth();
+
+      var y = dibujarCabecera(doc, "Informe semanal de limpieza", [
+        { icono: 'pin',   texto: edificio },
+        { icono: 'cal',   texto: "Período: " + nombrePeriodo(periodo) },
+        { icono: 'reloj', texto: "Generado: " + fmtFechaCorta() }
+      ]);
+
+      // 4 tarjetas
+      var areasCobertura = datos.nAreasTotal > 0
+        ? (datos.nAreasCubiertas + "/" + datos.nAreasTotal)
+        : String(datos.nAreasCubiertas);
+      var cards = [
+        { icono: 'escoba',   color: PDF_COLORS.azul,  valor: datos.total,        etiqueta: "Limpiezas" },
+        { icono: 'reloj',    color: PDF_COLORS.verde, valor: datos.nDias,        etiqueta: "Días trabajados" },
+        { icono: 'edificio', color: PDF_COLORS.ambar, valor: areasCobertura,     etiqueta: "Áreas cubiertas" },
+        { icono: 'alerta',   color: PDF_COLORS.rojo,  valor: incs.length,        etiqueta: "Incidencias" }
+      ];
+      y = dibujarTarjetasMetricas(doc, y, cards);
+
+      // ACTIVIDAD POR DÍA (barras horizontales)
+      y = dibujarTituloSeccion(doc, y + 4, "reloj", "Actividad por día");
+
+      var r = rangoFechas(periodo);
+      var diasArr = [];
+      var nombresDia = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+      var cursor = new Date(r.inicio); cursor.setHours(0,0,0,0);
+      for (var i = 0; i < 7; i++) {
+        var key = cursor.getFullYear()+"-"+cursor.getMonth()+"-"+cursor.getDate();
+        var etiqueta = nombresDia[cursor.getDay()] + " " + cursor.getDate();
+        diasArr.push({ key: key, etiqueta: etiqueta, count: 0 });
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      regs.forEach(function(reg){
+        var f = new Date(reg.created_at);
+        var key = f.getFullYear()+"-"+f.getMonth()+"-"+f.getDate();
+        var d = diasArr.find(function(x){ return x.key === key; });
+        if (d) d.count++;
+      });
+      var maxLimp = Math.max.apply(null, diasArr.map(function(d){ return d.count; }));
+      if (maxLimp === 0) maxLimp = 1;
+      var barMax = pageW - 80;
+
+      diasArr.forEach(function(d){
+        textRGB(doc, PDF_COLORS.texto);
+        doc.setFontSize(9); doc.setFont(undefined, "bold");
+        doc.text(d.etiqueta, 18, y + 4);
+
+        // Barra de fondo
+        fillRGB(doc, PDF_COLORS.bordeSuave);
+        doc.roundedRect(40, y + 1, barMax, 5, 1, 1, "F");
+        // Barra de valor
+        if (d.count > 0) {
+          var w = (d.count / maxLimp) * barMax;
+          fillRGB(doc, PDF_COLORS.azul);
+          doc.roundedRect(40, y + 1, w, 5, 1, 1, "F");
+        }
+
+        // Etiqueta del conteo a la derecha
+        textRGB(doc, d.count > 0 ? PDF_COLORS.texto : PDF_COLORS.textoSoft);
+        doc.setFontSize(9); doc.setFont(undefined, "normal");
+        var tx = d.count > 0
+          ? (d.count + (d.count === 1 ? " limpieza" : " limpiezas"))
+          : "Sin actividad";
+        doc.text(tx, pageW - 18, y + 4, { align: "right" });
+
+        y += 9;
+      });
+
+      // INCIDENCIAS
+      y += 6;
+      if (y > 230) { doc.addPage(); y = 22; }
+      y = dibujarTituloSeccion(doc, y, "alerta", "Incidencias de la semana");
+
+      if (incs.length === 0) {
+        y = dibujarEstadoVacioVerde(doc, y, "No se reportaron incidencias esta semana.");
+      } else {
+        // Resumen breve
+        textRGB(doc, PDF_COLORS.textoSoft);
+        doc.setFontSize(9.5); doc.setFont(undefined, "italic");
+        doc.text("Se detectaron " + incs.length + " incidencia(s), de las cuales " + datos.incResueltas + " ya están resueltas.", 18, y);
+        y += 7;
+        incs.forEach(function(inc){
+          if (y > 245) { doc.addPage(); y = 22; }
+          y = dibujarFilaIncidencia(doc, y, inc);
+        });
+      }
+
+      dibujarPie(doc, y, null);
+      doc.save("Informe_semanal_" + edificio.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf");
+    }
+
+    // ============================================================
+    //          INFORME MENSUAL (estilo mockup)
+    // ============================================================
     function crearPDFMensual(edificio, periodo, regs, incs, datos) {
       var jsPDF = window.jspdf.jsPDF;
       var doc = new jsPDF();
       var pageW = doc.internal.pageSize.getWidth();
-      var y = 0;
 
-      // ENCABEZADO celebratorio (verde)
-      doc.setFillColor(29, 158, 117);
-      doc.rect(0, 0, pageW, 46, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(13); doc.setFont(undefined, "bold");
-      doc.text("CleanTrack", 14, 16);
-      doc.setFontSize(22); doc.setFont(undefined, "bold");
-      doc.text("Resumen del mes", 14, 30);
-      doc.setFontSize(13); doc.setFont(undefined, "normal");
-      doc.text(edificio + "  ·  " + nombrePeriodo(periodo), 14, 40);
+      var y = dibujarCabecera(doc, "Informe mensual de limpieza", [
+        { icono: 'pin',   texto: edificio },
+        { icono: 'cal',   texto: "Período: " + nombrePeriodo(periodo) },
+        { icono: 'reloj', texto: "Generado: " + fmtFechaCorta() }
+      ]);
 
-      // Mensaje positivo destacado
-      y = 56;
+      // Mensaje de resumen positivo en banner verde
       var pctInc = incs.length > 0 ? Math.round((datos.incResueltas / incs.length) * 100) : 100;
-      doc.setFillColor(234, 243, 222);
-      doc.roundedRect(14, y, pageW - 28, 16, 3, 3, "F");
-      doc.setTextColor(15, 110, 86);
-      doc.setFontSize(10.5); doc.setFont(undefined, "bold");
-      var msjPos = "Un mes de servicio dedicado: " + datos.total + " limpiezas realizadas y " + pctInc + "% de incidencias resueltas.";
-      doc.text(msjPos, pageW/2, y + 10, { align: "center" });
+      fillRGB(doc, PDF_COLORS.panelVerde);
+      doc.roundedRect(14, y, pageW - 28, 12, 3, 3, "F");
+      textRGB(doc, PDF_COLORS.verdeTexto);
+      doc.setFontSize(10); doc.setFont(undefined, "bold");
+      doc.text(datos.total + " limpiezas realizadas este mes  ·  " + pctInc + "% de incidencias resueltas",
+               pageW/2, y + 7.5, { align: "center" });
+      y += 16;
 
-      // TARJETAS GRANDES de logros (2x2)
-      y += 26;
-      function tarjeta(x, yy, w, h, color, valor, etiqueta) {
-        doc.setFillColor(color[0], color[1], color[2]);
-        doc.roundedRect(x, yy, w, h, 3, 3, "F");
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(26); doc.setFont(undefined, "bold");
-        doc.text(String(valor), x + w/2, yy + h/2 + 1, { align: "center" });
-        doc.setFontSize(9); doc.setFont(undefined, "normal");
-        doc.text(etiqueta, x + w/2, yy + h - 6, { align: "center" });
-      }
-      var gap = 8;
-      var cardW = (pageW - 28 - gap) / 2;
-      var cardH = 30;
-      tarjeta(14, y, cardW, cardH, [24,95,165], datos.total, "Limpiezas realizadas");
-      tarjeta(14 + cardW + gap, y, cardW, cardH, [29,158,117], datos.nDias, "Días trabajados");
-      y += cardH + gap;
-      var cobertura = datos.nAreasTotal > 0 ? (datos.nAreasCubiertas + " / " + datos.nAreasTotal) : String(datos.nAreasCubiertas);
-      tarjeta(14, y, cardW, cardH, [186,117,23], cobertura, "Áreas cubiertas");
-      tarjeta(14 + cardW + gap, y, cardW, cardH, [83,74,183], datos.incResueltas + " / " + incs.length, "Incidencias resueltas");
+      // 4 tarjetas grandes
+      var areasCobertura = datos.nAreasTotal > 0
+        ? (datos.nAreasCubiertas + "/" + datos.nAreasTotal)
+        : String(datos.nAreasCubiertas);
+      var cards = [
+        { icono: 'escoba',   color: PDF_COLORS.azul,  valor: datos.total,            etiqueta: "Limpiezas realizadas" },
+        { icono: 'reloj',    color: PDF_COLORS.verde, valor: datos.nDias,            etiqueta: "Días trabajados" },
+        { icono: 'edificio', color: PDF_COLORS.ambar, valor: areasCobertura,         etiqueta: "Áreas cubiertas" },
+        { icono: 'check',    color: PDF_COLORS.verde, valor: datos.incResueltas + "/" + incs.length, etiqueta: "Incid. resueltas" }
+      ];
+      y = dibujarTarjetasMetricas(doc, y, cards);
 
-      // TENDENCIA POR SEMANA
-      y += cardH + 16;
-      doc.setTextColor(44, 44, 42);
-      doc.setFontSize(13); doc.setFont(undefined, "bold");
-      doc.text("Actividad por semana", 14, y);
-      y += 10;
-      // Agrupar registros en semanas del mes (bloques de 7 días desde el inicio)
+      // ACTIVIDAD POR SEMANA (barras)
+      y = dibujarTituloSeccion(doc, y + 4, "reloj", "Actividad por semana");
+
       var r = rangoFechas(periodo);
       var semanas = [];
       var ini = new Date(r.inicio); ini.setHours(0,0,0,0);
@@ -366,355 +944,99 @@
       var maxSem = Math.max.apply(null, semanas.map(function(s){ return s.count; }));
       if (maxSem === 0) maxSem = 1;
       var barMax = pageW - 90;
+
       semanas.forEach(function(s){
-        doc.setFontSize(9.5); doc.setFont(undefined, "normal"); doc.setTextColor(44, 44, 42);
-        doc.text(s.sem, 16, y + 4);
-        var w = s.count === 0 ? 0 : (s.count / maxSem) * barMax;
-        if (w > 0) { doc.setFillColor(29, 158, 117); doc.roundedRect(48, y, w, 7, 1, 1, "F"); }
-        if (w > 16) { doc.setTextColor(255,255,255); doc.setFontSize(8.5); doc.setFont(undefined, "bold"); doc.text(String(s.count), 48 + w - 8, y + 5); }
-        else { doc.setTextColor(107,106,100); doc.setFontSize(8.5); doc.text(String(s.count), 48 + w + 3, y + 5); }
-        y += 12;
+        textRGB(doc, PDF_COLORS.texto);
+        doc.setFontSize(9); doc.setFont(undefined, "bold");
+        doc.text(s.sem, 18, y + 4);
+
+        fillRGB(doc, PDF_COLORS.bordeSuave);
+        doc.roundedRect(45, y + 1, barMax, 5, 1, 1, "F");
+
+        if (s.count > 0) {
+          var w = (s.count / maxSem) * barMax;
+          fillRGB(doc, PDF_COLORS.verde);
+          doc.roundedRect(45, y + 1, w, 5, 1, 1, "F");
+        }
+
+        textRGB(doc, s.count > 0 ? PDF_COLORS.texto : PDF_COLORS.textoSoft);
+        doc.setFontSize(9); doc.setFont(undefined, "normal");
+        var tx = s.count > 0 ? (s.count + " limpiezas") : "—";
+        doc.text(tx, pageW - 18, y + 4, { align: "right" });
+
+        y += 9;
       });
 
-      // AREAS MAS ATENDIDAS
+      // ÁREAS MÁS ATENDIDAS
       y += 6;
-      doc.setTextColor(44, 44, 42);
-      doc.setFontSize(13); doc.setFont(undefined, "bold");
-      doc.text("Áreas más atendidas", 14, y);
-      y += 9;
+      if (y > 220) { doc.addPage(); y = 22; }
+      y = dibujarTituloSeccion(doc, y, "edificio", "Áreas más atendidas");
+
       var conteoAreas = {};
       regs.forEach(function(reg){ var a = reg.area || "Sin área"; conteoAreas[a] = (conteoAreas[a] || 0) + 1; });
       var topAreas = Object.keys(conteoAreas).map(function(k){ return { area: k, veces: conteoAreas[k] }; });
       topAreas.sort(function(a,b){ return b.veces - a.veces; });
       topAreas = topAreas.slice(0, 5);
+
       if (topAreas.length === 0) {
-        doc.setFontSize(9.5); doc.setFont(undefined, "normal"); doc.setTextColor(107,106,100);
-        doc.text("Sin datos de áreas en este período.", 16, y); y += 8;
+        textRGB(doc, PDF_COLORS.textoSoft);
+        doc.setFontSize(9.5); doc.setFont(undefined, "italic");
+        doc.text("Sin datos de áreas en este período.", 18, y + 3);
+        y += 10;
       } else {
         topAreas.forEach(function(a, i){
-          doc.setFontSize(9.5); doc.setFont(undefined, "normal");
-          doc.setTextColor(60, 60, 58);
-          doc.text((i+1) + ".  " + a.area.substring(0,40), 16, y + 3);
-          doc.setTextColor(107, 106, 100);
-          doc.text(a.veces + (a.veces === 1 ? " vez" : " veces"), pageW - 40, y + 3);
-          y += 8;
-        });
-      }
-
-      // ===== PAGINA 2: incidencias + feedback =====
-      doc.addPage();
-      y = 24;
-      doc.setTextColor(44, 44, 42);
-      doc.setFontSize(14); doc.setFont(undefined, "bold");
-      doc.text("Incidencias del mes", 14, y);
-      y += 10;
-      if (incs.length === 0) {
-        doc.setFontSize(10); doc.setFont(undefined, "normal"); doc.setTextColor(107,106,100);
-        doc.text("No se reportaron incidencias este mes.", 16, y); y += 8;
-      } else {
-        doc.setFontSize(10); doc.setFont(undefined, "normal"); doc.setTextColor(60,60,58);
-        doc.text("Se detectaron " + incs.length + " incidencia(s) y se resolvieron " + datos.incResueltas + " (" + pctInc + "%).", 16, y);
-        y += 9;
-        incs.forEach(function(inc){
-          if (y > 275) { doc.addPage(); y = 20; }
-          var esInsumo = inc.tipo === "insumo";
-          if (inc.resuelto) doc.setTextColor(15, 110, 86); else doc.setTextColor(133, 79, 11);
-          doc.setFontSize(9.5);
-          var txt = "• " + (esInsumo ? "Falta insumo" : "Problema") + ": " + (inc.descripcion || "");
-          if (inc.area) txt += " (" + inc.area + ")";
-          txt += " - " + (inc.resuelto ? "Resuelta" : "Pendiente");
-          var lineas = doc.splitTextToSize(txt, pageW - 36);
-          doc.text(lineas, 18, y);
-          y += lineas.length * 5 + 1;
-        });
-      }
-
-      // ESPACIO PARA FEEDBACK DEL PROPERTY MANAGER
-      y += 12;
-      if (y > 235) { doc.addPage(); y = 20; }
-      doc.setDrawColor(200, 198, 190);
-      doc.setFillColor(250, 249, 245);
-      doc.roundedRect(14, y, pageW - 28, 40, 3, 3, "FD");
-      doc.setTextColor(107, 106, 100);
-      doc.setFontSize(11); doc.setFont(undefined, "bold");
-      doc.text("Sus comentarios sobre el servicio:", 18, y + 9);
-      doc.setDrawColor(210, 208, 200);
-      doc.line(18, y + 20, pageW - 18, y + 20);
-      doc.line(18, y + 30, pageW - 18, y + 30);
-
-      // Pie
-      y += 50;
-      if (y > 285) { doc.addPage(); y = 20; }
-      doc.setTextColor(107, 106, 100); doc.setFontSize(8);
-      doc.text("Informe generado por CleanTrack — " + nombrePeriodo(periodo), 14, y);
-
-      doc.save("Informe_mensual_" + edificio.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf");
-    }
-
-    function crearPDFSemanal(edificio, periodo, regs, incs, datos) {
-      var jsPDF = window.jspdf.jsPDF;
-      var doc = new jsPDF();
-      var pageW = doc.internal.pageSize.getWidth();
-      var y = 0;
-
-      // Encabezado
-      doc.setFillColor(24, 95, 165);
-      doc.rect(0, 0, pageW, 38, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(20); doc.setFont(undefined, "bold");
-      doc.text("CleanTrack", 14, 18);
-      doc.setFontSize(11); doc.setFont(undefined, "normal");
-      doc.text("Informe semanal de limpieza", 14, 27);
-
-      y = 50;
-      doc.setTextColor(44, 44, 42);
-      doc.setFontSize(15); doc.setFont(undefined, "bold");
-      doc.text(edificio, 14, y);
-      y += 7;
-      doc.setFontSize(11); doc.setFont(undefined, "normal");
-      doc.setTextColor(107, 106, 100);
-      doc.text("Período: " + nombrePeriodo(periodo), 14, y);
-      y += 5;
-      doc.text("Generado: " + new Date().toLocaleDateString("es"), 14, y);
-
-      // Panel de desempeño (4 indicadores)
-      y += 14;
-      doc.setFillColor(245, 244, 239);
-      doc.roundedRect(14, y, pageW - 28, 26, 3, 3, "F");
-      var colW = (pageW - 28) / 4;
-      doc.setFontSize(16); doc.setFont(undefined, "bold");
-      doc.setTextColor(15, 110, 86);
-      doc.text(String(datos.nDias), 14 + colW*0.5, y + 11, { align: "center" });
-      doc.setTextColor(24, 95, 165);
-      doc.text(String(datos.total), 14 + colW*1.5, y + 11, { align: "center" });
-      doc.text((datos.nAreasTotal > 0 ? (datos.nAreasCubiertas + " / " + datos.nAreasTotal) : String(datos.nAreasCubiertas)), 14 + colW*2.5, y + 11, { align: "center" });
-      doc.setTextColor(133, 79, 11);
-      doc.text((datos.incResueltas + " / " + incs.length), 14 + colW*3.5, y + 11, { align: "center" });
-      doc.setTextColor(107, 106, 100);
-      doc.setFontSize(8); doc.setFont(undefined, "normal");
-      doc.text("Días trabajados", 14 + colW*0.5, y + 19, { align: "center" });
-      doc.text("Limpiezas", 14 + colW*1.5, y + 19, { align: "center" });
-      doc.text("Áreas cubiertas", 14 + colW*2.5, y + 19, { align: "center" });
-      doc.text("Incid. resueltas", 14 + colW*3.5, y + 19, { align: "center" });
-
-      // Actividad por día
-      y += 38;
-      doc.setTextColor(44, 44, 42);
-      doc.setFontSize(12); doc.setFont(undefined, "bold");
-      doc.text("Actividad por día", 14, y);
-      y += 9;
-
-      // Construir conteo por día (7 días del rango)
-      var r = rangoFechas(periodo);
-      var diasArr = [];
-      var nombresDia = ["dom","lun","mar","mié","jue","vie","sáb"];
-      var cursor = new Date(r.inicio); cursor.setHours(0,0,0,0);
-      for (var i = 0; i < 7; i++) {
-        var key = cursor.getFullYear()+"-"+cursor.getMonth()+"-"+cursor.getDate();
-        var etiqueta = nombresDia[cursor.getDay()] + " " + cursor.getDate();
-        diasArr.push({ key: key, etiqueta: etiqueta, count: 0 });
-        cursor.setDate(cursor.getDate() + 1);
-      }
-      regs.forEach(function(reg){
-        var f = new Date(reg.created_at);
-        var key = f.getFullYear()+"-"+f.getMonth()+"-"+f.getDate();
-        var d = diasArr.find(function(x){ return x.key === key; });
-        if (d) d.count++;
-      });
-      var maxLimp = Math.max.apply(null, diasArr.map(function(d){ return d.count; }));
-      if (maxLimp === 0) maxLimp = 1;
-      var barMax = pageW - 80;
-      diasArr.forEach(function(d){
-        doc.setFontSize(9); doc.setFont(undefined, "normal"); doc.setTextColor(44, 44, 42);
-        doc.text(d.etiqueta, 16, y + 3);
-        var w = d.count === 0 ? 0 : (d.count / maxLimp) * barMax;
-        if (w > 0) { doc.setFillColor(24, 95, 165); doc.roundedRect(40, y - 1, w, 5, 1, 1, "F"); }
-        doc.setTextColor(107, 106, 100);
-        doc.text(d.count === 0 ? "Sin actividad" : (d.count + (d.count === 1 ? " limpieza" : " limpiezas")), 40 + w + 3, y + 3);
-        y += 9;
-      });
-
-      // Incidencias de la semana
-      y += 6;
-      if (y > 250) { doc.addPage(); y = 20; }
-      doc.setTextColor(44, 44, 42);
-      doc.setFontSize(12); doc.setFont(undefined, "bold");
-      doc.text("Incidencias de la semana", 14, y);
-      y += 8;
-      doc.setFontSize(9.5); doc.setFont(undefined, "normal");
-      if (incs.length === 0) {
-        doc.setTextColor(107, 106, 100);
-        doc.text("No se reportaron incidencias esta semana.", 16, y); y += 6;
-      } else {
-        doc.setTextColor(60, 60, 58);
-        doc.text("Se detectaron " + incs.length + " incidencia(s) y se resolvieron " + datos.incResueltas + ".", 16, y);
-        y += 7;
-        incs.forEach(function(inc){
-          if (y > 275) { doc.addPage(); y = 20; }
-          var esInsumo = inc.tipo === "insumo";
-          var estado = inc.resuelto ? "Resuelta" : "Pendiente";
-          if (inc.resuelto) doc.setTextColor(15, 110, 86); else doc.setTextColor(133, 79, 11);
+          fillRGB(doc, i === 0 ? PDF_COLORS.cabeceraBg : PDF_COLORS.blanco);
+          doc.roundedRect(14, y, pageW - 28, 8, 1.5, 1.5, "F");
+          textRGB(doc, PDF_COLORS.azulOsc);
+          doc.setFontSize(9.5); doc.setFont(undefined, "bold");
+          doc.text((i+1) + ".", 18, y + 5);
+          textRGB(doc, PDF_COLORS.texto);
+          doc.setFont(undefined, "normal");
+          var nombreArea = a.area.length > 40 ? a.area.substring(0, 39) + "…" : a.area;
+          doc.text(nombreArea, 24, y + 5);
+          textRGB(doc, PDF_COLORS.textoSoft);
           doc.setFontSize(9);
-          var txt = "• " + (esInsumo ? "Falta insumo" : "Problema") + ": " + (inc.descripcion || "");
-          if (inc.area) txt += " (" + inc.area + ")";
-          txt += " - " + estado;
-          var lineas = doc.splitTextToSize(txt, pageW - 36);
-          doc.text(lineas, 18, y);
-          y += lineas.length * 5 + 1;
+          doc.text(a.veces + (a.veces === 1 ? " vez" : " veces"), pageW - 18, y + 5, { align: "right" });
+          y += 10;
         });
       }
 
-      // Pie
-      y += 8;
-      if (y > 282) { doc.addPage(); y = 20; }
-      doc.setDrawColor(226, 224, 216);
-      doc.line(14, y, pageW - 14, y);
+      // INCIDENCIAS
       y += 6;
-      doc.setTextColor(107, 106, 100);
-      doc.setFontSize(8);
-      doc.text("Informe generado por CleanTrack", 14, y);
-
-      doc.save("Informe_semanal_" + edificio.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf");
-    }
-
-    function crearPDF(edificio, periodo, regs, incs, resumen) {
-      var jsPDF = window.jspdf.jsPDF;
-      var doc = new jsPDF();
-      var pageW = doc.internal.pageSize.getWidth();
-      var y = 0;
-
-      var titulo = (periodo === "diario") ? "Informe diario de limpieza" : "Informe de servicio de limpieza";
-
-      doc.setFillColor(24, 95, 165);
-      doc.rect(0, 0, pageW, 38, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(20); doc.setFont(undefined, "bold");
-      doc.text("CleanTrack", 14, 18);
-      doc.setFontSize(11); doc.setFont(undefined, "normal");
-      doc.text(titulo, 14, 27);
-
-      y = 50;
-      doc.setTextColor(44, 44, 42);
-      doc.setFontSize(15); doc.setFont(undefined, "bold");
-      doc.text(edificio, 14, y);
-      y += 7;
-      doc.setFontSize(11); doc.setFont(undefined, "normal");
-      doc.setTextColor(107, 106, 100);
-      doc.text("Período: " + nombrePeriodo(periodo), 14, y);
-      y += 5;
-      doc.text("Generado: " + new Date().toLocaleDateString("es"), 14, y);
-
-      // Resumen (4 columnas)
-      y += 14;
-      doc.setFillColor(245, 244, 239);
-      doc.roundedRect(14, y, pageW - 28, 26, 3, 3, "F");
-      var colW = (pageW - 28) / 4;
-      doc.setTextColor(24, 95, 165);
-      doc.setFontSize(16); doc.setFont(undefined, "bold");
-      doc.text(String(resumen.total), 14 + colW*0.5, y + 11, { align: "center" });
-      doc.text(String(resumen.conFoto), 14 + colW*1.5, y + 11, { align: "center" });
-      doc.text(String(resumen.esDiario ? resumen.nEmps : resumen.nDias), 14 + colW*2.5, y + 11, { align: "center" });
-      doc.setTextColor(133, 79, 11);
-      doc.text(String(incs.length), 14 + colW*3.5, y + 11, { align: "center" });
-      doc.setTextColor(107, 106, 100);
-      doc.setFontSize(8); doc.setFont(undefined, "normal");
-      doc.text("Áreas limpiadas", 14 + colW*0.5, y + 19, { align: "center" });
-      doc.text("Con foto", 14 + colW*1.5, y + 19, { align: "center" });
-      doc.text(resumen.esDiario ? "Empleados" : "Días activos", 14 + colW*2.5, y + 19, { align: "center" });
-      doc.text("Incidencias", 14 + colW*3.5, y + 19, { align: "center" });
-
-      // Tabla de limpiezas
-      y += 38;
-      doc.setTextColor(44, 44, 42);
-      doc.setFontSize(12); doc.setFont(undefined, "bold");
-      doc.text("Detalle de limpiezas", 14, y);
-      y += 8;
-
-      doc.setFillColor(24, 95, 165);
-      doc.rect(14, y - 5, pageW - 28, 8, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(9); doc.setFont(undefined, "bold");
-      doc.text("Fecha/Hora", 16, y);
-      doc.text("Área", 56, y);
-      doc.text("Empleado", 116, y);
-      doc.text("Foto", pageW - 28, y);
-      y += 6;
-
-      doc.setTextColor(44, 44, 42);
-      doc.setFont(undefined, "normal");
-      doc.setFontSize(8.5);
-
-      if (regs.length === 0) {
-        doc.setTextColor(107, 106, 100);
-        doc.text("No se registraron limpiezas en este período.", 16, y); y += 7;
-      } else {
-        regs.forEach(function(reg, i) {
-          if (y > 275) { doc.addPage(); y = 20; }
-          if (i % 2 === 0) { doc.setFillColor(248, 247, 243); doc.rect(14, y - 4, pageW - 28, 7, "F"); }
-          doc.setTextColor(44, 44, 42);
-          doc.text(fmtFecha(reg.created_at), 16, y);
-          doc.text((reg.area || "").substring(0, 30), 56, y);
-          doc.text((reg.nombre_empleado || "").substring(0, 20), 116, y);
-          if (reg.con_foto && reg.foto_url) {
-            doc.setTextColor(24, 95, 165);
-            doc.textWithLink("Ver", pageW - 28, y, { url: reg.foto_url });
-          } else {
-            doc.setTextColor(160, 160, 160);
-            doc.text("-", pageW - 27, y);
-          }
-          y += 7;
-        });
-      }
-
-      // Sección de incidencias
-      y += 8;
-      if (y > 250) { doc.addPage(); y = 20; }
-      doc.setTextColor(44, 44, 42);
-      doc.setFontSize(12); doc.setFont(undefined, "bold");
-      doc.text("Incidencias reportadas", 14, y);
-      y += 8;
+      if (y > 220) { doc.addPage(); y = 22; }
+      y = dibujarTituloSeccion(doc, y, "alerta", "Incidencias del mes");
 
       if (incs.length === 0) {
-        doc.setTextColor(107, 106, 100);
-        doc.setFontSize(9); doc.setFont(undefined, "normal");
-        doc.text("No se reportaron incidencias en este período.", 16, y);
-        y += 7;
+        y = dibujarEstadoVacioVerde(doc, y, "No se reportaron incidencias este mes.");
       } else {
-        incs.forEach(function(inc) {
-          if (y > 265) { doc.addPage(); y = 20; }
-          var esInsumo = inc.tipo === "insumo";
-          // Etiqueta de tipo
-          if (esInsumo) { doc.setFillColor(230, 241, 251); doc.setTextColor(24, 95, 165); }
-          else { doc.setFillColor(250, 238, 218); doc.setTextColor(133, 79, 11); }
-          doc.roundedRect(14, y - 4, 28, 6, 1, 1, "F");
-          doc.setFontSize(7.5); doc.setFont(undefined, "bold");
-          doc.text(esInsumo ? "FALTA INSUMO" : "PROBLEMA", 16, y);
-          // Estado
-          if (inc.resuelto) { doc.setTextColor(15, 110, 86); doc.text("Resuelta", 46, y); }
-          else { doc.setTextColor(133, 79, 11); doc.text("Pendiente", 46, y); }
-          // Fecha
-          doc.setTextColor(107, 106, 100); doc.setFont(undefined, "normal");
-          doc.text(fmtFecha(inc.created_at), pageW - 40, y);
-          y += 6;
-          // Descripción
-          doc.setTextColor(44, 44, 42); doc.setFontSize(9);
-          var desc = doc.splitTextToSize((inc.descripcion || "") + (inc.area ? "  (" + inc.area + ")" : ""), pageW - 32);
-          doc.text(desc, 16, y);
-          y += desc.length * 5 + 4;
+        textRGB(doc, PDF_COLORS.textoSoft);
+        doc.setFontSize(9.5); doc.setFont(undefined, "italic");
+        doc.text("Se detectaron " + incs.length + " incidencia(s), con " + datos.incResueltas + " resueltas (" + pctInc + "%).", 18, y);
+        y += 7;
+        incs.forEach(function(inc){
+          if (y > 245) { doc.addPage(); y = 22; }
+          y = dibujarFilaIncidencia(doc, y, inc);
         });
       }
 
-      y += 6;
-      if (y > 280) { doc.addPage(); y = 20; }
-      doc.setDrawColor(226, 224, 216);
-      doc.line(14, y, pageW - 14, y);
-      y += 6;
-      doc.setTextColor(107, 106, 100);
-      doc.setFontSize(8);
-      doc.text("Informe generado por CleanTrack — Los enlaces 'Ver' abren la foto del registro.", 14, y);
+      // Espacio para comentarios del property manager
+      y += 8;
+      if (y > 230) { doc.addPage(); y = 22; }
+      strokeRGB(doc, PDF_COLORS.borde);
+      doc.setLineWidth(0.4);
+      fillRGB(doc, PDF_COLORS.cabeceraBg);
+      doc.roundedRect(14, y, pageW - 28, 32, 3, 3, "FD");
+      textRGB(doc, PDF_COLORS.azulOsc);
+      doc.setFontSize(10); doc.setFont(undefined, "bold");
+      doc.text("Comentarios del property manager:", 20, y + 7);
+      strokeRGB(doc, PDF_COLORS.borde);
+      doc.setLineWidth(0.3);
+      doc.line(20, y + 17, pageW - 20, y + 17);
+      doc.line(20, y + 25, pageW - 20, y + 25);
+      y += 36;
 
-      var nombreArch = "Informe_" + (periodo === "diario" ? "diario" : periodo) + "_" + edificio.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf";
-      doc.save(nombreArch);
+      dibujarPie(doc, y, null);
+      doc.save("Informe_mensual_" + edificio.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf");
     }
 
     verificarAcceso();
