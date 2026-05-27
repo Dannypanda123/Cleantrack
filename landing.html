@@ -170,6 +170,17 @@
     .paso h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
     .paso p { color: rgba(255,255,255,0.72); font-size: 14.5px; }
 
+    /* Bloque de video */
+    .video-bloque { margin-top: 60px; text-align: center; }
+    .video-bloque h3 { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+    .video-bloque .vsub { color: rgba(255,255,255,0.74); font-size: 16px; max-width: 560px; margin: 0 auto 28px; }
+    .video-marco {
+      max-width: 800px; margin: 0 auto; border-radius: 18px; overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.12);
+      background: #06203D;
+    }
+    .video-marco video { width: 100%; display: block; aspect-ratio: 16 / 9; object-fit: cover; background: #06203D; }
+
     /* Comparación */
     .porque { background: var(--fondo); }
     .tabla-comp { margin-top: 44px; width: 100%; border-collapse: collapse; background: var(--blanco); border-radius: 16px; overflow: hidden; box-shadow: 0 6px 24px rgba(0,0,0,0.05); }
@@ -217,7 +228,7 @@
   <!-- ============ NAV ============ -->
   <nav>
     <div class="nav-inner">
-      <a href="landing.html" class="nav-logo">
+      <a href="/" class="nav-logo">
         <img src="logo-simbolo.png" alt="CleanTrack" />
         <span class="nombre">CleanTrack</span>
       </a>
@@ -354,6 +365,18 @@
           <p>You and your supervisors see all activity from the dashboard, instantly. No calls, no waiting for reports.</p>
         </div>
       </div>
+
+      <div class="video-bloque reveal">
+        <h3>See it in action</h3>
+        <p class="vsub frase">A quick look at how CleanTrack works, from scanning the QR to your live dashboard.</p>
+        <div class="video-marco">
+          <!-- Sube tu video como video.mp4 a la raíz del repo y aparecerá aquí automáticamente -->
+          <video controls preload="metadata" poster="logo-simbolo.png">
+            <source src="video.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -410,7 +433,7 @@
     <img src="logo-simbolo.png" alt="CleanTrack" />
     <h2>Start proving<br>your value <span class="acento">today</span></h2>
     <div class="linea"></div>
-    <p class="sub frase">Your first 15 days are free. We help you set everything up — no cost, no commitment.</p>
+    <p class="sub frase">Your first 30 days are free. We help you set everything up — no cost, no commitment.</p>
     <a href="contact.html" class="btn btn-verde">Contact us for a quote</a>
   </section>
 
