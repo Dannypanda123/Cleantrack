@@ -11,6 +11,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="ui.js"></script>
 
   <style>
     :root {
@@ -483,7 +484,7 @@
 
     async function cambiarEstadoArea(id, nuevoEstado) {
       const { error } = await db.from("areas").update({ activa: nuevoEstado }).eq("id", id);
-      if (error) alert("No se pudo cambiar: " + error.message);
+      if (error) uiToast("No se pudo cambiar: " + error.message, "error");
       cargarAreas();
     }
 
@@ -492,13 +493,13 @@
       var edi = edificiosCache.find(function(e){ return e.id === id; });
 
       const { error } = await db.from("edificios").update({ activo: nuevoEstado }).eq("id", id);
-      if (error) { alert("No se pudo cambiar: " + error.message); return; }
+      if (error) { uiToast("No se pudo cambiar: " + error.message, "error"); return; }
 
       // Si se DESACTIVA el edificio, desactivar también todas sus áreas
       // (al reactivar el edificio, las áreas NO se reactivan solas: las activa el usuario)
       if (nuevoEstado === false && edi) {
         const { error: errAreas } = await db.from("areas").update({ activa: false }).eq("edificio", edi.nombre);
-        if (errAreas) alert("El edificio se desactivó, pero hubo un problema al desactivar sus áreas: " + errAreas.message);
+        if (errAreas) uiToast("El edificio se desactivó, pero hubo un problema al desactivar sus áreas: " + errAreas.message, "error");
       }
 
       cargarAreas();
@@ -568,7 +569,7 @@
     // Imprimir UNA sola tarjeta, con el mismo diseño bonito que la hoja
     function imprimirUnaTarjeta() {
       var img = document.querySelector("#qr-canvas img") || document.querySelector("#qr-canvas canvas");
-      if (!img) { alert("Espera a que el QR cargue."); return; }
+      if (!img) { uiToast("Espera a que el QR cargue.", "info"); return; }
       var src = img.tagName === "IMG" ? img.src : img.toDataURL("image/png");
       var empresa = nombreCompania || "CleanTrack";
       var ini = inicialesDe(empresa);
@@ -610,7 +611,7 @@
     // ===== Imprimir TODOS los QR de un edificio =====
     function imprimirQRedificio(edificioId, nombreEd) {
       var areasEd = todasLasAreas.filter(function(a){ return a.edificio === nombreEd; });
-      if (areasEd.length === 0) { alert("Este edificio no tiene áreas para generar códigos."); return; }
+      if (areasEd.length === 0) { uiToast("Este edificio no tiene áreas para generar códigos.", "info"); return; }
 
       var empresa = nombreCompania || "CleanTrack";
       var ini = inicialesDe(empresa);
