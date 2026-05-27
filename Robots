@@ -1,0 +1,22 @@
+# CleanTrack — robots.txt
+# Permite indexar la landing y el contacto. Bloquea las pantallas internas.
+
+User-agent: *
+Allow: /$
+Allow: /index.html
+Allow: /contact.html
+
+Disallow: /login.html
+Disallow: /inicio.html
+Disallow: /admin.html
+Disallow: /dashboard.html
+Disallow: /areas.html
+Disallow: /Empleado.html
+Disallow: /incidencias.html
+Disallow: /buzon.html
+Disallow: /soporte.html
+Disallow: /panel.html
+Disallow: /estadisticas.html
+Disallow: /reportes.html
+
+Sitemap: https://cleantrack-app.com/sitemap.xml
