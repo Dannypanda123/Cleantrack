@@ -6,6 +6,7 @@
   <title>CleanTrack — Empleados</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="ui.js"></script>
 
   <style>
     :root {
@@ -291,11 +292,12 @@
         var itemSin = document.createElement("div");
         itemSin.className = "sug-item sug-sin-asignar";
         itemSin.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="17" y1="8" x2="22" y2="13"></line><line x1="22" y1="8" x2="17" y2="13"></line></svg><span>Sin asignar <span class="sug-hint">— quitar de todos los edificios</span></span>';
-        itemSin.onmousedown = function(e) {
+        itemSin.onmousedown = async function(e) {
           e.preventDefault();
           var tieneEdificios = seleccion[tipo].length > 0;
           if (tieneEdificios) {
-            if (!confirm("¿Quitar a este empleado de todos sus edificios? Quedará en el grupo 'Sin asignar' (sigue activo en la compañía).")) {
+            const ok = await uiConfirm("¿Quitar a este empleado de todos sus edificios? Quedará en el grupo 'Sin asignar' (sigue activo en la compañía).", { titulo: "Quitar de todos los edificios", textoOk: "Sí, quitar", peligro: false });
+            if (!ok) {
               buscador.focus();
               return;
             }
@@ -520,15 +522,16 @@
     }
 
     async function eliminarEmpleado(id, nombre) {
-      if (!confirm("¿Eliminar a " + nombre + "? Esta acción no se puede deshacer. (Sus registros de limpieza se conservan.)")) return;
+      const ok = await uiConfirm("¿Eliminar a " + nombre + "? Esta acción no se puede deshacer. (Sus registros de limpieza se conservan.)", { titulo: "Eliminar empleado", textoOk: "Sí, eliminar", peligro: true });
+      if (!ok) return;
       const { error } = await db.from("empleados").delete().eq("id", id);
-      if (error) { alert("No se pudo eliminar: " + error.message); return; }
+      if (error) { uiToast("No se pudo eliminar: " + error.message, "error"); return; }
       cargarEmpleados();
     }
 
     async function cambiarEstado(id, nuevoEstado) {
       const { error } = await db.from("empleados").update({ activo: nuevoEstado }).eq("id", id);
-      if (error) alert("No se pudo cambiar el estado: " + error.message);
+      if (error) uiToast("No se pudo cambiar el estado: " + error.message, "error");
       cargarEmpleados();
     }
 
