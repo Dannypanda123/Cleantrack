@@ -208,7 +208,7 @@
           <div class="ic">✉️</div>
           <div>
             <div class="et">Email</div>
-            <div class="vl"><a href="mailto:Info@cleantrack-app.com">Info@cleantrack-app.com</a></div>
+            <div class="vl"><a href="mailto:gomezmanager@cleantrack-app.com">gomezmanager@cleantrack-app.com</a></div>
           </div>
         </div>
 
@@ -268,6 +268,9 @@
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
     }
 
+    // Access key pública de Web3Forms (segura para estar en el cliente: solo sirve para enviarte formularios a ti)
+    const WEB3FORMS_KEY = "acf41ed8-e843-4758-a3e4-508733a00911";
+
     async function enviar() {
       var nombre = document.getElementById("nombre").value.trim();
       var empresa = document.getElementById("empresa").value.trim();
@@ -283,42 +286,68 @@
         aviso("Please enter a valid email address.", "error");
         return;
       }
-      if (!db) {
-        aviso("Connection error. Please email us directly.", "error");
-        return;
-      }
 
       document.getElementById("btnEnviar").disabled = true;
       aviso("Sending...", "cargando");
 
-      // Armamos el texto de la consulta en el campo "pregunta" de la tabla soporte
-      var pregunta =
-        "QUOTE REQUEST\n" +
+      // Texto unificado de la cotización (se usa en ambos canales)
+      var resumen =
         "Name: " + nombre + "\n" +
         "Company: " + empresa + "\n" +
         "Buildings: " + (edificios || "not specified") + "\n" +
         "Message: " + (mensaje || "(none)");
 
-      const { error } = await db.from("soporte").insert([{
-        email_usuario: email,
-        pregunta: pregunta,
-        resuelto: false
-      }]);
-
-      if (error) {
-        console.error(error);
-        aviso("Something went wrong. Please email us at Info@cleantrack-app.com", "error");
-        document.getElementById("btnEnviar").disabled = false;
-        return;
+      // ---- CANAL 1 (principal): correo vía Web3Forms ----
+      var correoOk = false;
+      try {
+        const resp = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({
+            access_key: WEB3FORMS_KEY,
+            subject: "New CleanTrack quote request — " + empresa,
+            from_name: "CleanTrack Website",
+            name: nombre,
+            email: email,
+            company: empresa,
+            buildings: (edificios || "not specified"),
+            message: (mensaje || "(none)")
+          })
+        });
+        const datos = await resp.json();
+        correoOk = !!datos.success;
+      } catch (e) {
+        console.error("Web3Forms error:", e);
+        correoOk = false;
       }
 
-      aviso("✓ Thank you! We've received your request and will be in touch soon.", "ok");
-      // limpiar campos
-      document.getElementById("nombre").value = "";
-      document.getElementById("empresa").value = "";
-      document.getElementById("email").value = "";
-      document.getElementById("edificios").value = "";
-      document.getElementById("mensaje").value = "";
+      // ---- CANAL 2 (respaldo): guardar en Supabase ----
+      // Si el RLS bloquea el insert anónimo, no afecta al cliente: el correo ya avisó.
+      if (db) {
+        try {
+          await db.from("soporte").insert([{
+            email_usuario: email,
+            pregunta: "QUOTE REQUEST\n" + resumen,
+            resuelto: false
+          }]);
+        } catch (e) {
+          console.error("Supabase insert error (respaldo):", e);
+        }
+      }
+
+      // ---- Resultado para el cliente ----
+      // Mostramos éxito si AL MENOS el correo llegó (que es lo que nos avisa a nosotros).
+      if (correoOk) {
+        aviso("✓ Thank you! We've received your request and will be in touch soon.", "ok");
+        document.getElementById("nombre").value = "";
+        document.getElementById("empresa").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("edificios").value = "";
+        document.getElementById("mensaje").value = "";
+      } else {
+        aviso("Something went wrong. Please email us directly at gomezmanager@cleantrack-app.com", "error");
+        document.getElementById("btnEnviar").disabled = false;
+      }
     }
   </script>
 </body>
