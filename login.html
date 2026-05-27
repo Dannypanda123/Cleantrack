@@ -73,7 +73,7 @@
       position: relative;
     }
     .logo-img {
-      width: 64px; height: 64px; object-fit: contain; display: block; margin: 0 auto 10px;
+      width: 192px; height: 192px; object-fit: contain; display: block; margin: 0 auto 10px;
       filter: drop-shadow(0 6px 18px rgba(0,0,0,0.28));
     }
     .marca-nombre {
@@ -81,12 +81,13 @@
       color: #fff; font-size: 26px; font-weight: 700; letter-spacing: 0.01em;
       text-align: center; line-height: 1;
     }
+    .marca-nombre .verde-txt { color: var(--verde); }
     .marca-linea {
       width: 38px; height: 3px; background: var(--verde); border-radius: 3px;
       margin: 12px auto 0;
     }
-    .cabecera .titulo { color: #fff; font-size: 17px; font-weight: 600; letter-spacing: 0.01em; }
-    .cabecera .subtitulo { color: rgba(255,255,255,0.72); font-size: 13px; margin-top: 12px; letter-spacing: 0.02em; }
+    .cabecera .titulo { color: #fff; font-size: 17px; font-weight: 600; letter-spacing: 0.01em; margin-top: 14px; }
+    .cabecera .subtitulo { color: rgba(255,255,255,0.72); font-size: 13px; margin-top: 4px; letter-spacing: 0.02em; }
 
     .cuerpo { padding: 30px 32px 34px; }
 
@@ -122,9 +123,10 @@
   <div class="caja">
     <div class="cabecera">
       <img src="logo-simbolo.png" alt="CleanTrack" class="logo-img" />
-      <div class="marca-nombre">CleanTrack</div>
+      <div class="marca-nombre">Clean<span class="verde-txt">Track</span></div>
       <div class="marca-linea"></div>
-      <div class="subtitulo">Panel del supervisor</div>
+      <div class="titulo">Panel del supervisor</div>
+      <div class="subtitulo">Gestión profesional de limpieza</div>
     </div>
 
     <div class="cuerpo">
