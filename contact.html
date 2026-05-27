@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CleanTrack — Contact us</title>
+  <meta name="description" content="Request a free quote for CleanTrack. Your first 30 days are free — no cost, no commitment." />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --azul: #185FA5;
+      --azul-osc: #0C447C;
+      --azul-mas-osc: #0A3A6B;
+      --verde: #1D9E75;
+      --verde-osc: #178A65;
+      --fondo: #ECEBE4;
+      --fondo-claro: #F4F3EE;
+      --blanco: #FFFFFF;
+      --texto: #1B2733;
+      --texto-suave: #5A6573;
+      --borde: #E2E0D8;
+      --rojo: #B23B3B;
+      --rojo-claro: #FBEAEA;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Sora", -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--texto); background: var(--fondo); line-height: 1.6;
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+    .frase { font-family: "Fraunces", Georgia, serif; font-style: italic; }
+
+    /* NAV (igual que la landing) */
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(12,68,124,0.96); backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-inner {
+      max-width: 1120px; margin: 0 auto; padding: 14px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo img { width: 34px; height: 34px; object-fit: contain; }
+    .nav-logo .nombre { color: #fff; font-weight: 700; font-size: 19px; }
+    .nav-links { display: flex; align-items: center; gap: 8px; }
+    .nav-links a {
+      color: rgba(255,255,255,0.85); text-decoration: none; font-size: 14.5px;
+      font-weight: 500; padding: 9px 14px; border-radius: 9px; transition: all 0.15s;
+    }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.10); }
+    .nav-links a.login { border: 1.5px solid rgba(255,255,255,0.30); }
+    .nav-links a.login:hover { background: rgba(255,255,255,0.15); }
+    .menu-btn { display: none; background: none; border: none; cursor: pointer; padding: 6px; }
+    .menu-btn span { display: block; width: 24px; height: 2px; background: #fff; margin: 5px 0; border-radius: 2px; }
+    @media (max-width: 780px) {
+      .menu-btn { display: block; }
+      .nav-links {
+        position: absolute; top: 100%; left: 0; right: 0; background: var(--azul-osc);
+        flex-direction: column; gap: 4px; padding: 0 24px; align-items: stretch;
+        max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease;
+      }
+      .nav-links.abierto { max-height: 320px; padding: 12px 24px 18px; }
+      .nav-links a { text-align: center; }
+    }
+
+    /* HERO chico */
+    .head {
+      background: linear-gradient(160deg, var(--azul-osc) 0%, var(--azul) 100%);
+      color: #fff; text-align: center; padding: 64px 24px 56px;
+    }
+    .head img { width: 70px; height: 70px; object-fit: contain; margin: 0 auto 20px; display: block; filter: drop-shadow(0 8px 22px rgba(0,0,0,0.3)); }
+    .head h1 { font-size: clamp(32px, 5vw, 46px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.08; }
+    .head h1 .acento { color: #5FD3A8; }
+    .head .linea { width: 60px; height: 4px; background: var(--verde); border-radius: 3px; margin: 20px auto; }
+    .head .sub { font-size: 18px; color: rgba(255,255,255,0.84); max-width: 540px; margin: 0 auto; }
+
+    /* CONTENIDO */
+    .contenido { flex: 1; max-width: 1000px; margin: -32px auto 0; padding: 0 24px 70px; width: 100%; }
+    .grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 26px; align-items: start; }
+    @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+
+    .tarjeta { background: var(--blanco); border-radius: 20px; padding: 34px; box-shadow: 0 14px 40px rgba(12,68,124,0.10); border: 1px solid var(--borde); }
+    .tarjeta h2 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+    .tarjeta .desc { color: var(--texto-suave); font-size: 15px; margin-bottom: 24px; }
+
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--texto); margin-bottom: 7px; }
+    .campo { margin-bottom: 18px; }
+    input, textarea, select {
+      width: 100%; padding: 13px 15px; font-size: 15px; font-family: inherit;
+      border: 1.5px solid var(--borde); border-radius: 11px; outline: none;
+      background: #FCFBF8; transition: border-color 0.15s, box-shadow 0.15s; color: var(--texto);
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--verde); box-shadow: 0 0 0 3px rgba(29,158,117,0.14); background: #fff; }
+    textarea { resize: vertical; min-height: 110px; }
+
+    .btn-enviar {
+      width: 100%; padding: 15px; border: none; border-radius: 12px; cursor: pointer;
+      font-size: 16px; font-weight: 600; color: #fff; font-family: inherit;
+      background: linear-gradient(135deg, var(--verde), var(--verde-osc));
+      box-shadow: 0 8px 22px rgba(29,158,117,0.35); transition: transform 0.08s, box-shadow 0.15s; margin-top: 4px;
+    }
+    .btn-enviar:hover { box-shadow: 0 12px 28px rgba(29,158,117,0.5); }
+    .btn-enviar:active { transform: scale(0.98); }
+    .btn-enviar:disabled { opacity: 0.6; cursor: default; }
+
+    .aviso { text-align: center; font-size: 14px; margin-top: 16px; padding: 13px; border-radius: 11px; display: none; }
+    .aviso.error { background: var(--rojo-claro); color: var(--rojo); display: block; }
+    .aviso.cargando { background: #DCE9F5; color: var(--azul-osc); display: block; }
+    .aviso.ok { background: #D6F0E4; color: var(--verde-osc); display: block; }
+
+    /* tarjeta de info lateral */
+    .info { background: linear-gradient(160deg, var(--azul-osc), var(--azul)); color: #fff; }
+    .info h3 { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #7FE0BC; text-align: center; margin-bottom: 22px; }
+    .info-item { display: flex; gap: 14px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.12); }
+    .info-item:last-child { border-bottom: none; }
+    .info-item .ic { width: 40px; height: 40px; border-radius: 11px; background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .info-item .et { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.6); }
+    .info-item .vl { font-size: 15px; font-weight: 500; word-break: break-word; }
+    .info-item a { color: #fff; text-decoration: none; }
+    .info-item a:hover { text-decoration: underline; }
+    .info .gratis { margin-top: 22px; background: rgba(29,158,117,0.25); border: 1px solid rgba(127,224,188,0.4); border-radius: 13px; padding: 16px; font-size: 14px; }
+    .info .gratis b { display: block; margin-bottom: 3px; font-size: 15px; }
+
+    footer { background: var(--azul-mas-osc); color: rgba(255,255,255,0.6); text-align: center; padding: 30px 24px; font-size: 14px; }
+    footer .marca { color: #fff; font-weight: 700; font-size: 16px; }
+    footer a { color: rgba(255,255,255,0.7); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <img src="logo-simbolo.png" alt="CleanTrack" />
+        <span class="nombre">CleanTrack</span>
+      </a>
+      <button class="menu-btn" onclick="toggleMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-links" id="navLinks">
+        <a href="/#how">How it works</a>
+        <a href="/#why">Why CleanTrack</a>
+        <a href="login.html" class="login">Supervisor login</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="head">
+    <img src="logo-simbolo.png" alt="CleanTrack" />
+    <h1>Let's talk about your <span class="acento">cleaning team</span></h1>
+    <div class="linea"></div>
+    <p class="sub frase">Tell us a bit about your company and we'll send you a tailored quote.</p>
+  </header>
+
+  <main class="contenido">
+    <div class="grid">
+
+      <!-- FORMULARIO -->
+      <div class="tarjeta">
+        <h2>Request a quote</h2>
+        <p class="desc">Fill out the form and we'll get back to you shortly. No commitment.</p>
+
+        <div class="campo">
+          <label for="nombre">Your name</label>
+          <input type="text" id="nombre" placeholder="John Smith" autocomplete="name" />
+        </div>
+        <div class="campo">
+          <label for="empresa">Company name</label>
+          <input type="text" id="empresa" placeholder="Smith Cleaning Services" autocomplete="organization" />
+        </div>
+        <div class="campo">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="you@company.com" autocomplete="email" />
+        </div>
+        <div class="campo">
+          <label for="edificios">How many buildings do you service?</label>
+          <select id="edificios">
+            <option value="">Select an option</option>
+            <option value="1-2">1–2 buildings</option>
+            <option value="3-5">3–5 buildings</option>
+            <option value="6-10">6–10 buildings</option>
+            <option value="10+">More than 10 buildings</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="mensaje">Anything else we should know? (optional)</label>
+          <textarea id="mensaje" placeholder="Tell us about your team, your needs, or any questions you have."></textarea>
+        </div>
+
+        <button class="btn-enviar" id="btnEnviar" onclick="enviar()">Send request</button>
+
+        <div class="aviso" id="aviso"></div>
+      </div>
+
+      <!-- INFO LATERAL -->
+      <div class="tarjeta info">
+        <h3>Contact</h3>
+
+        <div class="info-item">
+          <div class="ic">✉️</div>
+          <div>
+            <div class="et">Email</div>
+            <div class="vl"><a href="mailto:Info@cleantrack-app.com">Info@cleantrack-app.com</a></div>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="ic">🌐</div>
+          <div>
+            <div class="et">Website</div>
+            <div class="vl">cleantrack-app.com</div>
+          </div>
+        </div>
+
+        <div class="gratis">
+          <b>Your first 30 days are free</b>
+          Try it risk-free. We help you set everything up — no cost, no commitment.
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="marca">CleanTrack</div>
+    <div class="frase">Every cleaning, verified.</div>
+    <div style="margin-top:12px; font-size:13px;">© <span id="year"></span> CleanTrack · <a href="login.html">Supervisor login</a></div>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
+
+    let db = null;
+    try {
+      const { createClient } = supabase;
+      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (e) {
+      console.error("No se pudo conectar a Supabase:", e);
+    }
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    function toggleMenu() {
+      document.getElementById("navLinks").classList.toggle("abierto");
+    }
+    document.querySelectorAll("#navLinks a").forEach(function(a){
+      a.addEventListener("click", function(){
+        document.getElementById("navLinks").classList.remove("abierto");
+      });
+    });
+
+    function aviso(texto, tipo) {
+      var a = document.getElementById("aviso");
+      a.textContent = texto;
+      a.className = "aviso " + tipo;
+    }
+
+    function validarEmail(e) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+    }
+
+    async function enviar() {
+      var nombre = document.getElementById("nombre").value.trim();
+      var empresa = document.getElementById("empresa").value.trim();
+      var email = document.getElementById("email").value.trim();
+      var edificios = document.getElementById("edificios").value;
+      var mensaje = document.getElementById("mensaje").value.trim();
+
+      if (!nombre || !empresa || !email) {
+        aviso("Please fill in your name, company and email.", "error");
+        return;
+      }
+      if (!validarEmail(email)) {
+        aviso("Please enter a valid email address.", "error");
+        return;
+      }
+      if (!db) {
+        aviso("Connection error. Please email us directly.", "error");
+        return;
+      }
+
+      document.getElementById("btnEnviar").disabled = true;
+      aviso("Sending...", "cargando");
+
+      // Armamos el texto de la consulta en el campo "pregunta" de la tabla soporte
+      var pregunta =
+        "QUOTE REQUEST\n" +
+        "Name: " + nombre + "\n" +
+        "Company: " + empresa + "\n" +
+        "Buildings: " + (edificios || "not specified") + "\n" +
+        "Message: " + (mensaje || "(none)");
+
+      const { error } = await db.from("soporte").insert([{
+        email_usuario: email,
+        pregunta: pregunta,
+        resuelto: false
+      }]);
+
+      if (error) {
+        console.error(error);
+        aviso("Something went wrong. Please email us at Info@cleantrack-app.com", "error");
+        document.getElementById("btnEnviar").disabled = false;
+        return;
+      }
+
+      aviso("✓ Thank you! We've received your request and will be in touch soon.", "ok");
+      // limpiar campos
+      document.getElementById("nombre").value = "";
+      document.getElementById("empresa").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("edificios").value = "";
+      document.getElementById("mensaje").value = "";
+    }
+  </script>
+</body>
+</html>
