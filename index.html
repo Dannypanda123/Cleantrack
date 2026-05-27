@@ -167,6 +167,32 @@
     .inc-label { display: block; font-size: 13px; font-weight: 600; color: var(--gris-texto); margin-bottom: 6px; }
     .inc-desc { width: 100%; min-height: 90px; padding: 13px; font-size: 15px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 16px; outline: none; resize: vertical; font-family: inherit; }
     .inc-desc:focus { border-color: var(--gris-verde-700); }
+
+    /* ===== AJUSTE PARA PANTALLAS DE POCA ALTURA (móviles) ===== */
+    /* Comprime la pantalla del PIN para que el teclado completo (incl. 0 y Borrar) */
+    /* entre sin hacer scroll. Solo afecta a teléfonos; en desktop queda igual. */
+    @media (max-height: 740px) {
+      body { padding: 10px; align-items: flex-start; }
+      .cabecera { padding: 14px 24px; }
+      .cabecera img { height: 52px; }
+      .cabecera .marca-texto { font-size: 20px; }
+      .cabecera .marca-eslogan { font-size: 12px; }
+      .cuerpo { padding: 16px 20px 20px; }
+      #p-pin .area-info { padding: 12px; margin-bottom: 14px; }
+      #p-pin .area-info .ico-area { width: 28px; height: 28px; margin-bottom: 6px; }
+      #p-pin .area-info .nombre { font-size: 17px; }
+      #p-pin .label { margin-bottom: 12px; }
+      #p-pin .pin-dots { margin-bottom: 16px; }
+      #p-pin .keypad { gap: 9px; }
+      #p-pin .key { aspect-ratio: 2.0; font-size: 20px; border-radius: 12px; }
+    }
+    /* Pantallas aún más bajas (teléfonos pequeños) */
+    @media (max-height: 640px) {
+      .cabecera img { height: 44px; }
+      #p-pin .area-info .edificio { font-size: 12px; }
+      #p-pin .keypad { gap: 7px; }
+      #p-pin .key { aspect-ratio: 2.3; font-size: 19px; }
+    }
   </style>
 </head>
 <body>
