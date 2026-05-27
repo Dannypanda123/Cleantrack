@@ -6,6 +6,7 @@
   <title>CleanTrack — Incidencias</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="ui.js"></script>
 
   <style>
     :root {
@@ -261,7 +262,7 @@
 
     async function cambiarEstado(id, resuelto) {
       const { error } = await db.from("incidencias").update({ resuelto: resuelto }).eq("id", id);
-      if (error) { alert("No se pudo actualizar: " + error.message); return; }
+      if (error) { uiToast("No se pudo actualizar: " + error.message, "error"); return; }
       cargar();
     }
 
