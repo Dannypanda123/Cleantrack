@@ -7,6 +7,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="ui.js"></script>
 
   <style>
     :root {
@@ -34,7 +35,6 @@
     .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
     .btn-refrescar:active, .btn-salir:active { transform: scale(0.97); }
 
-    /* Selector de edificio */
     .selector-cont { margin-bottom: 22px; }
     .selector-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-texto); margin-bottom: 8px; }
     .selector { width: 100%; padding: 14px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: var(--blanco); color: var(--texto); outline: none; cursor: pointer; }
@@ -58,8 +58,8 @@
     .miniatura { width: 54px; height: 54px; border-radius: 12px; object-fit: cover; flex-shrink: 0; cursor: pointer; border: 1px solid var(--gris-borde); }
     .icono { width: 54px; height: 54px; border-radius: 12px; background: var(--verde-claro); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
     .registro .info { flex: 1; min-width: 0; }
-    .registro .area { font-size: 15px; font-weight: 600; }
-    .registro .detalle { font-size: 13px; color: var(--gris-texto); margin-top: 2px; }
+    .registro .area { font-size: 15px; font-weight: 600; word-break: break-word; }
+    .registro .detalle { font-size: 13px; color: var(--gris-texto); margin-top: 2px; word-break: break-word; }
     .registro .hora { font-size: 13px; color: var(--gris-texto); text-align: right; flex-shrink: 0; }
 
     .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 8px; margin-top: 4px; }
@@ -149,7 +149,6 @@
       return h + ":" + m + " " + ampm;
     }
 
-    // Clave única del día (para agrupar) y etiqueta legible
     function claveDia(fechaISO) {
       var f = new Date(fechaISO);
       return f.getFullYear() + "-" + f.getMonth() + "-" + f.getDate();
@@ -165,17 +164,14 @@
       if (claveDia(fechaISO) === claveDia(hoy.toISOString())) return "Hoy";
       if (claveDia(fechaISO) === claveDia(ayer.toISOString())) return "Ayer";
 
-      // Diferencia en días
       var f0 = new Date(f.getFullYear(), f.getMonth(), f.getDate());
       var h0 = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
       var difDias = Math.round((h0 - f0) / 86400000);
 
       if (difDias > 1 && difDias < 7) {
-        // Día de la semana, con primera letra mayúscula
         var d = dias[f.getDay()];
         return d.charAt(0).toUpperCase() + d.slice(1);
       }
-      // Fecha completa: "18 de mayo"
       return f.getDate() + " de " + meses[f.getMonth()];
     }
 
@@ -189,12 +185,15 @@
       if (!db) return;
       const { data, error } = await db.from("registros").select("*").order("created_at", { ascending: false });
       if (error) {
-        document.getElementById("lista").innerHTML = '<div class="vacio">Error al cargar: ' + error.message + '</div>';
+        document.getElementById("lista").innerHTML = "";
+        var errDiv = document.createElement("div");
+        errDiv.className = "vacio";
+        errDiv.textContent = "Error al cargar: " + error.message;
+        document.getElementById("lista").appendChild(errDiv);
         return;
       }
       todosRegistros = data || [];
 
-      // Llenar el selector de edificios (conservando la selección actual)
       var sel = document.getElementById("selector-edificio");
       var seleccionActual = sel.value;
 
@@ -203,13 +202,20 @@
       var lista = Object.keys(edificios).sort();
 
       if (lista.length === 0) {
-        sel.innerHTML = '<option value="">No hay datos aún</option>';
+        sel.innerHTML = "";
+        var optVacio = document.createElement("option");
+        optVacio.value = "";
+        optVacio.textContent = "No hay datos aún";
+        sel.appendChild(optVacio);
       } else {
-        sel.innerHTML = '<option value="">Todos los edificios</option>';
+        sel.innerHTML = "";
+        var optTodos = document.createElement("option");
+        optTodos.value = "";
+        optTodos.textContent = "Todos los edificios";
+        sel.appendChild(optTodos);
         lista.forEach(function(e){
           var o = document.createElement("option"); o.value = e; o.textContent = e; sel.appendChild(o);
         });
-        // Restaurar selección previa si sigue existiendo
         if (seleccionActual && (seleccionActual === "" || lista.indexOf(seleccionActual) !== -1)) {
           sel.value = seleccionActual;
         }
@@ -231,42 +237,76 @@
 
       var lista = document.getElementById("lista");
       if (total === 0) {
-        lista.innerHTML = '<div class="vacio">' + (edificio ? "Aún no hay registros en este edificio." : "Aún no hay registros. Cuando un empleado registre un área, aparecerá aquí.") + '</div>';
+        lista.innerHTML = "";
+        var vacioDiv = document.createElement("div");
+        vacioDiv.className = "vacio";
+        vacioDiv.textContent = edificio ? "Aún no hay registros en este edificio." : "Aún no hay registros. Cuando un empleado registre un área, aparecerá aquí.";
+        lista.appendChild(vacioDiv);
         return;
       }
 
       lista.innerHTML = "";
       var diaActual = null;
       regs.forEach(function(r) {
-        // Insertar separador cuando cambia el día
+        // Separador de día cuando cambia la fecha
         var clave = claveDia(r.created_at);
         if (clave !== diaActual) {
           diaActual = clave;
           var sep = document.createElement("div");
           sep.className = "separador-fecha";
-          sep.innerHTML = '<span class="texto">' + etiquetaDia(r.created_at) + '</span><span class="linea"></span>';
+          var sepTexto = document.createElement("span");
+          sepTexto.className = "texto";
+          sepTexto.textContent = etiquetaDia(r.created_at);
+          var sepLinea = document.createElement("span");
+          sepLinea.className = "linea";
+          sep.appendChild(sepTexto);
+          sep.appendChild(sepLinea);
           lista.appendChild(sep);
         }
 
+        // Badge (HTML estático, seguro)
         var badge = r.con_foto
           ? '<span class="badge badge-foto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>Con foto</span>'
           : '<span class="badge badge-sinfoto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Registrado</span>';
-        var visual;
-        if (r.foto_url) {
-          visual = '<img class="miniatura" src="' + r.foto_url + '" alt="Foto" onclick="abrirModal(\'' + r.foto_url + '\')" />';
-        } else {
-          visual = '<div class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="#5F7268" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>';
-        }
+
         var div = document.createElement("div");
         div.className = "registro";
+
+        // Estructura base sin datos del usuario
         div.innerHTML =
-          visual +
+          '<div class="visual-slot"></div>' +
           '<div class="info">' +
-            '<div class="area">' + (r.area || "Área") + '</div>' +
-            '<div class="detalle">' + (r.edificio || "") + ' · ' + (r.nombre_empleado || "Empleado") + '</div>' +
-            badge +
+            '<div class="area"></div>' +
+            '<div class="detalle"></div>' +
           '</div>' +
-          '<div class="hora">' + formatHora(r.created_at) + '</div>';
+          '<div class="hora"></div>';
+
+        // Visual (foto o icono). Foto creada con createElement para no inyectar
+        // la URL dentro de un atributo onclick.
+        var visualSlot = div.querySelector(".visual-slot");
+        if (r.foto_url) {
+          var img = document.createElement("img");
+          img.className = "miniatura";
+          img.src = r.foto_url;
+          img.alt = "Foto";
+          var urlFoto = r.foto_url;
+          img.addEventListener("click", function() { abrirModal(urlFoto); });
+          visualSlot.replaceWith(img);
+        } else {
+          var icoDiv = document.createElement("div");
+          icoDiv.className = "icono";
+          icoDiv.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#5F7268" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+          visualSlot.replaceWith(icoDiv);
+        }
+
+        // Badge dentro de .info (HTML estático, seguro)
+        div.querySelector(".info").insertAdjacentHTML("beforeend", badge);
+
+        // Datos del usuario con textContent (ANTI-XSS)
+        div.querySelector(".area").textContent = r.area || "Área";
+        div.querySelector(".detalle").textContent = (r.edificio || "") + " · " + (r.nombre_empleado || "Empleado");
+        div.querySelector(".hora").textContent = formatHora(r.created_at);
+
         lista.appendChild(div);
       });
     }
