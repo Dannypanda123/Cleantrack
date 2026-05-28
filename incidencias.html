@@ -71,8 +71,8 @@
     .badge-estado { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 8px; }
     .badge-pendiente { background: var(--ambar-claro); color: var(--ambar-texto); }
     .badge-resuelto { background: var(--verde-claro); color: var(--verde-texto); }
-    .inc-desc { font-size: 15px; line-height: 1.45; margin-bottom: 8px; }
-    .inc-meta { font-size: 12px; color: var(--gris-texto); margin-bottom: 12px; }
+    .inc-desc { font-size: 15px; line-height: 1.45; margin-bottom: 8px; word-break: break-word; }
+    .inc-meta { font-size: 12px; color: var(--gris-texto); margin-bottom: 12px; word-break: break-word; }
     .inc-acciones { display: flex; }
     .btn-resolver { padding: 9px 16px; border: none; border-radius: 10px; background: var(--verde-accion); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
     .btn-resolver:active { transform: scale(0.97); }
@@ -133,7 +133,7 @@
   </div>
 
   <script>
-    
+
     var todas = [];
     var filtroActual = "pendientes";
 
@@ -168,7 +168,8 @@
     async function cargar() {
       const { data, error } = await db.from("incidencias").select("*").order("created_at", { ascending: false });
       if (error) {
-        document.getElementById("lista").innerHTML = '<div class="vacio">Error al cargar: ' + error.message + '</div>';
+        // Mensaje de error escapado (por si Supabase devuelve algo extraño)
+        document.getElementById("lista").innerHTML = '<div class="vacio">Error al cargar: ' + uiEscapar(error.message) + '</div>';
         return;
       }
       todas = data || [];
@@ -180,9 +181,17 @@
       todas.forEach(function(i){ edificios[i.edificio || "Sin edificio"] = true; });
       var listaEd = Object.keys(edificios).sort();
 
-      sel.innerHTML = '<option value="">Todos los edificios</option>';
+      // Limpiamos y rellenamos el select usando createElement (más seguro que innerHTML)
+      sel.innerHTML = "";
+      var optTodos = document.createElement("option");
+      optTodos.value = "";
+      optTodos.textContent = "Todos los edificios";
+      sel.appendChild(optTodos);
       listaEd.forEach(function(e){
-        var o = document.createElement("option"); o.value = e; o.textContent = e; sel.appendChild(o);
+        var o = document.createElement("option");
+        o.value = e;
+        o.textContent = e;
+        sel.appendChild(o);
       });
       if (seleccionActual) sel.value = seleccionActual;
 
@@ -214,41 +223,84 @@
       var lista = document.getElementById("lista");
       if (items.length === 0) {
         var msg = filtroActual === "pendientes" ? "No hay incidencias pendientes. ¡Todo en orden!" : (filtroActual === "resueltas" ? "Aún no hay incidencias resueltas." : "No hay incidencias.");
-        lista.innerHTML = '<div class="vacio">' + msg + '</div>';
+        // msg es texto literal nuestro (no de la BD), pero por consistencia usamos textContent
+        lista.innerHTML = "";
+        var vacio = document.createElement("div");
+        vacio.className = "vacio";
+        vacio.textContent = msg;
+        lista.appendChild(vacio);
         return;
       }
 
       lista.innerHTML = "";
       items.forEach(function(i) {
         var esInsumo = i.tipo === "insumo";
+
+        // SVGs estáticos (no contienen datos del usuario, seguros)
         var icoSVG = esInsumo
           ? '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>'
           : '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>';
 
-        var visual = i.foto_url
-          ? '<img class="inc-foto" src="' + i.foto_url + '" alt="Foto" onclick="abrirModal(\'' + i.foto_url + '\')" />'
-          : '<div class="inc-ico ' + (esInsumo ? 'insumo' : 'problema') + '">' + icoSVG + '</div>';
-
-        var badgeTipo = esInsumo
+        var badgeTipoHTML = esInsumo
           ? '<span class="badge-tipo insumo">Falta insumo</span>'
           : '<span class="badge-tipo problema">Problema</span>';
-        var badgeEstado = i.resuelto
+        var badgeEstadoHTML = i.resuelto
           ? '<span class="badge-estado badge-resuelto">Resuelta</span>'
           : '<span class="badge-estado badge-pendiente">Pendiente</span>';
-        var boton = i.resuelto
-          ? '<button class="btn-reabrir" onclick="cambiarEstado(' + i.id + ', false)">Reabrir</button>'
-          : '<button class="btn-resolver" onclick="cambiarEstado(' + i.id + ', true)">Marcar como resuelta</button>';
 
         var card = document.createElement("div");
         card.className = "inc-card" + (i.resuelto ? " resuelta" : "");
+
+        // Estructura base SIN datos del usuario (solo HTML estático)
         card.innerHTML =
-          visual +
+          '<div class="visual-slot"></div>' +
           '<div class="inc-cuerpo">' +
-            '<div class="inc-badges">' + badgeTipo + badgeEstado + '</div>' +
-            '<div class="inc-desc">' + (i.descripcion || "") + '</div>' +
-            '<div class="inc-meta">' + (i.area || "") + ' · ' + (i.edificio || "") + ' · ' + (i.nombre_empleado || "Empleado") + ' · ' + fmtFecha(i.created_at) + '</div>' +
-            '<div class="inc-acciones">' + boton + '</div>' +
+            '<div class="inc-badges">' + badgeTipoHTML + badgeEstadoHTML + '</div>' +
+            '<div class="inc-desc"></div>' +
+            '<div class="inc-meta"></div>' +
+            '<div class="inc-acciones"></div>' +
           '</div>';
+
+        // Visual (foto o icono). La foto la creamos con createElement para evitar
+        // inyectar la URL dentro de un atributo onclick.
+        var visualSlot = card.querySelector(".visual-slot");
+        if (i.foto_url) {
+          var img = document.createElement("img");
+          img.className = "inc-foto";
+          img.src = i.foto_url;
+          img.alt = "Foto";
+          var urlFoto = i.foto_url; // capturar en closure para el listener
+          img.addEventListener("click", function() { abrirModal(urlFoto); });
+          visualSlot.replaceWith(img);
+        } else {
+          var icoDiv = document.createElement("div");
+          icoDiv.className = "inc-ico " + (esInsumo ? "insumo" : "problema");
+          icoDiv.innerHTML = icoSVG; // SVG estático, seguro
+          visualSlot.replaceWith(icoDiv);
+        }
+
+        // Datos del usuario con textContent (ANTI-XSS).
+        // Esto es lo más importante del archivo: la descripción la escribe
+        // el empleado en su móvil, así que NUNCA debe interpretarse como HTML.
+        card.querySelector(".inc-desc").textContent = i.descripcion || "";
+        card.querySelector(".inc-meta").textContent =
+          (i.area || "") + " · " + (i.edificio || "") + " · " +
+          (i.nombre_empleado || "Empleado") + " · " + fmtFecha(i.created_at);
+
+        // Botón con addEventListener (no onclick inline). Esto evita que datos
+        // del usuario se cuelen dentro de un atributo HTML.
+        var boton = document.createElement("button");
+        if (i.resuelto) {
+          boton.className = "btn-reabrir";
+          boton.textContent = "Reabrir";
+          boton.addEventListener("click", function() { cambiarEstado(i.id, false); });
+        } else {
+          boton.className = "btn-resolver";
+          boton.textContent = "Marcar como resuelta";
+          boton.addEventListener("click", function() { cambiarEstado(i.id, true); });
+        }
+        card.querySelector(".inc-acciones").appendChild(boton);
+
         lista.appendChild(card);
       });
     }
