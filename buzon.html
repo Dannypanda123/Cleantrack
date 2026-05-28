@@ -27,6 +27,7 @@
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
     .contenedor { max-width: 640px; margin: 0 auto; display: none; }
     .verificando { max-width: 640px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+    .sin-acceso { max-width: 640px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; display: none; }
 
     .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
     .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
@@ -50,7 +51,7 @@
     .pregunta-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
     .pregunta-email { font-size: 13px; font-weight: 600; color: var(--gris-verde-700); word-break: break-all; }
     .pregunta-fecha { font-size: 12px; color: var(--gris-texto); white-space: nowrap; flex-shrink: 0; }
-    .pregunta-texto { font-size: 15px; line-height: 1.5; margin-bottom: 14px; }
+    .pregunta-texto { font-size: 15px; line-height: 1.5; margin-bottom: 14px; word-break: break-word; white-space: pre-wrap; }
 
     .badge-estado { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 8px; }
     .badge-pendiente { background: var(--ambar-claro); color: var(--ambar-texto); }
@@ -68,6 +69,11 @@
 <body>
 
   <div class="verificando" id="verificando">Verificando sesión...</div>
+
+  <div class="sin-acceso" id="sin-acceso">
+    Esta sección es solo para el administrador.<br><br>
+    <a class="btn-salir" href="inicio.html">← Volver al inicio</a>
+  </div>
 
   <div class="contenedor" id="contenedor">
 
@@ -99,7 +105,6 @@
   </div>
 
   <script>
-    
     var todas = [];
     var filtroActual = "pendientes";
 
@@ -107,6 +112,21 @@
       if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
+
+      // Solo el administrador puede ver el buzón de soporte
+      try {
+        const { data: esAdmin, error } = await db.rpc("soy_admin");
+        if (error || esAdmin !== true) {
+          document.getElementById("verificando").style.display = "none";
+          document.getElementById("sin-acceso").style.display = "block";
+          return;
+        }
+      } catch (e) {
+        document.getElementById("verificando").style.display = "none";
+        document.getElementById("sin-acceso").style.display = "block";
+        return;
+      }
+
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
       cargar();
@@ -120,7 +140,11 @@
     async function cargar() {
       const { data, error } = await db.from("soporte").select("*").order("created_at", { ascending: false });
       if (error) {
-        document.getElementById("lista").innerHTML = '<div class="vacio">Error al cargar: ' + error.message + '</div>';
+        document.getElementById("lista").innerHTML = "";
+        var errDiv = document.createElement("div");
+        errDiv.className = "vacio";
+        errDiv.textContent = "Error al cargar: " + error.message;
+        document.getElementById("lista").appendChild(errDiv);
         return;
       }
       todas = data || [];
@@ -158,7 +182,11 @@
 
       if (items.length === 0) {
         var msg = filtroActual === "pendientes" ? "No hay preguntas pendientes. ¡Todo al día!" : (filtroActual === "resueltas" ? "Aún no hay preguntas resueltas." : "Aún no hay preguntas.");
-        lista.innerHTML = '<div class="vacio">' + msg + '</div>';
+        lista.innerHTML = "";
+        var vacioDiv = document.createElement("div");
+        vacioDiv.className = "vacio";
+        vacioDiv.textContent = msg;
+        lista.appendChild(vacioDiv);
         return;
       }
 
@@ -166,19 +194,40 @@
       items.forEach(function(p) {
         var card = document.createElement("div");
         card.className = "pregunta-card" + (p.resuelto ? " resuelta" : "");
+
         var badge = p.resuelto
           ? '<span class="badge-estado badge-resuelto">Resuelta</span>'
           : '<span class="badge-estado badge-pendiente">Pendiente</span>';
-        var boton = p.resuelto
-          ? '<button class="btn-reabrir" onclick="cambiarEstado(' + p.id + ', false)">Reabrir</button>'
-          : '<button class="btn-resolver" onclick="cambiarEstado(' + p.id + ', true)">Marcar como resuelta</button>';
+
+        // Estructura base sin datos del usuario
         card.innerHTML =
           '<div class="pregunta-top">' +
-            '<div class="pregunta-email">' + (p.email_usuario || "Sin correo") + '</div>' +
-            '<div class="pregunta-fecha">' + fmtFecha(p.created_at) + '</div>' +
+            '<div class="pregunta-email"></div>' +
+            '<div class="pregunta-fecha"></div>' +
           '</div>' +
-          '<div class="pregunta-texto">' + p.pregunta + '</div>' +
-          '<div class="acciones-card">' + badge + boton + '</div>';
+          '<div class="pregunta-texto"></div>' +
+          '<div class="acciones-card">' + badge + '</div>';
+
+        // Datos del usuario con textContent (ANTI-XSS).
+        // El email y la pregunta los escribe el supervisor, así que nunca
+        // deben interpretarse como HTML.
+        card.querySelector(".pregunta-email").textContent = p.email_usuario || "Sin correo";
+        card.querySelector(".pregunta-fecha").textContent = fmtFecha(p.created_at);
+        card.querySelector(".pregunta-texto").textContent = p.pregunta || "";
+
+        // Botón con addEventListener
+        var boton = document.createElement("button");
+        if (p.resuelto) {
+          boton.className = "btn-reabrir";
+          boton.textContent = "Reabrir";
+          boton.addEventListener("click", function() { cambiarEstado(p.id, false); });
+        } else {
+          boton.className = "btn-resolver";
+          boton.textContent = "Marcar como resuelta";
+          boton.addEventListener("click", function() { cambiarEstado(p.id, true); });
+        }
+        card.querySelector(".acciones-card").appendChild(boton);
+
         lista.appendChild(card);
       });
     }
