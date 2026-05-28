@@ -1,19 +1,53 @@
 /* ============================================================
-   CleanTrack — Componentes de interfaz (alertas elegantes)
-   Reemplazan los alert() y confirm() feos del navegador.
-   Uso:
-     uiToast("Guardado correctamente");                 // aviso normal (verde)
-     uiToast("No se pudo guardar", "error");             // aviso de error (rojo)
-     uiToast("Revisa los datos", "info");                // aviso informativo (azul)
-     const ok = await uiConfirm("¿Eliminar este empleado?");  // confirmación sí/no
-     if (ok) { ...borrar... }
+   CleanTrack — Componentes de interfaz reusables
+   ============================================================
+   Funciones disponibles:
+
+   uiEscapar(texto)
+     Convierte caracteres peligrosos en entidades HTML para
+     evitar XSS. Úsalo SIEMPRE que metas datos de la BD o del
+     usuario dentro de innerHTML.
+     Ejemplo: div.innerHTML = '<p>' + uiEscapar(emp.nombre) + '</p>';
+
+   uiToast(mensaje, tipo, duracion)
+     Muestra un aviso bonito arriba en pantalla que se va solo.
+     tipo: "ok" (verde, por defecto), "error" (rojo), "info" (azul).
+     Ejemplo: uiToast("Guardado correctamente");
+              uiToast("No se pudo guardar", "error");
+
+   uiConfirm(mensaje, opciones)
+     Muestra un modal de confirmación bonito. Devuelve una promesa
+     que resuelve a true (confirmar) o false (cancelar).
+     opciones: { titulo, textoOk, textoCancel, peligro }
+     Ejemplo: const ok = await uiConfirm("¿Eliminar a Ana?");
+              if (ok) { ...borrar... }
    ============================================================ */
 (function () {
-  // Evita duplicar si el archivo se carga dos veces
+  // Evita duplicar si el archivo se carga dos veces por accidente
   if (window.__cleantrackUI) return;
   window.__cleantrackUI = true;
 
-  // ---- Estilos (se inyectan una sola vez) ----
+  // ============================================================
+  // ESCAPAR HTML (anti-XSS)
+  // ============================================================
+  // Convierte caracteres especiales en entidades HTML para que el
+  // navegador los muestre como texto literal en lugar de interpretarlos
+  // como código. Sin esto, un empleado podría ponerse de nombre
+  // <script>alert(1)</script> y ejecutar código en el navegador del
+  // supervisor cuando viera la lista de empleados.
+  window.uiEscapar = function (texto) {
+    if (texto === null || texto === undefined) return "";
+    return String(texto)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  };
+
+  // ============================================================
+  // ESTILOS DE LOS TOASTS Y MODALES (se inyectan una sola vez)
+  // ============================================================
   var css = ''
     + '.ct-toast-wrap{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none;width:calc(100% - 32px);max-width:420px;}'
     + '.ct-toast{pointer-events:auto;width:100%;display:flex;align-items:flex-start;gap:11px;background:#fff;border-radius:13px;padding:14px 16px;font-family:"Sora",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14.5px;line-height:1.45;color:#1B2733;box-shadow:0 12px 34px rgba(12,68,124,0.18),0 2px 8px rgba(0,0,0,0.08);border-left:4px solid #1D9E75;opacity:0;transform:translateY(-12px);transition:opacity .25s ease,transform .25s ease;}'
@@ -45,7 +79,9 @@
   style.textContent = css;
   document.head.appendChild(style);
 
-  // ---- Contenedor de toasts ----
+  // ============================================================
+  // CONTENEDOR DE TOASTS
+  // ============================================================
   function wrap() {
     var w = document.querySelector(".ct-toast-wrap");
     if (!w) {
@@ -56,7 +92,9 @@
     return w;
   }
 
-  // ---- Toast (aviso que se va solo) ----
+  // ============================================================
+  // TOAST (aviso que se va solo)
+  // ============================================================
   window.uiToast = function (mensaje, tipo, duracion) {
     tipo = tipo || "ok";
     duracion = duracion || (tipo === "error" ? 4200 : 2800);
@@ -81,8 +119,10 @@
     }, duracion);
   };
 
-  // ---- Confirm (modal con promesa: devuelve true/false) ----
+  // ============================================================
+  // CONFIRM (modal con promesa: devuelve true/false)
   // opciones: { titulo, textoOk, textoCancel, peligro:true/false }
+  // ============================================================
   window.uiConfirm = function (mensaje, opciones) {
     opciones = opciones || {};
     var titulo = opciones.titulo || "Confirmar";
