@@ -54,7 +54,7 @@
 
     .vacio { text-align: center; color: var(--gris-texto); padding: 20px; font-size: 14px; }
     .cargando { text-align: center; color: var(--gris-texto); padding: 40px; font-size: 14px; }
-    .titulo-edificio { font-size: 18px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .titulo-edificio { font-size: 18px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; word-break: break-word; }
     .subtitulo-edificio { font-size: 13px; color: var(--gris-texto); margin-bottom: 18px; }
   </style>
 </head>
@@ -89,11 +89,9 @@
   </div>
 
   <script>
-    
     var todosLosRegistros = [];
     var chartDias = null, chartAreas = null, chartEmp = null;
 
-    // Paleta para la dona
     var PALETA = ["#185FA5", "#378ADD", "#85B7EB", "#1D9E75", "#5DCAA5", "#9FE1CB", "#B4B2A9"];
 
     async function verificarAcceso() {
@@ -101,11 +99,9 @@
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
 
-      try {
-        const { data: planData, error } = await db.rpc("mi_plan");
-        var plan = (!error && planData) ? String(planData).toLowerCase().trim() : "basico";
-        if (plan !== "pro") { window.location.href = "inicio.html"; return; }
-      } catch (e) { window.location.href = "inicio.html"; return; }
+      // Se eliminó la verificación de plan: ahora cualquier supervisor o admin
+      // logueado puede entrar a Estadísticas. El acceso a los datos sigue
+      // protegido por RLS de Supabase a nivel de compañía.
 
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
@@ -132,15 +128,26 @@
 
       var sel = document.getElementById("selector-edificio");
       if (listaEdificios.length === 0) {
-        sel.innerHTML = '<option value="">No hay datos aún</option>';
-        document.getElementById("contenido-edificio").innerHTML = '<div class="vacio">Aún no hay registros. Cuando los empleados registren áreas, sus estadísticas aparecerán aquí agrupadas por edificio.</div>';
+        sel.innerHTML = "";
+        var optVacio = document.createElement("option");
+        optVacio.value = "";
+        optVacio.textContent = "No hay datos aún";
+        sel.appendChild(optVacio);
+
+        document.getElementById("contenido-edificio").innerHTML = "";
+        var vacioDiv = document.createElement("div");
+        vacioDiv.className = "vacio";
+        vacioDiv.textContent = "Aún no hay registros. Cuando los empleados registren áreas, sus estadísticas aparecerán aquí agrupadas por edificio.";
+        document.getElementById("contenido-edificio").appendChild(vacioDiv);
         return;
       }
 
       sel.innerHTML = "";
       listaEdificios.forEach(function(e){
         var opt = document.createElement("option");
-        opt.value = e; opt.textContent = e; sel.appendChild(opt);
+        opt.value = e;
+        opt.textContent = e;
+        sel.appendChild(opt);
       });
 
       mostrarEdificio();
@@ -158,10 +165,10 @@
       var conFoto = regs.filter(function(r){ return r.con_foto; }).length;
       var pctFoto = total > 0 ? Math.round((conFoto / total) * 100) : 0;
 
-      // Estructura de la pantalla
       var cont = document.getElementById("contenido-edificio");
+
       cont.innerHTML =
-        '<div class="titulo-edificio"><svg viewBox="0 0 24 24" fill="none" stroke="#5F7268" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;flex-shrink:0;"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg>' + edificio + '</div>' +
+        '<div class="titulo-edificio"><svg viewBox="0 0 24 24" fill="none" stroke="#5F7268" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;flex-shrink:0;"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg><span class="nombre-edificio"></span></div>' +
         '<div class="subtitulo-edificio">Estadísticas de este edificio</div>' +
         '<div class="metricas">' +
           '<div class="metrica"><div class="label">Total registros</div><div class="valor">' + total + '</div></div>' +
@@ -173,13 +180,14 @@
         '<div class="tarjeta"><h2>Áreas más atendidas</h2><div id="leyenda-areas" class="leyenda"></div><div class="grafico-cont" style="height:240px;"><canvas id="cv-areas"></canvas></div></div>' +
         '<div class="tarjeta"><h2>Actividad por empleado</h2><div class="grafico-cont" id="cont-emp"><canvas id="cv-emp"></canvas></div></div>';
 
-      // Destruir gráficos previos si existen
+      // Nombre del edificio con textContent (anti-XSS)
+      cont.querySelector(".nombre-edificio").textContent = edificio;
+
       if (chartDias) { chartDias.destroy(); chartDias = null; }
       if (chartAreas) { chartAreas.destroy(); chartAreas = null; }
       if (chartEmp) { chartEmp.destroy(); chartEmp = null; }
 
       if (total === 0) {
-        cont.querySelector("#cont-emp").parentElement.parentElement.parentElement.innerHTML += '';
         return;
       }
 
@@ -192,7 +200,6 @@
       Chart.defaults.font.size = 12;
       var tt = { backgroundColor: "#2C2C2A", padding: 10, cornerRadius: 8 };
 
-      // ===== LÍNEA: últimos 7 días =====
       var dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
       var etiquetas = [], valores = [];
       for (var i = 6; i >= 0; i--) {
@@ -206,7 +213,6 @@
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: tt }, scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#EFEEE8" } }, x: { grid: { display: false } } }, animation: { duration: 800 } }
       });
 
-      // ===== DONA: áreas (top 6 + "Otras") =====
       var conteoA = {};
       regs.forEach(function(r){ var k = r.area || "Sin área"; conteoA[k] = (conteoA[k] || 0) + 1; });
       var arrA = Object.keys(conteoA).map(function(k){ return { nombre: k, valor: conteoA[k] }; });
@@ -222,13 +228,19 @@
       var dataA = topA.map(function(x){ return x.valor; });
       var coloresA = topA.map(function(x, idx){ return PALETA[idx % PALETA.length]; });
 
-      // Leyenda personalizada
-      var leyendaHTML = "";
+      // Leyenda personalizada (anti-XSS: cada item creado con createElement/textContent)
+      var legCont = document.getElementById("leyenda-areas");
+      legCont.innerHTML = "";
       topA.forEach(function(x, idx){
         var pct = totalA > 0 ? Math.round((x.valor / totalA) * 100) : 0;
-        leyendaHTML += '<span><span class="punto" style="background:' + coloresA[idx] + ';"></span>' + x.nombre + ' ' + pct + '%</span>';
+        var span = document.createElement("span");
+        var punto = document.createElement("span");
+        punto.className = "punto";
+        punto.style.background = coloresA[idx];
+        span.appendChild(punto);
+        span.appendChild(document.createTextNode(" " + x.nombre + " " + pct + "%"));
+        legCont.appendChild(span);
       });
-      document.getElementById("leyenda-areas").innerHTML = leyendaHTML;
 
       chartAreas = new Chart(document.getElementById("cv-areas"), {
         type: "doughnut",
@@ -236,7 +248,6 @@
         options: { responsive: true, maintainAspectRatio: false, cutout: "60%", plugins: { legend: { display: false }, tooltip: tt }, animation: { duration: 800 } }
       });
 
-      // ===== BARRAS HORIZONTALES: empleados (top 6) =====
       var conteoE = {};
       regs.forEach(function(r){ var k = r.nombre_empleado || "Sin dato"; conteoE[k] = (conteoE[k] || 0) + 1; });
       var arrE = Object.keys(conteoE).map(function(k){ return { nombre: k, valor: conteoE[k] }; });
@@ -245,7 +256,6 @@
       var labelsE = arrE.map(function(x){ return x.nombre; });
       var dataE = arrE.map(function(x){ return x.valor; });
 
-      // Altura dinámica según número de empleados
       var alturaEmp = Math.max(arrE.length * 40 + 40, 120);
       document.getElementById("cont-emp").style.height = alturaEmp + "px";
 
