@@ -7,6 +7,7 @@
   <meta name="description" content="Request a free quote for CleanTrack. Your first 30 days are free — no cost, no commitment." />
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,7 +38,6 @@
     }
     .frase { font-family: "Fraunces", Georgia, serif; font-style: italic; }
 
-    /* NAV (igual que la landing) */
     nav {
       position: sticky; top: 0; z-index: 50;
       background: rgba(12,68,124,0.96); backdrop-filter: blur(10px);
@@ -71,7 +71,6 @@
       .nav-links a { text-align: center; }
     }
 
-    /* HERO chico */
     .head {
       background: linear-gradient(160deg, var(--azul-osc) 0%, var(--azul) 100%);
       color: #fff; text-align: center; padding: 64px 24px 56px;
@@ -82,7 +81,6 @@
     .head .linea { width: 60px; height: 4px; background: var(--verde); border-radius: 3px; margin: 20px auto; }
     .head .sub { font-size: 18px; color: rgba(255,255,255,0.84); max-width: 540px; margin: 0 auto; }
 
-    /* CONTENIDO */
     .contenido { flex: 1; max-width: 1000px; margin: -32px auto 0; padding: 0 24px 70px; width: 100%; }
     .grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 26px; align-items: start; }
     @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
@@ -109,246 +107,4 @@
     }
     .btn-enviar:hover { box-shadow: 0 12px 28px rgba(29,158,117,0.5); }
     .btn-enviar:active { transform: scale(0.98); }
-    .btn-enviar:disabled { opacity: 0.6; cursor: default; }
-
-    .aviso { text-align: center; font-size: 14px; margin-top: 16px; padding: 13px; border-radius: 11px; display: none; }
-    .aviso.error { background: var(--rojo-claro); color: var(--rojo); display: block; }
-    .aviso.cargando { background: #DCE9F5; color: var(--azul-osc); display: block; }
-    .aviso.ok { background: #D6F0E4; color: var(--verde-osc); display: block; }
-
-    /* tarjeta de info lateral */
-    .info { background: linear-gradient(160deg, var(--azul-osc), var(--azul)); color: #fff; }
-    .info h3 { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #7FE0BC; text-align: center; margin-bottom: 22px; }
-    .info-item { display: flex; gap: 14px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.12); }
-    .info-item:last-child { border-bottom: none; }
-    .info-item .ic { width: 40px; height: 40px; border-radius: 11px; background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-    .info-item .et { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.6); }
-    .info-item .vl { font-size: 15px; font-weight: 500; word-break: break-word; }
-    .info-item a { color: #fff; text-decoration: none; }
-    .info-item a:hover { text-decoration: underline; }
-    .info .gratis { margin-top: 22px; background: rgba(29,158,117,0.25); border: 1px solid rgba(127,224,188,0.4); border-radius: 13px; padding: 16px; font-size: 14px; }
-    .info .gratis b { display: block; margin-bottom: 3px; font-size: 15px; }
-
-    footer { background: var(--azul-mas-osc); color: rgba(255,255,255,0.6); text-align: center; padding: 30px 24px; font-size: 14px; }
-    footer .marca { color: #fff; font-weight: 700; font-size: 16px; }
-    footer a { color: rgba(255,255,255,0.7); text-decoration: none; }
-  </style>
-</head>
-<body>
-
-  <nav>
-    <div class="nav-inner">
-      <a href="/" class="nav-logo">
-        <img src="logo-simbolo.png" alt="CleanTrack" />
-        <span class="nombre">CleanTrack</span>
-      </a>
-      <button class="menu-btn" onclick="toggleMenu()" aria-label="Menu">
-        <span></span><span></span><span></span>
-      </button>
-      <div class="nav-links" id="navLinks">
-        <a href="/#how">How it works</a>
-        <a href="/#why">Why CleanTrack</a>
-        <a href="login.html" class="login">Supervisor login</a>
-      </div>
-    </div>
-  </nav>
-
-  <header class="head">
-    <img src="logo-simbolo.png" alt="CleanTrack" />
-    <h1>Let's talk about your <span class="acento">cleaning team</span></h1>
-    <div class="linea"></div>
-    <p class="sub frase">Tell us a bit about your company and we'll send you a tailored quote.</p>
-  </header>
-
-  <main class="contenido">
-    <div class="grid">
-
-      <!-- FORMULARIO -->
-      <div class="tarjeta">
-        <h2>Request a quote</h2>
-        <p class="desc">Fill out the form and we'll get back to you shortly. No commitment.</p>
-
-        <div class="campo">
-          <label for="nombre">Your name</label>
-          <input type="text" id="nombre" placeholder="John Smith" autocomplete="name" />
-        </div>
-        <div class="campo">
-          <label for="empresa">Company name</label>
-          <input type="text" id="empresa" placeholder="Smith Cleaning Services" autocomplete="organization" />
-        </div>
-        <div class="campo">
-          <label for="email">Email</label>
-          <input type="email" id="email" placeholder="you@company.com" autocomplete="email" />
-        </div>
-        <div class="campo">
-          <label for="edificios">How many buildings do you service?</label>
-          <select id="edificios">
-            <option value="">Select an option</option>
-            <option value="1-2">1–2 buildings</option>
-            <option value="3-5">3–5 buildings</option>
-            <option value="6-10">6–10 buildings</option>
-            <option value="10+">More than 10 buildings</option>
-          </select>
-        </div>
-        <div class="campo">
-          <label for="mensaje">Anything else we should know? (optional)</label>
-          <textarea id="mensaje" placeholder="Tell us about your team, your needs, or any questions you have."></textarea>
-        </div>
-
-        <button class="btn-enviar" id="btnEnviar" onclick="enviar()">Send request</button>
-
-        <div class="aviso" id="aviso"></div>
-      </div>
-
-      <!-- INFO LATERAL -->
-      <div class="tarjeta info">
-        <h3>Contact</h3>
-
-        <div class="info-item">
-          <div class="ic">✉️</div>
-          <div>
-            <div class="et">Email</div>
-            <div class="vl"><a href="mailto:info@cleantrack-app.com">info@cleantrack-app.com</a></div>
-          </div>
-        </div>
-
-        <div class="info-item">
-          <div class="ic">🌐</div>
-          <div>
-            <div class="et">Website</div>
-            <div class="vl">cleantrack-app.com</div>
-          </div>
-        </div>
-
-        <div class="gratis">
-          <b>Your first 30 days are free</b>
-          Try it risk-free. We help you set everything up — no cost, no commitment.
-        </div>
-      </div>
-
-    </div>
-  </main>
-
-  <footer>
-    <div class="marca">CleanTrack</div>
-    <div class="frase">Every cleaning, verified.</div>
-    <div style="margin-top:12px; font-size:13px;">© <span id="year"></span> CleanTrack · <a href="login.html">Supervisor login</a></div>
-  </footer>
-
-  <script>
-    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
-
-    let db = null;
-    try {
-      const { createClient } = supabase;
-      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) {
-      console.error("No se pudo conectar a Supabase:", e);
-    }
-
-    document.getElementById("year").textContent = new Date().getFullYear();
-
-    function toggleMenu() {
-      document.getElementById("navLinks").classList.toggle("abierto");
-    }
-    document.querySelectorAll("#navLinks a").forEach(function(a){
-      a.addEventListener("click", function(){
-        document.getElementById("navLinks").classList.remove("abierto");
-      });
-    });
-
-    function aviso(texto, tipo) {
-      var a = document.getElementById("aviso");
-      a.textContent = texto;
-      a.className = "aviso " + tipo;
-    }
-
-    function validarEmail(e) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
-    }
-
-    // Access key pública de Web3Forms (segura para estar en el cliente: solo sirve para enviarte formularios a ti)
-    const WEB3FORMS_KEY = "acf41ed8-e843-4758-a3e4-508733a00911";
-
-    async function enviar() {
-      var nombre = document.getElementById("nombre").value.trim();
-      var empresa = document.getElementById("empresa").value.trim();
-      var email = document.getElementById("email").value.trim();
-      var edificios = document.getElementById("edificios").value;
-      var mensaje = document.getElementById("mensaje").value.trim();
-
-      if (!nombre || !empresa || !email) {
-        aviso("Please fill in your name, company and email.", "error");
-        return;
-      }
-      if (!validarEmail(email)) {
-        aviso("Please enter a valid email address.", "error");
-        return;
-      }
-
-      document.getElementById("btnEnviar").disabled = true;
-      aviso("Sending...", "cargando");
-
-      // Texto unificado de la cotización (se usa en ambos canales)
-      var resumen =
-        "Name: " + nombre + "\n" +
-        "Company: " + empresa + "\n" +
-        "Buildings: " + (edificios || "not specified") + "\n" +
-        "Message: " + (mensaje || "(none)");
-
-      // ---- CANAL 1 (principal): correo vía Web3Forms ----
-      var correoOk = false;
-      try {
-        const resp = await fetch("https://api.web3forms.com/submit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          body: JSON.stringify({
-            access_key: WEB3FORMS_KEY,
-            subject: "New CleanTrack quote request — " + empresa,
-            from_name: "CleanTrack Website",
-            name: nombre,
-            email: email,
-            company: empresa,
-            buildings: (edificios || "not specified"),
-            message: (mensaje || "(none)")
-          })
-        });
-        const datos = await resp.json();
-        correoOk = !!datos.success;
-      } catch (e) {
-        console.error("Web3Forms error:", e);
-        correoOk = false;
-      }
-
-      // ---- CANAL 2 (respaldo): guardar en Supabase ----
-      // Si el RLS bloquea el insert anónimo, no afecta al cliente: el correo ya avisó.
-      if (db) {
-        try {
-          await db.from("soporte").insert([{
-            email_usuario: email,
-            pregunta: "QUOTE REQUEST\n" + resumen,
-            resuelto: false
-          }]);
-        } catch (e) {
-          console.error("Supabase insert error (respaldo):", e);
-        }
-      }
-
-      // ---- Resultado para el cliente ----
-      // Mostramos éxito si AL MENOS el correo llegó (que es lo que nos avisa a nosotros).
-      if (correoOk) {
-        aviso("✓ Thank you! We've received your request and will be in touch soon.", "ok");
-        document.getElementById("nombre").value = "";
-        document.getElementById("empresa").value = "";
-        document.getElementById("email").value = "";
-        document.getElementById("edificios").value = "";
-        document.getElementById("mensaje").value = "";
-      } else {
-        aviso("Something went wrong. Please email us directly at info@cleantrack-app.com", "error");
-        document.getElementById("btnEnviar").disabled = false;
-      }
-    }
-  </script>
-</body>
-</html>
+    .btn-enviar:disabled { opacity: 0.6
