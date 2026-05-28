@@ -562,7 +562,7 @@
       document.getElementById("tp-nom").textContent = empresa;
       var cont = document.getElementById("qr-canvas");
       cont.innerHTML = "";
-      new QRCode(cont, { text: BASE_URL + "/Empleado.html?area=" + id, width: 240, height: 240, colorDark: "#185FA5", colorLight: "#ffffff" });
+      new QRCode(cont, { text: BASE_URL + "/empleado.html?area=" + id, width: 240, height: 240, colorDark: "#185FA5", colorLight: "#ffffff" });
       document.getElementById("modal-qr").classList.add("abierto");
     }
 
@@ -625,7 +625,7 @@
       areasEd.forEach(function(a){
         var div = document.createElement("div");
         temp.appendChild(div);
-        new QRCode(div, { text: BASE_URL + "/Empleado.html?area=" + a.id, width: 240, height: 240, colorDark: "#185FA5", colorLight: "#ffffff" });
+        new QRCode(div, { text: BASE_URL + "/empleado.html?area=" + a.id, width: 240, height: 240, colorDark: "#185FA5", colorLight: "#ffffff" });
         imagenes.push({ div: div, nombre: a.nombre });
       });
 
