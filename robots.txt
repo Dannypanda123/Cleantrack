@@ -11,7 +11,7 @@ Disallow: /inicio.html
 Disallow: /admin.html
 Disallow: /dashboard.html
 Disallow: /areas.html
-Disallow: /Empleado.html
+Disallow: /empleado.html
 Disallow: /incidencias.html
 Disallow: /buzon.html
 Disallow: /soporte.html
