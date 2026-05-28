@@ -115,8 +115,8 @@
 
       // Solo el administrador puede ver el buzón de soporte
       try {
-        const { data: esAdmin, error } = await db.rpc("soy_admin");
-        if (error || esAdmin !== true) {
+        const { data: esStaff, error } = await db.rpc("soy_superadmin");
+        if (error || esStaff !== true) {
           document.getElementById("verificando").style.display = "none";
           document.getElementById("sin-acceso").style.display = "block";
           return;
