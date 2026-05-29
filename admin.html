@@ -87,6 +87,13 @@
     .btn-agregar:active { transform: scale(0.98); }
     .btn-agregar:disabled { opacity: 0.6; }
 
+    /* Campo PIN con botón Generar al lado */
+    .pin-fila { display: flex; gap: 8px; align-items: stretch; margin-bottom: 14px; }
+    .pin-fila .pin-input { flex: 1; margin-bottom: 0; }
+    .btn-generar { flex-shrink: 0; padding: 0 16px; border: 1.5px solid var(--azul); background: #E6F1FB; color: var(--azul-osc); border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; }
+    .btn-generar:hover { background: #d8e9f9; }
+    .btn-generar:active { transform: scale(0.97); }
+
     .empleado { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--gris-borde); }
     .empleado:last-child { border-bottom: none; }
     .emp-avatar { width: 42px; height: 42px; border-radius: 50%; background: #E6F1FB; color: var(--azul-osc); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; flex-shrink: 0; }
@@ -181,7 +188,10 @@
         <label for="nombre">Nombre completo</label>
         <input type="text" class="campo-texto" id="nombre" placeholder="Ej. Ana Torres" />
         <label for="pin">PIN (4 dígitos)</label>
-        <input type="text" class="campo-texto" id="pin" placeholder="Ej. 4892" inputmode="numeric" maxlength="4" />
+        <div class="pin-fila">
+          <input type="text" class="campo-texto pin-input" id="pin" placeholder="Ej. 4892" inputmode="numeric" maxlength="4" />
+          <button type="button" class="btn-generar" onclick="generarPin('pin')">Generar</button>
+        </div>
 
         <label>Edificios donde trabaja</label>
         <div class="selector-edificios">
@@ -223,7 +233,10 @@
       <label for="edit-nombre">Nombre completo</label>
       <input type="text" class="campo-texto" id="edit-nombre" />
       <label for="edit-pin">PIN (4 dígitos)</label>
-      <input type="text" class="campo-texto" id="edit-pin" inputmode="numeric" maxlength="4" />
+      <div class="pin-fila">
+        <input type="text" class="campo-texto pin-input" id="edit-pin" inputmode="numeric" maxlength="4" />
+        <button type="button" class="btn-generar" onclick="generarPin('edit-pin')">Generar</button>
+      </div>
 
       <label>Edificios donde trabaja</label>
       <div class="selector-edificios">
@@ -513,6 +526,34 @@
           renderLista();
         });
       });
+    }
+
+    // Lista de PIN fáciles de adivinar que NO se deben generar
+    var PINS_FACILES = {
+      "0000":1,"1111":1,"2222":1,"3333":1,"4444":1,"5555":1,"6666":1,"7777":1,"8888":1,"9999":1,
+      "1234":1,"2345":1,"3456":1,"4567":1,"5678":1,"6789":1,"7890":1,
+      "4321":1,"5432":1,"6543":1,"7654":1,"8765":1,"9876":1,"0987":1,
+      "1212":1,"1122":1,"2580":1,"0852":1,"1004":1,"2020":1,"2024":1,"2025":1,"6969":1,"1313":1
+    };
+
+    function generarPin(campoId) {
+      // PIN ya usados en la compañía (empleadosCache viene filtrado por RLS)
+      var usados = {};
+      empleadosCache.forEach(function(e){ if (e.pin) usados[String(e.pin)] = 1; });
+
+      var nuevo = null;
+      // Hasta 2000 intentos: de sobra para 10.000 combinaciones posibles
+      for (var i = 0; i < 2000; i++) {
+        var n = Math.floor(Math.random() * 10000);
+        var candidato = ("000" + n).slice(-4);   // siempre 4 dígitos
+        if (!usados[candidato] && !PINS_FACILES[candidato]) { nuevo = candidato; break; }
+      }
+
+      if (!nuevo) {
+        uiToast("No se pudo generar un PIN libre. Revisa cuántos empleados tienes.", "error");
+        return;
+      }
+      document.getElementById(campoId).value = nuevo;
     }
 
     async function agregarEmpleado() {
