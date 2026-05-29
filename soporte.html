@@ -11,6 +11,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="idiomas.js"></script>
 
   <style>
     :root {
@@ -99,13 +100,14 @@
             <span class="marca-texto">CleanTrack</span>
           </div>
           <div class="cab-botones">
-            <a class="btn-cab" href="inicio.html">← Inicio</a>
-            <button class="btn-cab" onclick="salir()">Salir</button>
+            <a class="btn-cab" href="inicio.html" data-i18n="comun.inicio">← Inicio</a>
+            <button class="btn-cab" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+            <button class="btn-cab" onclick="salir()" data-i18n="comun.salir">Salir</button>
           </div>
         </div>
         <div class="cab-titulo">
-          <h1>Centro de ayuda</h1>
-          <div class="cab-sub">Preguntas frecuentes y contacto con soporte</div>
+          <h1 data-i18n="sop.titulo">Centro de ayuda</h1>
+          <div class="cab-sub" data-i18n="sop.subtitulo">Preguntas frecuentes y contacto con soporte</div>
         </div>
       </div>
     </header>
@@ -114,21 +116,21 @@
 
       <div class="buscador-cont">
         <svg class="lupa" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input type="text" class="buscador" id="buscador" placeholder="Escribe tu duda..." oninput="filtrarFAQ()" />
+        <input type="text" class="buscador" id="buscador" data-i18n-ph="sop.buscar" placeholder="Escribe tu duda..." oninput="filtrarFAQ()" />
       </div>
 
       <div class="columnas">
         <div class="tarjeta">
-          <div class="seccion-label">Preguntas frecuentes</div>
+          <div class="seccion-label" data-i18n="sop.faq_label">Preguntas frecuentes</div>
           <div id="lista-faq"></div>
-          <div class="sin-resultados faq-oculto" id="sin-resultados">No encontramos una respuesta para eso. Envíanos tu pregunta abajo y te ayudaremos.</div>
+          <div class="sin-resultados faq-oculto" id="sin-resultados" data-i18n="sop.sin_resultados">No encontramos una respuesta para eso. Envíanos tu pregunta abajo y te ayudaremos.</div>
         </div>
 
         <div class="form-card col-form">
-          <h2>¿No encontraste tu respuesta?</h2>
-          <div class="sub">Envíanos tu pregunta y la revisaremos</div>
-          <textarea id="pregunta" placeholder="Escribe tu pregunta aquí..."></textarea>
-          <button class="btn-enviar" id="btn-enviar" onclick="enviarPregunta()">Enviar pregunta</button>
+          <h2 data-i18n="sop.form_titulo">¿No encontraste tu respuesta?</h2>
+          <div class="sub" data-i18n="sop.form_sub">Envíanos tu pregunta y la revisaremos</div>
+          <textarea id="pregunta" data-i18n-ph="sop.form_ph" placeholder="Escribe tu pregunta aquí..."></textarea>
+          <button class="btn-enviar" id="btn-enviar" onclick="enviarPregunta()" data-i18n="sop.enviar">Enviar pregunta</button>
           <div class="mensaje" id="mensaje"></div>
         </div>
       </div>
@@ -143,27 +145,15 @@
 
     var emailUsuario = "";
 
-    // Base de preguntas y respuestas
-    var faq = [
-      { p: "¿Cómo registro la limpieza de un área?", r: "El empleado escanea el código QR pegado en el área con la cámara de su celular. Se abre la app, ingresa su PIN de 4 dígitos, toma una foto si se le solicita, y confirma. El registro queda guardado con la hora exacta.", clave: "registrar limpieza area empleado escanear qr pin foto" },
-      { p: "¿Cómo agrego un nuevo empleado?", r: "Entra a 'Empleados' desde el inicio. Escribe el nombre y un PIN de 4 dígitos, y toca 'Agregar empleado'. El empleado ya podrá usar ese PIN para registrar áreas.", clave: "agregar nuevo empleado pin nombre crear personal" },
-      { p: "¿Cómo desactivo a un empleado que ya no trabaja?", r: "En 'Empleados', busca a la persona y toca su interruptor para ponerlo en 'Inactivo'. Su PIN dejará de funcionar de inmediato, pero su historial de registros se conserva.", clave: "desactivar empleado despedir quitar inactivo pin dejar trabajar" },
-      { p: "¿Cómo creo un edificio?", r: "Entra a 'Edificios y áreas' y toca 'Crear edificio'. Llena el nombre y los datos que quieras (dirección, contacto, etc.) y guarda. Luego podrás crear áreas dentro de ese edificio.", clave: "crear edificio nuevo direccion contacto agregar" },
-      { p: "¿Cómo creo un área?", r: "En 'Edificios y áreas', toca 'Crear área'. Escribe el nombre del área, elige el edificio de la lista, marca si requiere foto, y crea. El área aparecerá agrupada bajo su edificio.", clave: "crear area nueva edificio bano lobby piso requiere foto" },
-      { p: "¿Cómo genero el código QR de un área?", r: "En 'Edificios y áreas', abre el edificio, busca el área y toca 'Generar código QR'. Aparecerá el QR, que puedes descargar para imprimir y pegar en el área. Cada área tiene su propio QR único.", clave: "generar codigo qr area imprimir descargar pegar" },
-      { p: "¿Qué hago si un código QR se daña o se pierde?", r: "Simplemente vuelve a 'Edificios y áreas', abre el área, y genera su QR de nuevo. El QR será el mismo que el anterior, así que el historial no se pierde. Imprímelo y reemplaza el dañado.", clave: "qr danado perdido roto reimprimir reemplazar generar nuevo" },
-      { p: "¿Cómo veo los registros de limpieza?", r: "Entra a 'Registros' desde el inicio. Verás todas las áreas limpiadas, con el nombre del empleado, la hora, y la foto si la hubo. Se actualiza automáticamente.", clave: "ver registros limpieza dashboard panel historial fotos" },
-      { p: "¿Cómo descargo el informe mensual en PDF?", r: "Entra a 'Reportes', elige el edificio y el período (este mes, mes pasado o últimos 7 días), y toca 'Generar PDF'. Se descargará un informe profesional que puedes imprimir o enviar a tu cliente.", clave: "descargar informe reporte pdf mensual cliente edificio periodo" },
-      { p: "¿Cómo veo las estadísticas?", r: "Entra a 'Estadísticas' y elige un edificio en el menú de arriba. Verás los números, la actividad de los últimos 7 días, y los rankings de áreas y empleados de ese edificio.", clave: "estadisticas datos graficas numeros rendimiento edificio" }
-    ];
-
     async function verificarAcceso() {
-      if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
+      if (!db) { document.getElementById("verificando").textContent = I18N.t("comun.sin_conexion"); return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
       emailUsuario = data.session.user.email || "";
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+      I18N.aplicar();
+      I18N.onChange(function(){ I18N.aplicar(); pintarFAQ(); filtrarFAQ(); });
       pintarFAQ();
     }
 
@@ -175,7 +165,7 @@
     function pintarFAQ() {
       var cont = document.getElementById("lista-faq");
       cont.innerHTML = "";
-      faq.forEach(function(item, i) {
+      I18N.faq().forEach(function(item, i) {
         var div = document.createElement("div");
         div.className = "faq-item";
         div.setAttribute("data-clave", (item.p + " " + item.clave).toLowerCase());
@@ -220,18 +210,18 @@
     async function enviarPregunta() {
       var pregunta = document.getElementById("pregunta").value.trim();
       var msg = document.getElementById("mensaje");
-      if (!pregunta) { msg.textContent = "Escribe tu pregunta."; msg.className = "mensaje error"; return; }
+      if (!pregunta) { msg.textContent = I18N.t("sop.escribe"); msg.className = "mensaje error"; return; }
 
       document.getElementById("btn-enviar").disabled = true;
-      msg.textContent = "Enviando..."; msg.className = "mensaje"; msg.style.display = "block";
+      msg.textContent = I18N.t("sop.enviando"); msg.className = "mensaje"; msg.style.display = "block";
 
       const { error } = await db.from("soporte").insert([{ email_usuario: emailUsuario, pregunta: pregunta, resuelto: false }]);
       document.getElementById("btn-enviar").disabled = false;
 
       if (error) {
-        msg.textContent = "Error al enviar: " + error.message; msg.className = "mensaje error";
+        msg.textContent = I18N.t("sop.error") + error.message; msg.className = "mensaje error";
       } else {
-        msg.textContent = "✓ Tu pregunta fue enviada. Te responderemos pronto."; msg.className = "mensaje ok";
+        msg.textContent = I18N.t("sop.ok"); msg.className = "mensaje ok";
         document.getElementById("pregunta").value = "";
       }
     }
