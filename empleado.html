@@ -441,7 +441,6 @@
       var btn = document.getElementById("btn-principal");
       fotoLista = false; fotoArchivo = null;
       document.getElementById("preview-foto").style.display = "none";
-      document.getElementById("btn-reintentar-foto").style.display = "none";
       document.getElementById("saludo-nombre").textContent = "Hola, " + empleadoNombre;
       document.getElementById("saludo-area").textContent = datosArea.area;
       if (pideFoto) {
@@ -473,7 +472,7 @@
         fotoLista = true;
         document.getElementById("btn-principal").textContent = "Registrar área con esta foto";
         document.getElementById("btn-reintentar-foto").style.display = "block";
-        document.getElementById("aviso-foto").style.display = "none";
+        
       };
       lector.readAsDataURL(archivo);
     }
