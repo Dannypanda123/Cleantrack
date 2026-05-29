@@ -16,6 +16,7 @@
     :root {
       --azul-osc: #0C447C;
       --azul: #185FA5;
+      --azul-suave: #BBD2EA;
       --gris-fondo: #ECEBE4;
       --gris-texto: #5A6573;
       --gris-borde: #E2E0D8;
@@ -34,7 +35,7 @@
     /* El contenedor de la app aparece tras verificar la sesión */
     .app { display: none; }
 
-    /* Barra superior (solo PC) */
+    /* Cabecera azul (solo PC) */
     .barra-pc { display: none; }
 
     /* Contenido principal */
@@ -122,23 +123,23 @@
     /* ===================== PC (pantallas anchas) ===================== */
     @media (min-width: 900px) {
       .barra-pc { display: block; background: var(--azul-osc); }
-      .barra-inner {
-        max-width: 1100px; margin: 0 auto; padding: 14px 32px;
-        display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-      }
-      .barra-marca { grid-column: 2; justify-self: center; display: flex; align-items: center; gap: 10px; }
+      .barra-inner { max-width: 1100px; margin: 0 auto; padding: 22px 32px 24px; }
+      .cab-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .barra-marca { display: flex; align-items: center; gap: 10px; }
       .logo-simbolo { height: 34px; width: auto; display: block; }
-      .marca-texto { font-size: 20px; font-weight: 600; color: var(--blanco); letter-spacing: -0.01em; }
-      .btn-salir-pc { grid-column: 3; justify-self: end; color: var(--blanco); border-color: rgba(255,255,255,0.45); }
+      .marca-texto { font-size: 19px; font-weight: 600; color: var(--blanco); letter-spacing: -0.01em; }
+      .btn-salir-pc { color: var(--blanco); border-color: rgba(255,255,255,0.45); }
       .btn-salir-pc:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.65); }
-      .logo-movil { display: none; }
-      .btn-salir-movil { display: none; }
+      .cab-saludo { font-size: 25px; font-weight: 600; color: var(--blanco); margin-top: 20px; }
+      .cab-sub { font-size: 14px; color: var(--azul-suave); margin-top: 3px; }
 
-      .main { max-width: 1100px; padding: 32px 32px 48px; }
-      .bienvenida { display: block; margin-bottom: 4px; }
-      .bienvenida h1 { font-size: 28px; }
-      .saludo-sub { margin-bottom: 10px; }
-      .seccion-label { margin-top: 26px; }
+      /* En PC el saludo va en la cabecera, no en el cuerpo */
+      .logo-movil { display: none; }
+      .bienvenida { display: none; }
+      .saludo-sub { display: none; }
+
+      .main { max-width: 1100px; padding: 26px 32px 48px; }
+      .seccion-label { margin: 0 0 14px; }
       .grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
       .tarjeta { padding: 20px; }
     }
@@ -150,24 +151,28 @@
 
   <div class="app" id="contenedor">
 
-    <!-- Barra superior: solo se ve en PC -->
+    <!-- Cabecera azul: solo se ve en PC -->
     <header class="barra-pc">
       <div class="barra-inner">
-        <div class="barra-marca">
-          <img src="logo-simbolo.png" alt="" class="logo-simbolo" />
-          <span class="marca-texto">CleanTrack</span>
+        <div class="cab-fila">
+          <div class="barra-marca">
+            <img src="logo-simbolo.png" alt="" class="logo-simbolo" />
+            <span class="marca-texto">CleanTrack</span>
+          </div>
+          <button class="btn-salir btn-salir-pc" onclick="salir()">Salir</button>
         </div>
-        <button class="btn-salir btn-salir-pc" onclick="salir()">Salir</button>
+        <h1 class="titulo-saludo cab-saludo">Hola</h1>
+        <div class="cab-sub">Centro de control del supervisor</div>
       </div>
     </header>
 
     <main class="main">
 
-      <!-- Logo centrado: solo se ve en móvil -->
+      <!-- Logo centrado + saludo: solo se ven en móvil -->
       <img src="logo.png" alt="CleanTrack" class="logo-movil" />
 
       <div class="bienvenida">
-        <h1 id="titulo-saludo">Hola</h1>
+        <h1 class="titulo-saludo">Hola</h1>
         <button class="btn-salir btn-salir-movil" onclick="salir()">Salir</button>
       </div>
       <div class="saludo-sub">Centro de control del supervisor</div>
@@ -251,7 +256,10 @@
       if (nombre) {
         nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1);
         // textContent = seguro contra XSS (muestra el texto tal cual, nunca lo ejecuta)
-        document.getElementById("titulo-saludo").textContent = "Hola, " + nombre;
+        var saludos = document.querySelectorAll(".titulo-saludo");
+        for (var i = 0; i < saludos.length; i++) {
+          saludos[i].textContent = "Hola, " + nombre;
+        }
       }
 
       await aplicarAdmin();
