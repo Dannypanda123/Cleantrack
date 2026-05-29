@@ -6,6 +6,7 @@
   <title>CleanTrack — Inicio</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
 
   <style>
     :root {
@@ -85,17 +86,8 @@
     .tarjeta h3 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
     .tarjeta p { font-size: 13px; color: var(--gris-texto); line-height: 1.4; }
 
-    /* Etiqueta para funciones del plan Pro */
-    .etiqueta-pro {
-      position: absolute; top: 16px; right: 16px;
-      background: #FAC775; color: #633806;
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.05em; padding: 4px 9px; border-radius: 8px;
-    }
     .seccion-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gris-texto); margin: 28px 0 12px; }
 
-    /* Tarjetas Pro se ocultan por defecto; se muestran si el plan lo permite */
-    .solo-pro { display: none; }
     /* Tarjeta de admin oculta por defecto; solo para administradores */
     .solo-admin { display: none; }
     .etiqueta-admin {
@@ -106,7 +98,7 @@
     }
     /* Microinteracción: entrada en cascada de las tarjetas */
     @keyframes ctFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    .grid .tarjeta:not(.solo-pro):not(.solo-admin) { opacity: 0; animation: ctFadeIn 0.5s ease forwards; }
+    .grid .tarjeta:not(.solo-admin) { opacity: 0; animation: ctFadeIn 0.5s ease forwards; }
     .grid .tarjeta:nth-child(1) { animation-delay: 0.05s; }
     .grid .tarjeta:nth-child(2) { animation-delay: 0.12s; }
     .grid .tarjeta:nth-child(3) { animation-delay: 0.19s; }
@@ -115,7 +107,7 @@
     .grid .tarjeta:nth-child(6) { animation-delay: 0.40s; }
     .grid .tarjeta:nth-child(7) { animation-delay: 0.47s; }
     .grid .tarjeta:nth-child(8) { animation-delay: 0.54s; }
-    @media (prefers-reduced-motion: reduce) { .grid .tarjeta:not(.solo-pro):not(.solo-admin) { animation: none; opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .grid .tarjeta:not(.solo-admin) { animation: none; opacity: 1; } }
   </style>
 </head>
 <body>
@@ -160,15 +152,13 @@
         <p>Reportes de insumos faltantes y problemas en cada edificio</p>
       </a>
 
-      <a class="tarjeta solo-pro" id="card-estadisticas" href="estadisticas.html">
-        <span class="etiqueta-pro">Pro</span>
+      <a class="tarjeta" id="card-estadisticas" href="estadisticas.html">
         <div class="ico ico-estadisticas"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
         <h3>Estadísticas</h3>
         <p>Cumplimiento, áreas más atendidas y tendencias</p>
       </a>
 
-      <a class="tarjeta solo-pro" id="card-reportes" href="reportes.html">
-        <span class="etiqueta-pro">Pro</span>
+      <a class="tarjeta" id="card-reportes" href="reportes.html">
         <div class="ico ico-reportes"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
         <h3>Reportes</h3>
         <p>Informe mensual en PDF para presentar al cliente</p>
@@ -192,16 +182,8 @@
   </div>
 
   <script>
-    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
-
-    let db = null;
-    try {
-      const { createClient } = supabase;
-      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) {
-      console.error("No se pudo conectar a Supabase:", e);
-    }
+    // El cliente de Supabase (db) y las credenciales vienen de config.js
+    const db = window.db;
 
     async function verificarAcceso() {
       if (!db) {
@@ -219,10 +201,10 @@
       nombre = nombre.replace(/[0-9]/g, "");
       if (nombre) {
         nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1);
+        // textContent = seguro contra XSS (muestra el texto tal cual, nunca lo ejecuta)
         document.getElementById("titulo-saludo").textContent = "Hola, " + nombre;
       }
 
-      await aplicarPlan();
       await aplicarAdmin();
 
       document.getElementById("verificando").style.display = "none";
@@ -240,21 +222,6 @@
         }
       } catch (e) {
         console.error("No se pudo verificar admin:", e);
-      }
-    }
-
-    async function aplicarPlan() {
-      try {
-        const { data, error } = await db.rpc("mi_plan");
-        var plan = (!error && data) ? String(data).toLowerCase().trim() : "basico";
-        if (plan === "pro") {
-          document.querySelectorAll(".solo-pro").forEach(function(el) {
-            el.style.display = "block";
-            el.style.animation = "ctFadeIn 0.5s ease forwards";
-          });
-        }
-      } catch (e) {
-        console.error("No se pudo leer el plan:", e);
       }
     }
 
