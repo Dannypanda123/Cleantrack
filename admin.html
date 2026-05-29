@@ -419,10 +419,8 @@
     var filtroActual = "todos";
 
     function edificiosDe(emp) {
-      // Lee de la tabla normalizada (adjuntada como emp._edificios).
-      // Respaldo al campo de texto antiguo por si algún empleado aún no tuviera vínculos.
-      if (emp._edificios && emp._edificios.length) return emp._edificios;
-      return (emp.edificios || "").split(",").map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+      // Edificios del empleado desde la tabla normalizada (adjuntados como emp._edificios)
+      return emp._edificios || [];
     }
     function coincideFiltro(emp) {
       if (filtroActual === "activos") return !!emp.activo;
@@ -598,9 +596,9 @@
       document.getElementById("btn-agregar").disabled = true;
       msg.textContent = "Agregando..."; msg.className = "mensaje"; msg.style.display = "block";
 
-      // 1) Crear el empleado (la columna de texto 'edificios' se mantiene por compatibilidad)
+      // 1) Crear el empleado (los edificios van en la tabla normalizada, paso 2)
       const { data: creado, error } = await db.from("empleados")
-        .insert([{ nombre: nombre, pin: pin, activo: true, edificios: seleccion.add.join(", ") }])
+        .insert([{ nombre: nombre, pin: pin, activo: true }])
         .select()
         .single();
 
@@ -679,8 +677,8 @@
       document.getElementById("btn-guardar-edit").disabled = true;
       msg.textContent = "Guardando..."; msg.className = "mensaje"; msg.style.display = "block";
 
-      // 1) Actualizar datos del empleado (mantenemos el texto 'edificios' por compatibilidad)
-      const { error } = await db.from("empleados").update({ nombre: nombre, pin: pin, edificios: seleccion.edit.join(", ") }).eq("id", editandoId);
+      // 1) Actualizar datos del empleado (los edificios van en la tabla normalizada, paso 2)
+      const { error } = await db.from("empleados").update({ nombre: nombre, pin: pin }).eq("id", editandoId);
 
       if (error) {
         document.getElementById("btn-guardar-edit").disabled = false;
