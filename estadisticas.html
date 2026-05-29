@@ -5,46 +5,77 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CleanTrack — Estadísticas</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600&display=swap" rel="stylesheet" />
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 
   <style>
     :root {
+      --azul-osc: #0C447C;
+      --azul: #185FA5;
+      --azul-suave: #BBD2EA;
       --verde: #1D9E75;
       --verde-claro: #EAF3DE;
       --verde-texto: #0F6E56;
-      --azul: #185FA5;
       --azul-claro: #E6F1FB;
       --gris-fondo: #F5F4EF;
-      --gris-texto: #6B6A64;
+      --gris-texto: #5A6573;
       --gris-borde: #E2E0D8;
-      --texto: #2C2C2A;
+      --texto: #1B2733;
       --blanco: #FFFFFF;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
-    .contenedor { max-width: 720px; margin: 0 auto; display: none; }
-    .verificando { max-width: 720px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--gris-fondo); color: var(--texto); min-height: 100vh;
+    }
+    .verificando { max-width: 720px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; padding: 0 20px; }
+    .contenedor { display: none; }
 
-    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-    .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
-    .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
-    .top-botones { display: flex; gap: 8px; }
-    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+    /* ===== Cabecera azul ===== */
+    .cabecera { background: var(--azul-osc); }
+    .cab-inner { max-width: 720px; margin: 0 auto; padding: 18px 20px 22px; }
+    .cab-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.16); }
+    .barra-marca { display: flex; align-items: center; gap: 9px; }
+    .logo-simbolo { height: 30px; width: auto; display: block; }
+    .marca-texto { font-family: "Sora", sans-serif; font-size: 18px; font-weight: 600; color: var(--blanco); letter-spacing: -0.01em; }
+    .cab-botones { display: flex; gap: 8px; }
+    .btn-cab {
+      background: transparent; color: var(--blanco);
+      border: 1.5px solid rgba(255,255,255,0.45);
+      padding: 8px 15px; border-radius: 11px; font-size: 13px; font-weight: 600;
+      cursor: pointer; text-decoration: none; display: inline-block; font-family: inherit; white-space: nowrap;
+    }
+    .btn-cab:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.65); }
+    .btn-cab:active { transform: scale(0.97); }
+    .cab-titulo { margin-top: 16px; }
+    .cab-titulo h1 { font-size: 23px; font-weight: 600; color: var(--blanco); }
+    .cab-sub { font-size: 13px; color: var(--azul-suave); margin-top: 3px; }
 
-    .selector-cont { margin-bottom: 22px; }
-    .selector-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-texto); margin-bottom: 8px; }
-    .selector { width: 100%; padding: 14px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: var(--blanco); color: var(--texto); outline: none; cursor: pointer; }
+    /* ===== Cuerpo ===== */
+    .main { max-width: 720px; margin: 0 auto; padding: 22px 20px 40px; }
+
+    .selector-cont { margin-bottom: 20px; }
+    .selector-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-texto); margin-bottom: 7px; }
+    .selector { width: 100%; padding: 13px 14px; font-size: 15px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: var(--blanco); color: var(--texto); outline: none; cursor: pointer; font-family: inherit; }
     .selector:focus { border-color: var(--azul); }
 
-    .metricas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-    @media (max-width: 560px) { .metricas { grid-template-columns: repeat(2, 1fr); } }
-    .metrica { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 16px; }
-    .metrica .label { font-size: 11px; color: var(--gris-texto); margin-bottom: 6px; }
-    .metrica .valor { font-size: 26px; font-weight: 600; }
+    .titulo-edificio { font-size: 18px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; word-break: break-word; }
+    .subtitulo-edificio { font-size: 13px; color: var(--gris-texto); margin-bottom: 18px; }
 
-    .tarjeta { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+    .metricas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    @media (max-width: 560px) { .metricas { grid-template-columns: repeat(2, 1fr); } }
+    .metrica { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 15px; }
+    .metrica .label { font-size: 11px; color: var(--gris-texto); margin-bottom: 5px; }
+    .metrica .valor { font-size: 25px; font-weight: 600; color: var(--azul); }
+    .metrica.foto .valor { color: var(--verde); }
+
+    .graficos { display: grid; grid-template-columns: 1fr; gap: 18px; }
+    .tarjeta { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 20px; }
     .tarjeta h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
     .grafico-cont { position: relative; width: 100%; }
 
@@ -54,8 +85,17 @@
 
     .vacio { text-align: center; color: var(--gris-texto); padding: 20px; font-size: 14px; }
     .cargando { text-align: center; color: var(--gris-texto); padding: 40px; font-size: 14px; }
-    .titulo-edificio { font-size: 18px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; word-break: break-word; }
-    .subtitulo-edificio { font-size: 13px; color: var(--gris-texto); margin-bottom: 18px; }
+
+    /* ===================== PC (pantallas anchas) ===================== */
+    @media (min-width: 900px) {
+      .cab-inner { max-width: 1100px; padding: 20px 32px 24px; }
+      .main { max-width: 1100px; padding: 24px 32px 48px; }
+      .cab-titulo h1 { font-size: 25px; }
+      .selector { max-width: 360px; }
+      /* Gráficas lado a lado; "por empleado" ocupa el ancho completo */
+      .graficos { grid-template-columns: 1fr 1fr; }
+      .tarjeta.ancho-completo { grid-column: 1 / -1; }
+    }
   </style>
 </head>
 <body>
@@ -64,27 +104,37 @@
 
   <div class="contenedor" id="contenedor">
 
-    <div class="top">
-      <div>
-        <div class="marca">CleanTrack</div>
-        <h1>Estadísticas</h1>
+    <header class="cabecera">
+      <div class="cab-inner">
+        <div class="cab-fila">
+          <div class="barra-marca">
+            <img src="logo-simbolo.png" alt="" class="logo-simbolo" />
+            <span class="marca-texto">CleanTrack</span>
+          </div>
+          <div class="cab-botones">
+            <a class="btn-cab" href="inicio.html">← Inicio</a>
+            <button class="btn-cab" onclick="salir()">Salir</button>
+          </div>
+        </div>
+        <div class="cab-titulo">
+          <h1>Estadísticas</h1>
+          <div class="cab-sub">Rendimiento y tendencias por edificio</div>
+        </div>
       </div>
-      <div class="top-botones">
-        <a class="btn-salir" href="inicio.html">← Inicio</a>
-        <button class="btn-salir" onclick="salir()">Salir</button>
+    </header>
+
+    <main class="main">
+      <div class="selector-cont">
+        <div class="selector-label">Edificio</div>
+        <select class="selector" id="selector-edificio" onchange="mostrarEdificio()">
+          <option value="">Cargando edificios...</option>
+        </select>
       </div>
-    </div>
 
-    <div class="selector-cont">
-      <div class="selector-label">Edificio</div>
-      <select class="selector" id="selector-edificio" onchange="mostrarEdificio()">
-        <option value="">Cargando edificios...</option>
-      </select>
-    </div>
-
-    <div id="contenido-edificio">
-      <div class="cargando">Cargando estadísticas...</div>
-    </div>
+      <div id="contenido-edificio">
+        <div class="cargando">Cargando estadísticas...</div>
+      </div>
+    </main>
 
   </div>
 
@@ -168,17 +218,19 @@
       var cont = document.getElementById("contenido-edificio");
 
       cont.innerHTML =
-        '<div class="titulo-edificio"><svg viewBox="0 0 24 24" fill="none" stroke="#5F7268" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;flex-shrink:0;"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg><span class="nombre-edificio"></span></div>' +
+        '<div class="titulo-edificio"><svg viewBox="0 0 24 24" fill="none" stroke="#5A6573" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;flex-shrink:0;"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg><span class="nombre-edificio"></span></div>' +
         '<div class="subtitulo-edificio">Estadísticas de este edificio</div>' +
         '<div class="metricas">' +
           '<div class="metrica"><div class="label">Total registros</div><div class="valor">' + total + '</div></div>' +
           '<div class="metrica"><div class="label">Hoy</div><div class="valor">' + nHoy + '</div></div>' +
           '<div class="metrica"><div class="label">Esta semana</div><div class="valor">' + nSemana + '</div></div>' +
-          '<div class="metrica"><div class="label">% con foto</div><div class="valor">' + pctFoto + '%</div></div>' +
+          '<div class="metrica foto"><div class="label">% con foto</div><div class="valor">' + pctFoto + '%</div></div>' +
         '</div>' +
-        '<div class="tarjeta"><h2>Actividad últimos 7 días</h2><div class="grafico-cont" style="height:200px;"><canvas id="cv-dias"></canvas></div></div>' +
-        '<div class="tarjeta"><h2>Áreas más atendidas</h2><div id="leyenda-areas" class="leyenda"></div><div class="grafico-cont" style="height:240px;"><canvas id="cv-areas"></canvas></div></div>' +
-        '<div class="tarjeta"><h2>Actividad por empleado</h2><div class="grafico-cont" id="cont-emp"><canvas id="cv-emp"></canvas></div></div>';
+        '<div class="graficos">' +
+          '<div class="tarjeta"><h2>Actividad últimos 7 días</h2><div class="grafico-cont" style="height:200px;"><canvas id="cv-dias"></canvas></div></div>' +
+          '<div class="tarjeta"><h2>Áreas más atendidas</h2><div id="leyenda-areas" class="leyenda"></div><div class="grafico-cont" style="height:240px;"><canvas id="cv-areas"></canvas></div></div>' +
+          '<div class="tarjeta ancho-completo"><h2>Actividad por empleado</h2><div class="grafico-cont" id="cont-emp"><canvas id="cv-emp"></canvas></div></div>' +
+        '</div>';
 
       // Nombre del edificio con textContent (anti-XSS)
       cont.querySelector(".nombre-edificio").textContent = edificio;
@@ -196,9 +248,9 @@
 
     function pintarGraficos(regs) {
       if (!window.Chart) { setTimeout(function(){ pintarGraficos(regs); }, 120); return; }
-      Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
+      Chart.defaults.font.family = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
       Chart.defaults.font.size = 12;
-      var tt = { backgroundColor: "#2C2C2A", padding: 10, cornerRadius: 8 };
+      var tt = { backgroundColor: "#1B2733", padding: 10, cornerRadius: 8 };
 
       var dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
       var etiquetas = [], valores = [];
