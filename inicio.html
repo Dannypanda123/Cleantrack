@@ -42,9 +42,9 @@
     .main { max-width: 680px; margin: 0 auto; padding: 24px 20px 40px; }
 
     /* Logo centrado (móvil) */
-    .logo-movil { display: block; margin: 0 auto 18px; width: 180px; height: auto; }
+    .logo-movil { display: block; margin: 0 auto 16px; width: 180px; height: auto; }
 
-    .bienvenida { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; }
+    .bienvenida { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; border-top: 1px solid var(--gris-borde); padding-top: 16px; }
     .bienvenida h1 { font-size: 26px; font-weight: 600; color: var(--texto); }
     .btn-salir {
       background: transparent; color: var(--gris-texto);
@@ -133,7 +133,7 @@
     @media (min-width: 900px) {
       .barra-pc { display: block; background: var(--azul-osc); }
       .barra-inner { max-width: 1100px; margin: 0 auto; padding: 20px 32px 22px; }
-      .cab-fila { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+      .cab-fila { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.16); }
       .barra-marca { grid-column: 2; justify-self: center; display: flex; align-items: center; gap: 10px; }
       .logo-simbolo { height: 34px; width: auto; display: block; }
       .marca-texto { font-family: "Sora", sans-serif; font-size: 19px; font-weight: 600; color: var(--blanco); letter-spacing: -0.01em; }
