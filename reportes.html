@@ -7,6 +7,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="idiomas.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
@@ -63,45 +64,46 @@
     <div class="top">
       <div>
         <div class="marca">CleanTrack</div>
-        <h1>Reportes</h1>
+        <h1 data-i18n="rep.titulo">Reportes</h1>
       </div>
       <div class="top-botones">
-        <a class="btn-salir" href="inicio.html">← Inicio</a>
-        <button class="btn-salir" onclick="salir()">Salir</button>
+        <a class="btn-salir" href="inicio.html" data-i18n="comun.inicio">← Inicio</a>
+        <button class="btn-salir" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+        <button class="btn-salir" onclick="salir()" data-i18n="comun.salir">Salir</button>
       </div>
     </div>
 
     <div class="tarjeta">
-      <h2>Generar informe</h2>
-      <div class="sub">Crea un informe en PDF para presentar a tu cliente</div>
+      <h2 data-i18n="rep.generar_titulo">Generar informe</h2>
+      <div class="sub" data-i18n="rep.generar_sub">Crea un informe en PDF para presentar a tu cliente</div>
 
-      <label for="sel-edificio">Edificio</label>
+      <label for="sel-edificio" data-i18n="rep.edificio">Edificio</label>
       <select id="sel-edificio"><option value="">Cargando...</option></select>
 
-      <label for="sel-periodo">Tipo de informe</label>
+      <label for="sel-periodo" data-i18n="rep.tipo">Tipo de informe</label>
       <select id="sel-periodo" onchange="cambioPeriodo()">
-        <option value="diario">Diario (un día)</option>
-        <option value="7-dias">Semanal (últimos 7 días)</option>
-        <option value="mes-actual">Mensual (este mes)</option>
-        <option value="mes-pasado">Mensual (mes pasado)</option>
+        <option value="diario" data-i18n="rep.tipo_diario">Diario (un día)</option>
+        <option value="7-dias" data-i18n="rep.tipo_semanal">Semanal (últimos 7 días)</option>
+        <option value="mes-actual" data-i18n="rep.tipo_mes_actual">Mensual (este mes)</option>
+        <option value="mes-pasado" data-i18n="rep.tipo_mes_pasado">Mensual (mes pasado)</option>
       </select>
 
       <div id="cont-fecha" style="display:none;">
-        <label for="sel-fecha">Día del informe</label>
+        <label for="sel-fecha" data-i18n="rep.dia_informe">Día del informe</label>
         <input type="date" id="sel-fecha" min="2020-01-01" max="2040-12-31" />
       </div>
 
-      <button class="btn-generar" id="btn-generar" onclick="generar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> Generar PDF</button>
+      <button class="btn-generar" id="btn-generar" onclick="generar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> <span data-i18n="rep.btn_generar">Generar PDF</span></button>
       <div class="mensaje" id="mensaje"></div>
     </div>
 
     <div class="preview" id="preview">
-      <h2>Vista previa del informe</h2>
+      <h2 data-i18n="rep.preview_titulo">Vista previa del informe</h2>
       <div class="preview-metricas">
-        <div class="pm"><div class="v" id="pv-total">—</div><div class="l">Áreas limpiadas</div></div>
-        <div class="pm"><div class="v" id="pv-foto">—</div><div class="l">Con foto</div></div>
-        <div class="pm"><div class="v" id="pv-dias">—</div><div class="l" id="lbl-dias">Días activos</div></div>
-        <div class="pm"><div class="v inc" id="pv-inc">—</div><div class="l">Incidencias</div></div>
+        <div class="pm"><div class="v" id="pv-total">—</div><div class="l" data-i18n="rep.pv_areas">Áreas limpiadas</div></div>
+        <div class="pm"><div class="v" id="pv-foto">—</div><div class="l" data-i18n="rep.pv_foto">Con foto</div></div>
+        <div class="pm"><div class="v" id="pv-dias">—</div><div class="l" id="lbl-dias" data-i18n="rep.pv_dias">Días activos</div></div>
+        <div class="pm"><div class="v inc" id="pv-inc">—</div><div class="l" data-i18n="rep.pv_inc">Incidencias</div></div>
       </div>
     </div>
 
@@ -162,12 +164,14 @@
     }
 
     async function verificarAcceso() {
-      if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
+      if (!db) { document.getElementById("verificando").textContent = I18N.t("comun.sin_conexion"); return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
 
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+      I18N.aplicar();
+      I18N.onChange(function(){ I18N.aplicar(); cargarTodo(); });
       var hoy = new Date();
       var hoyStr = hoy.getFullYear() + "-" + String(hoy.getMonth()+1).padStart(2,"0") + "-" + String(hoy.getDate()).padStart(2,"0");
       var campoFecha = document.getElementById("sel-fecha");
@@ -258,20 +262,20 @@
     }
 
     function nombrePeriodo(periodo) {
-      var meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+      var meses = I18N.t("pdf.meses").split(",");
       var ahora = new Date();
       var texto;
       if (periodo === "diario") {
         var val = document.getElementById("sel-fecha").value;
         var partes = val.split("-");
-        texto = partes[2] + " de " + meses[partes[1]-1] + " " + partes[0];
+        texto = partes[2] + I18N.t("pdf.de") + meses[partes[1]-1] + " " + partes[0];
       } else if (periodo === "mes-actual") {
         texto = meses[ahora.getMonth()] + " " + ahora.getFullYear();
       } else if (periodo === "mes-pasado") {
         var m = ahora.getMonth() - 1; var y = ahora.getFullYear(); if (m < 0) { m = 11; y--; }
         texto = meses[m] + " " + y;
       } else {
-        texto = "últimos 7 días";
+        texto = I18N.t("pdf.ultimos7");
       }
       // Mayúscula inicial
       return texto.charAt(0).toUpperCase() + texto.slice(1);
@@ -580,7 +584,7 @@
       // Texto del pie
       textRGB(doc, PDF_COLORS.textoSoft);
       doc.setFontSize(8); doc.setFont(undefined, "normal");
-      var txt = "Informe generado por CleanTrack" + (extraTexto ? " — " + extraTexto : "");
+      var txt = I18N.t("pdf.pie") + (extraTexto ? " — " + extraTexto : "");
       doc.text(txt, 23, pieY + 3);
     }
 
@@ -593,7 +597,7 @@
       var periodo = document.getElementById("sel-periodo").value;
       var msg = document.getElementById("mensaje");
 
-      if (!edificio) { msg.textContent = "Selecciona un edificio."; msg.className = "mensaje error"; return; }
+      if (!edificio) { msg.textContent = I18N.t("rep.sel_edificio"); msg.className = "mensaje error"; return; }
 
       var r = rangoFechas(periodo);
       var regs = todosRegistros.filter(function(reg){
@@ -640,7 +644,7 @@
         msg.textContent = "No hay datos para ese edificio en ese período."; msg.className = "mensaje error"; return;
       }
 
-      msg.textContent = "Generando PDF..."; msg.className = "mensaje cargando";
+      msg.textContent = I18N.t("rep.generando"); msg.className = "mensaje cargando";
       try {
         var datos = { total: total, conFoto: conFoto, nDias: nDias, nEmps: nEmps, esDiario: esDiario,
                       nAreasCubiertas: nAreasCubiertas, nAreasTotal: nAreasTotal, incResueltas: incResueltas };
@@ -654,7 +658,7 @@
         msg.textContent = "✓ PDF generado y descargado"; msg.className = "mensaje ok";
       } catch (e) {
         console.error(e);
-        msg.textContent = "Error al generar el PDF: " + e.message; msg.className = "mensaje error";
+        msg.textContent = I18N.t("rep.error") + e.message; msg.className = "mensaje error";
       }
     }
 
@@ -667,23 +671,23 @@
       var pageW = doc.internal.pageSize.getWidth();
 
       // CABECERA
-      var y = dibujarCabecera(doc, "Informe diario de limpieza", [
+      var y = dibujarCabecera(doc, I18N.t("pdf.sub_diario"), [
         { icono: 'pin',   texto: edificio },
-        { icono: 'cal',   texto: "Período: " + nombrePeriodo(periodo) },
-        { icono: 'reloj', texto: "Generado: " + fmtFechaCorta() }
+        { icono: 'cal',   texto: I18N.t("pdf.periodo") + nombrePeriodo(periodo) },
+        { icono: 'reloj', texto: I18N.t("pdf.generado") + fmtFechaCorta() }
       ]);
 
       // 4 TARJETAS DE MÉTRICAS (como en el mockup)
       var cards = [
-        { icono: 'check',   color: PDF_COLORS.azul,  valor: resumen.total,    etiqueta: "Áreas limpiadas" },
-        { icono: 'camara',  color: PDF_COLORS.verde, valor: resumen.conFoto,  etiqueta: "Con foto" },
-        { icono: 'persona', color: PDF_COLORS.ambar, valor: resumen.nEmps,    etiqueta: "Empleados" },
-        { icono: 'alerta',  color: PDF_COLORS.rojo,  valor: incs.length,      etiqueta: "Incidencias" }
+        { icono: 'check',   color: PDF_COLORS.azul,  valor: resumen.total,    etiqueta: I18N.t("pdf.t_areas_limpiadas") },
+        { icono: 'camara',  color: PDF_COLORS.verde, valor: resumen.conFoto,  etiqueta: I18N.t("pdf.t_con_foto") },
+        { icono: 'persona', color: PDF_COLORS.ambar, valor: resumen.nEmps,    etiqueta: I18N.t("pdf.t_empleados") },
+        { icono: 'alerta',  color: PDF_COLORS.rojo,  valor: incs.length,      etiqueta: I18N.t("pdf.t_incidencias") }
       ];
       y = dibujarTarjetasMetricas(doc, y, cards);
 
       // DETALLE DE LIMPIEZAS
-      y = dibujarTituloSeccion(doc, y + 4, "edificio", "Detalle de limpiezas");
+      y = dibujarTituloSeccion(doc, y + 4, "edificio", I18N.t("pdf.s_detalle"));
 
       var cols = [
         { label: "Fecha/Hora", width: 40, get: function(r){ return fmtFecha(r.created_at); } },
@@ -696,7 +700,7 @@
       if (regs.length === 0) {
         textRGB(doc, PDF_COLORS.textoSoft);
         doc.setFontSize(9.5); doc.setFont(undefined, "italic");
-        doc.text("No se registraron limpiezas en este período.", 20, y + 4);
+        doc.text(I18N.t("pdf.vacio_limpiezas"), 20, y + 4);
         y += 12;
       } else {
         regs.forEach(function(reg) {
@@ -708,10 +712,10 @@
       // INCIDENCIAS REPORTADAS
       y += 8;
       if (y > 230) { doc.addPage(); y = 22; }
-      y = dibujarTituloSeccion(doc, y, "alerta", "Incidencias reportadas");
+      y = dibujarTituloSeccion(doc, y, "alerta", I18N.t("pdf.s_inc_reportadas"));
 
       if (incs.length === 0) {
-        y = dibujarEstadoVacioVerde(doc, y, "No se reportaron incidencias en este período.");
+        y = dibujarEstadoVacioVerde(doc, y, I18N.t("pdf.vacio_inc_periodo"));
       } else {
         incs.forEach(function(inc) {
           if (y > 240) { doc.addPage(); y = 22; }
@@ -734,10 +738,10 @@
       var doc = new jsPDF();
       var pageW = doc.internal.pageSize.getWidth();
 
-      var y = dibujarCabecera(doc, "Informe semanal de limpieza", [
+      var y = dibujarCabecera(doc, I18N.t("pdf.sub_semanal"), [
         { icono: 'pin',   texto: edificio },
-        { icono: 'cal',   texto: "Período: " + nombrePeriodo(periodo) },
-        { icono: 'reloj', texto: "Generado: " + fmtFechaCorta() }
+        { icono: 'cal',   texto: I18N.t("pdf.periodo") + nombrePeriodo(periodo) },
+        { icono: 'reloj', texto: I18N.t("pdf.generado") + fmtFechaCorta() }
       ]);
 
       // 4 tarjetas
@@ -745,15 +749,15 @@
         ? (datos.nAreasCubiertas + "/" + datos.nAreasTotal)
         : String(datos.nAreasCubiertas);
       var cards = [
-        { icono: 'check',    color: PDF_COLORS.azul,  valor: datos.total,        etiqueta: "Limpiezas" },
-        { icono: 'reloj',    color: PDF_COLORS.verde, valor: datos.nDias,        etiqueta: "Días trabajados" },
-        { icono: 'edificio', color: PDF_COLORS.ambar, valor: areasCobertura,     etiqueta: "Áreas cubiertas" },
-        { icono: 'alerta',   color: PDF_COLORS.rojo,  valor: incs.length,        etiqueta: "Incidencias" }
+        { icono: 'check',    color: PDF_COLORS.azul,  valor: datos.total,        etiqueta: I18N.t("pdf.t_limpiezas") },
+        { icono: 'reloj',    color: PDF_COLORS.verde, valor: datos.nDias,        etiqueta: I18N.t("pdf.t_dias_trab") },
+        { icono: 'edificio', color: PDF_COLORS.ambar, valor: areasCobertura,     etiqueta: I18N.t("pdf.t_areas_cub") },
+        { icono: 'alerta',   color: PDF_COLORS.rojo,  valor: incs.length,        etiqueta: I18N.t("pdf.t_incidencias") }
       ];
       y = dibujarTarjetasMetricas(doc, y, cards);
 
       // ACTIVIDAD POR DÍA (barras horizontales)
-      y = dibujarTituloSeccion(doc, y + 4, "reloj", "Actividad por día");
+      y = dibujarTituloSeccion(doc, y + 4, "reloj", I18N.t("pdf.s_act_dia"));
 
       var r = rangoFechas(periodo);
       var diasArr = [];
@@ -804,10 +808,10 @@
       // INCIDENCIAS
       y += 6;
       if (y > 230) { doc.addPage(); y = 22; }
-      y = dibujarTituloSeccion(doc, y, "alerta", "Incidencias de la semana");
+      y = dibujarTituloSeccion(doc, y, "alerta", I18N.t("pdf.s_inc_semana"));
 
       if (incs.length === 0) {
-        y = dibujarEstadoVacioVerde(doc, y, "No se reportaron incidencias esta semana.");
+        y = dibujarEstadoVacioVerde(doc, y, I18N.t("pdf.vacio_inc_semana"));
       } else {
         // Resumen breve
         textRGB(doc, PDF_COLORS.textoSoft);
@@ -832,10 +836,10 @@
       var doc = new jsPDF();
       var pageW = doc.internal.pageSize.getWidth();
 
-      var y = dibujarCabecera(doc, "Informe mensual de limpieza", [
+      var y = dibujarCabecera(doc, I18N.t("pdf.sub_mensual"), [
         { icono: 'pin',   texto: edificio },
-        { icono: 'cal',   texto: "Período: " + nombrePeriodo(periodo) },
-        { icono: 'reloj', texto: "Generado: " + fmtFechaCorta() }
+        { icono: 'cal',   texto: I18N.t("pdf.periodo") + nombrePeriodo(periodo) },
+        { icono: 'reloj', texto: I18N.t("pdf.generado") + fmtFechaCorta() }
       ]);
 
       // Mensaje de resumen positivo en banner verde
@@ -853,15 +857,15 @@
         ? (datos.nAreasCubiertas + "/" + datos.nAreasTotal)
         : String(datos.nAreasCubiertas);
       var cards = [
-        { icono: 'check',    color: PDF_COLORS.azul,  valor: datos.total,            etiqueta: "Limpiezas realizadas" },
-        { icono: 'reloj',    color: PDF_COLORS.verde, valor: datos.nDias,            etiqueta: "Días trabajados" },
-        { icono: 'edificio', color: PDF_COLORS.ambar, valor: areasCobertura,         etiqueta: "Áreas cubiertas" },
-        { icono: 'check',    color: PDF_COLORS.verde, valor: datos.incResueltas + "/" + incs.length, etiqueta: "Incid. resueltas" }
+        { icono: 'check',    color: PDF_COLORS.azul,  valor: datos.total,            etiqueta: I18N.t("pdf.t_limpiezas_real") },
+        { icono: 'reloj',    color: PDF_COLORS.verde, valor: datos.nDias,            etiqueta: I18N.t("pdf.t_dias_trab") },
+        { icono: 'edificio', color: PDF_COLORS.ambar, valor: areasCobertura,         etiqueta: I18N.t("pdf.t_areas_cub") },
+        { icono: 'check',    color: PDF_COLORS.verde, valor: datos.incResueltas + "/" + incs.length, etiqueta: I18N.t("pdf.t_inc_resueltas") }
       ];
       y = dibujarTarjetasMetricas(doc, y, cards);
 
       // ACTIVIDAD POR SEMANA (barras)
-      y = dibujarTituloSeccion(doc, y + 4, "reloj", "Actividad por semana");
+      y = dibujarTituloSeccion(doc, y + 4, "reloj", I18N.t("pdf.s_act_semana"));
 
       var r = rangoFechas(periodo);
       var semanas = [];
@@ -911,7 +915,7 @@
       // ÁREAS MÁS ATENDIDAS
       y += 6;
       if (y > 220) { doc.addPage(); y = 22; }
-      y = dibujarTituloSeccion(doc, y, "edificio", "Áreas más atendidas");
+      y = dibujarTituloSeccion(doc, y, "edificio", I18N.t("pdf.s_areas_atendidas"));
 
       var conteoAreas = {};
       regs.forEach(function(reg){ var a = reg.area || "Sin área"; conteoAreas[a] = (conteoAreas[a] || 0) + 1; });
@@ -945,10 +949,10 @@
       // INCIDENCIAS
       y += 6;
       if (y > 220) { doc.addPage(); y = 22; }
-      y = dibujarTituloSeccion(doc, y, "alerta", "Incidencias del mes");
+      y = dibujarTituloSeccion(doc, y, "alerta", I18N.t("pdf.s_inc_mes"));
 
       if (incs.length === 0) {
-        y = dibujarEstadoVacioVerde(doc, y, "No se reportaron incidencias este mes.");
+        y = dibujarEstadoVacioVerde(doc, y, I18N.t("pdf.vacio_inc_mes"));
       } else {
         textRGB(doc, PDF_COLORS.textoSoft);
         doc.setFontSize(9.5); doc.setFont(undefined, "italic");
