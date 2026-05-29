@@ -12,6 +12,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="config.js"></script>
+  <script src="idiomas.js"></script>
   <script src="ui.js"></script>
 
   <style>
@@ -158,13 +159,14 @@
             <span class="marca-texto">CleanTrack</span>
           </div>
           <div class="cab-botones">
-            <a class="btn-cab" href="inicio.html">← Inicio</a>
-            <button class="btn-cab" onclick="salir()">Salir</button>
+            <a class="btn-cab" href="inicio.html" data-i18n="comun.inicio">← Inicio</a>
+            <button class="btn-cab" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+            <button class="btn-cab" onclick="salir()" data-i18n="comun.salir">Salir</button>
           </div>
         </div>
         <div class="cab-titulo">
-          <h1>Edificios y áreas</h1>
-          <div class="cab-sub">Gestiona espacios y genera códigos QR por área</div>
+          <h1 data-i18n="area.titulo">Edificios y áreas</h1>
+          <div class="cab-sub" data-i18n="area.subtitulo">Gestiona espacios y genera códigos QR por área</div>
         </div>
       </div>
     </header>
@@ -172,14 +174,14 @@
     <main class="main">
 
       <div class="acciones">
-        <button class="btn-accion btn-edificio" onclick="abrirModalEdificio()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg> Crear edificio</button>
-        <button class="btn-accion btn-area" onclick="abrirModalArea()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Crear área</button>
+        <button class="btn-accion btn-edificio" onclick="abrirModalEdificio()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg> <span data-i18n="area.crear_edificio">Crear edificio</span></button>
+        <button class="btn-accion btn-area" onclick="abrirModalArea()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <span data-i18n="area.crear_area">Crear área</span></button>
       </div>
 
       <div class="tarjeta">
-        <h2>Edificios y sus áreas</h2>
-        <div class="sub">Cada edificio con sus áreas. Toca "Generar código QR" para descargar el QR de cada área.</div>
-        <div id="lista-areas"><div class="cargando">Cargando...</div></div>
+        <h2 data-i18n="area.lista_titulo">Edificios y sus áreas</h2>
+        <div class="sub" data-i18n="area.lista_sub">Cada edificio con sus áreas. Toca "Generar código QR" para descargar el QR de cada área.</div>
+        <div id="lista-areas"><div class="cargando" data-i18n="area.cargando">Cargando...</div></div>
       </div>
 
     </main>
@@ -189,25 +191,25 @@
   <!-- MODAL CREAR EDIFICIO -->
   <div class="modal" id="modal-edificio">
     <div class="modal-caja">
-      <div class="modal-titulo">Crear edificio</div>
-      <label>Nombre del edificio *</label>
+      <div class="modal-titulo" data-i18n="area.m_edificio_titulo">Crear edificio</div>
+      <label data-i18n="area.f_nombre_ed">Nombre del edificio *</label>
       <input type="text" id="e-nombre" placeholder="Ej. Marbella I" />
-      <label>Dirección</label>
+      <label data-i18n="area.f_direccion">Dirección</label>
       <input type="text" id="e-direccion" placeholder="Ej. Av. Principal 123" />
-      <label>Persona de contacto</label>
+      <label data-i18n="area.f_contacto">Persona de contacto</label>
       <input type="text" id="e-contacto" placeholder="Ej. Sr. Pérez (administrador)" />
-      <label>Teléfono</label>
+      <label data-i18n="area.f_telefono">Teléfono</label>
       <input type="text" id="e-telefono" placeholder="Ej. 555-1234" inputmode="tel" />
-      <label>Email</label>
+      <label data-i18n="area.f_email">Email</label>
       <input type="email" id="e-email" placeholder="Ej. admin@marbella.com" />
-      <label>Número de pisos</label>
+      <label data-i18n="area.f_pisos">Número de pisos</label>
       <input type="text" id="e-pisos" placeholder="Ej. 12" />
-      <label>Notas</label>
+      <label data-i18n="area.f_notas">Notas</label>
       <textarea id="e-notas" placeholder="Ej. Acceso por puerta trasera después de las 8pm"></textarea>
       <div class="mensaje" id="mensaje-edificio"></div>
       <div class="modal-botones">
-        <button class="btn-cancelar" onclick="cerrar('modal-edificio')">Cancelar</button>
-        <button class="btn-guardar azul" id="btn-guardar-edificio" onclick="guardarEdificio()">Guardar edificio</button>
+        <button class="btn-cancelar" onclick="cerrar('modal-edificio')" data-i18n="area.cancelar">Cancelar</button>
+        <button class="btn-guardar azul" id="btn-guardar-edificio" onclick="guardarEdificio()" data-i18n="area.guardar_ed">Guardar edificio</button>
       </div>
     </div>
   </div>
@@ -215,25 +217,25 @@
   <!-- MODAL EDITAR EDIFICIO -->
   <div class="modal" id="modal-editar-edificio">
     <div class="modal-caja">
-      <div class="modal-titulo">Editar edificio</div>
-      <label>Nombre del edificio *</label>
+      <div class="modal-titulo" data-i18n="area.m_editar_titulo">Editar edificio</div>
+      <label data-i18n="area.f_nombre_ed">Nombre del edificio *</label>
       <input type="text" id="ee-nombre" />
-      <label>Dirección</label>
+      <label data-i18n="area.f_direccion">Dirección</label>
       <input type="text" id="ee-direccion" />
-      <label>Persona de contacto</label>
+      <label data-i18n="area.f_contacto">Persona de contacto</label>
       <input type="text" id="ee-contacto" />
-      <label>Teléfono</label>
+      <label data-i18n="area.f_telefono">Teléfono</label>
       <input type="text" id="ee-telefono" inputmode="tel" />
-      <label>Email</label>
+      <label data-i18n="area.f_email">Email</label>
       <input type="email" id="ee-email" />
-      <label>Número de pisos</label>
+      <label data-i18n="area.f_pisos">Número de pisos</label>
       <input type="text" id="ee-pisos" />
-      <label>Notas</label>
+      <label data-i18n="area.f_notas">Notas</label>
       <textarea id="ee-notas"></textarea>
       <div class="mensaje" id="mensaje-editar-edificio"></div>
       <div class="modal-botones">
-        <button class="btn-cancelar" onclick="cerrar('modal-editar-edificio')">Cancelar</button>
-        <button class="btn-guardar azul" id="btn-guardar-editar-edificio" onclick="guardarEdicionEdificio()">Guardar cambios</button>
+        <button class="btn-cancelar" onclick="cerrar('modal-editar-edificio')" data-i18n="area.cancelar">Cancelar</button>
+        <button class="btn-guardar azul" id="btn-guardar-editar-edificio" onclick="guardarEdicionEdificio()" data-i18n="area.guardar_cambios">Guardar cambios</button>
       </div>
     </div>
   </div>
@@ -241,19 +243,19 @@
   <!-- MODAL CREAR ÁREA -->
   <div class="modal" id="modal-area">
     <div class="modal-caja">
-      <div class="modal-titulo">Crear área</div>
-      <label>Nombre del área *</label>
+      <div class="modal-titulo" data-i18n="area.m_area_titulo">Crear área</div>
+      <label data-i18n="area.f_nombre_area">Nombre del área *</label>
       <input type="text" id="a-nombre" placeholder="Ej. Lobby, Baño piso 2, Gimnasio" />
-      <label>Edificio *</label>
+      <label data-i18n="area.f_edificio">Edificio *</label>
       <select id="a-edificio"><option value="">Cargando edificios...</option></select>
       <div class="checkbox-fila">
         <input type="checkbox" id="a-requiere-foto" />
-        <label for="a-requiere-foto">Requiere foto al registrar</label>
+        <label for="a-requiere-foto" data-i18n="area.f_requiere_foto">Requiere foto al registrar</label>
       </div>
       <div class="mensaje" id="mensaje-area"></div>
       <div class="modal-botones">
-        <button class="btn-cancelar" onclick="cerrar('modal-area')">Cancelar</button>
-        <button class="btn-guardar verde" id="btn-guardar-area" onclick="guardarArea()">Crear área</button>
+        <button class="btn-cancelar" onclick="cerrar('modal-area')" data-i18n="area.cancelar">Cancelar</button>
+        <button class="btn-guardar verde" id="btn-guardar-area" onclick="guardarArea()" data-i18n="area.crear_area_btn">Crear área</button>
       </div>
     </div>
   </div>
@@ -269,8 +271,8 @@
         <div class="tp-pie">Powered by CleanTrack</div>
       </div>
       <div class="modal-botones">
-        <button class="btn-cancelar" onclick="cerrar('modal-qr')">Cerrar</button>
-        <button class="btn-guardar verde" onclick="imprimirUnaTarjeta()">Imprimir tarjeta</button>
+        <button class="btn-cancelar" onclick="cerrar('modal-qr')" data-i18n="area.qr_cerrar">Cerrar</button>
+        <button class="btn-guardar verde" onclick="imprimirUnaTarjeta()" data-i18n="area.qr_imprimir">Imprimir tarjeta</button>
       </div>
     </div>
   </div>
@@ -281,11 +283,13 @@
     var nombreAreaActual = "";
 
     async function verificarAcceso() {
-      if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
+      if (!db) { document.getElementById("verificando").textContent = I18N.t("comun.sin_conexion"); return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+      I18N.aplicar();
+      I18N.onChange(function(){ I18N.aplicar(); cargarAreas(); });
       cargarAreas();
     }
 
@@ -307,10 +311,10 @@
     async function guardarEdificio() {
       var nombre = document.getElementById("e-nombre").value.trim();
       var msg = document.getElementById("mensaje-edificio");
-      if (!nombre) { msg.textContent = "El nombre del edificio es obligatorio."; msg.className = "mensaje error"; return; }
+      if (!nombre) { msg.textContent = I18N.t("area.req_nombre_ed"); msg.className = "mensaje error"; return; }
 
       document.getElementById("btn-guardar-edificio").disabled = true;
-      msg.textContent = "Guardando..."; msg.className = "mensaje"; msg.style.display = "block";
+      msg.textContent = I18N.t("area.guardando"); msg.className = "mensaje"; msg.style.display = "block";
 
       const { error } = await db.from("edificios").insert([{
         nombre: nombre,
@@ -373,7 +377,7 @@
       var requiereFoto = document.getElementById("a-requiere-foto").checked;
       var msg = document.getElementById("mensaje-area");
 
-      if (!nombre) { msg.textContent = "Escribe el nombre del área."; msg.className = "mensaje error"; return; }
+      if (!nombre) { msg.textContent = I18N.t("area.req_nombre_area"); msg.className = "mensaje error"; return; }
       if (!edificio) { msg.textContent = "Selecciona un edificio."; msg.className = "mensaje error"; return; }
 
       document.getElementById("btn-guardar-area").disabled = true;
@@ -484,7 +488,7 @@
       nombreDiv.textContent = nombreEd + (edi.activo ? "" : " · Inactivo");
       var conteoDiv = document.createElement("div");
       conteoDiv.className = "grupo-conteo";
-      conteoDiv.textContent = areasEd.length + ' área' + (areasEd.length !== 1 ? 's' : '') + ' · ' + activas + ' activa' + (activas !== 1 ? 's' : '');
+      conteoDiv.textContent = areasEd.length + ' ' + (areasEd.length !== 1 ? I18N.t('area.area_plu') : I18N.t('area.area_sing')) + ' · ' + activas + ' ' + (activas !== 1 ? I18N.t('area.activa_plu') : I18N.t('area.activa_sing'));
       info.appendChild(nombreDiv);
       info.appendChild(conteoDiv);
 
@@ -537,7 +541,7 @@
       if (areasEd.length === 0) {
         var sinAreas = document.createElement("div");
         sinAreas.className = "sin-areas";
-        sinAreas.textContent = 'Este edificio aún no tiene áreas. Usa "Crear área" para agregar la primera.';
+        sinAreas.textContent = I18N.t('area.sin_areas_msg');
         cuerpo.appendChild(sinAreas);
       } else {
         areasEd.forEach(function(a){
@@ -570,13 +574,13 @@
       nombreDiv.textContent = a.nombre;  // ANTI-XSS: nombre del área como texto
       var detalleDiv = document.createElement("div");
       detalleDiv.className = "area-detalle";
-      detalleDiv.textContent = (a.requiere_foto ? 'Requiere foto · ' : '') + (a.activa ? 'Activa' : 'Inactiva');
+      detalleDiv.textContent = (a.requiere_foto ? I18N.t('area.requiere_foto_txt') : '') + (a.activa ? I18N.t('area.activa') : I18N.t('area.inactiva'));
       info.appendChild(nombreDiv);
       info.appendChild(detalleDiv);
 
       var btnQR = document.createElement("button");
       btnQR.className = "btn-qr-mini";
-      btnQR.title = "Código QR de esta área";
+      btnQR.title = I18N.t("area.qr_title");
       btnQR.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><line x1="14" y1="14" x2="14" y2="14.01"></line><line x1="21" y1="14" x2="21" y2="14.01"></line><line x1="14" y1="21" x2="21" y2="21"></line></svg>';
       btnQR.addEventListener("click", function(){ mostrarQR(a.id, a.nombre, nombreEd); });
 
@@ -685,10 +689,10 @@
     async function guardarEdicionEdificio() {
       var nombre = document.getElementById("ee-nombre").value.trim();
       var msg = document.getElementById("mensaje-editar-edificio");
-      if (!nombre) { msg.textContent = "El nombre del edificio es obligatorio."; msg.className = "mensaje error"; return; }
+      if (!nombre) { msg.textContent = I18N.t("area.req_nombre_ed"); msg.className = "mensaje error"; return; }
 
       document.getElementById("btn-guardar-editar-edificio").disabled = true;
-      msg.textContent = "Guardando..."; msg.className = "mensaje"; msg.style.display = "block";
+      msg.textContent = I18N.t("area.guardando"); msg.className = "mensaje"; msg.style.display = "block";
 
       const { error } = await db.from("edificios").update({
         nombre: nombre,
