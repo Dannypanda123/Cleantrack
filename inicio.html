@@ -16,7 +16,6 @@
     :root {
       --azul-osc: #0C447C;
       --azul: #185FA5;
-      --azul-suave: #BBD2EA;
       --gris-fondo: #ECEBE4;
       --gris-texto: #5A6573;
       --gris-borde: #E2E0D8;
@@ -34,35 +33,21 @@
     .contenedor { max-width: 680px; margin: 0 auto; display: none; }
     .verificando { max-width: 680px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
 
-    /* Cabecera azul de marca */
-    .cabecera {
-      background: var(--azul-osc);
-      border-radius: 20px;
-      padding: 22px 22px 24px;
-      margin-bottom: 26px;
-    }
-    .cab-top {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; margin-bottom: 18px;
-    }
-    .logo-chip {
-      background: var(--blanco);
-      border-radius: 12px;
-      padding: 7px 13px;
-      display: inline-flex; align-items: center;
-    }
-    .logo-img { height: 38px; width: auto; display: block; }
+    /* Logo centrado arriba (transparente, sobre fondo claro) */
+    .logo-img { display: block; margin: 0 auto 18px; width: 180px; height: auto; }
+
+    .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; }
+    .top h1 { font-size: 26px; font-weight: 600; color: var(--texto); }
     .btn-salir {
-      background: transparent; color: var(--blanco);
-      border: 1.5px solid rgba(255,255,255,0.45);
-      padding: 9px 18px; border-radius: 12px;
+      background: transparent; color: var(--gris-texto);
+      border: 1.5px solid var(--gris-borde);
+      padding: 9px 16px; border-radius: 12px;
       font-size: 14px; font-weight: 600; cursor: pointer;
       font-family: inherit; white-space: nowrap;
     }
-    .btn-salir:hover { background: rgba(255,255,255,0.12); }
+    .btn-salir:hover { background: var(--blanco); border-color: #B5D4F4; }
     .btn-salir:active { transform: scale(0.97); }
-    .cabecera h1 { font-size: 24px; font-weight: 600; color: var(--blanco); }
-    .saludo-sub { font-size: 14px; color: var(--azul-suave); margin-top: 4px; }
+    .saludo-sub { font-size: 15px; color: var(--gris-texto); margin-bottom: 28px; }
 
     .seccion-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gris-texto); margin: 0 0 14px; }
 
@@ -136,14 +121,14 @@
 
   <div class="contenedor" id="contenedor">
 
-    <div class="cabecera">
-      <div class="cab-top">
-        <span class="logo-chip"><img src="logo.png" alt="CleanTrack" class="logo-img" /></span>
-        <button class="btn-salir" onclick="salir()">Salir</button>
+    <img src="logo.png" alt="CleanTrack" class="logo-img" />
+    <div class="top">
+      <div>
+        <h1 id="titulo-saludo">Hola</h1>
       </div>
-      <h1 id="titulo-saludo">Hola</h1>
-      <div class="saludo-sub">Centro de control del supervisor</div>
+      <button class="btn-salir" onclick="salir()">Salir</button>
     </div>
+    <div class="saludo-sub">Centro de control del supervisor</div>
 
     <div class="seccion-label">Disponible</div>
     <div class="grid">
