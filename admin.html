@@ -11,6 +11,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="idiomas.js"></script>
   <script src="ui.js"></script>
 
   <style>
@@ -169,14 +170,15 @@
             <span class="marca-texto">CleanTrack</span>
           </div>
           <div class="cab-botones">
-            <a class="btn-cab" href="inicio.html">← Inicio</a>
-            <a class="btn-cab" href="dashboard.html">Ver registros</a>
-            <button class="btn-cab" onclick="salir()">Salir</button>
+            <a class="btn-cab" href="inicio.html" data-i18n="comun.inicio">← Inicio</a>
+            <button class="btn-cab" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+            <a class="btn-cab" href="dashboard.html" data-i18n="emp.ver_registros">Ver registros</a>
+            <button class="btn-cab" onclick="salir()" data-i18n="comun.salir">Salir</button>
           </div>
         </div>
         <div class="cab-titulo">
-          <h1>Empleados</h1>
-          <div class="cab-sub">Gestiona el personal de limpieza y sus PIN</div>
+          <h1 data-i18n="emp.titulo">Empleados</h1>
+          <div class="cab-sub" data-i18n="emp.subtitulo">Gestiona el personal de limpieza y sus PIN</div>
         </div>
       </div>
     </header>
@@ -184,41 +186,41 @@
     <main class="main">
 
       <div class="tarjeta col-agregar">
-        <h2>Agregar empleado</h2>
-        <label for="nombre">Nombre completo</label>
-        <input type="text" class="campo-texto" id="nombre" placeholder="Ej. Ana Torres" />
-        <label for="pin">PIN (4 dígitos)</label>
+        <h2 data-i18n="emp.agregar_titulo">Agregar empleado</h2>
+        <label for="nombre" data-i18n="emp.nombre">Nombre completo</label>
+        <input type="text" class="campo-texto" id="nombre" data-i18n-ph="emp.nombre_ph" placeholder="Ej. Ana Torres" />
+        <label for="pin" data-i18n="emp.pin">PIN (4 dígitos)</label>
         <div class="pin-fila">
-          <input type="text" class="campo-texto pin-input" id="pin" placeholder="Ej. 4892" inputmode="numeric" maxlength="4" />
-          <button type="button" class="btn-generar" onclick="generarPin('pin')">Generar</button>
+          <input type="text" class="campo-texto pin-input" id="pin" data-i18n-ph="emp.pin_ph" placeholder="Ej. 4892" inputmode="numeric" maxlength="4" />
+          <button type="button" class="btn-generar" onclick="generarPin('pin')" data-i18n="emp.generar">Generar</button>
         </div>
 
-        <label>Edificios donde trabaja</label>
+        <label data-i18n="emp.edificios">Edificios donde trabaja</label>
         <div class="selector-edificios">
           <div class="chips-caja" id="add-chips-caja" onclick="document.getElementById('add-buscador').focus()">
             <div id="add-chips" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
-            <input type="text" class="chips-input" id="add-buscador" placeholder="Buscar y agregar edificio..." autocomplete="off" />
+            <input type="text" class="chips-input" id="add-buscador" data-i18n-ph="emp.buscar_edificio" placeholder="Buscar y agregar edificio..." autocomplete="off" />
           </div>
           <div class="sugerencias" id="add-sugerencias"></div>
         </div>
 
-        <button class="btn-agregar" id="btn-agregar" onclick="agregarEmpleado()">Agregar empleado</button>
+        <button class="btn-agregar" id="btn-agregar" onclick="agregarEmpleado()" data-i18n="emp.btn_agregar">Agregar empleado</button>
         <div class="mensaje" id="mensaje-agregar"></div>
       </div>
 
       <div class="tarjeta col-lista">
         <div class="emp-lista-head">
-          <h2>Empleados</h2>
+          <h2 data-i18n="emp.lista_titulo">Empleados</h2>
           <span class="emp-contador" id="emp-contador"></span>
         </div>
-        <input type="text" class="campo-texto emp-buscador" id="emp-buscador" placeholder="Buscar por nombre o edificio..." autocomplete="off" />
+        <input type="text" class="campo-texto emp-buscador" id="emp-buscador" data-i18n-ph="emp.buscar" placeholder="Buscar por nombre o edificio..." autocomplete="off" />
         <div class="emp-filtros" id="emp-filtros">
-          <button type="button" class="emp-filtro activo" data-filtro="todos">Todos</button>
-          <button type="button" class="emp-filtro" data-filtro="activos">Activos</button>
-          <button type="button" class="emp-filtro" data-filtro="inactivos">Inactivos</button>
+          <button type="button" class="emp-filtro activo" data-filtro="todos" data-i18n="emp.f_todos">Todos</button>
+          <button type="button" class="emp-filtro" data-filtro="activos" data-i18n="emp.f_activos">Activos</button>
+          <button type="button" class="emp-filtro" data-filtro="inactivos" data-i18n="emp.f_inactivos">Inactivos</button>
         </div>
         <div id="lista-empleados">
-          <div class="cargando">Cargando...</div>
+          <div class="cargando" data-i18n="emp.cargando">Cargando...</div>
         </div>
       </div>
 
@@ -229,28 +231,28 @@
   <!-- MODAL EDITAR -->
   <div class="modal" id="modal-editar">
     <div class="modal-caja">
-      <div class="modal-titulo">Editar empleado</div>
-      <label for="edit-nombre">Nombre completo</label>
+      <div class="modal-titulo" data-i18n="emp.editar_titulo">Editar empleado</div>
+      <label for="edit-nombre" data-i18n="emp.nombre">Nombre completo</label>
       <input type="text" class="campo-texto" id="edit-nombre" />
-      <label for="edit-pin">PIN (4 dígitos)</label>
+      <label for="edit-pin" data-i18n="emp.pin">PIN (4 dígitos)</label>
       <div class="pin-fila">
         <input type="text" class="campo-texto pin-input" id="edit-pin" inputmode="numeric" maxlength="4" />
-        <button type="button" class="btn-generar" onclick="generarPin('edit-pin')">Generar</button>
+        <button type="button" class="btn-generar" onclick="generarPin('edit-pin')" data-i18n="emp.generar">Generar</button>
       </div>
 
-      <label>Edificios donde trabaja</label>
+      <label data-i18n="emp.edificios">Edificios donde trabaja</label>
       <div class="selector-edificios">
         <div class="chips-caja" id="edit-chips-caja" onclick="document.getElementById('edit-buscador').focus()">
           <div id="edit-chips" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
-          <input type="text" class="chips-input" id="edit-buscador" placeholder="Buscar y agregar edificio..." autocomplete="off" />
+          <input type="text" class="chips-input" id="edit-buscador" data-i18n-ph="emp.buscar_edificio" placeholder="Buscar y agregar edificio..." autocomplete="off" />
         </div>
         <div class="sugerencias" id="edit-sugerencias"></div>
       </div>
 
       <div class="mensaje" id="mensaje-editar"></div>
       <div class="modal-botones">
-        <button class="btn-cancelar" onclick="cerrarEditar()">Cancelar</button>
-        <button class="btn-guardar" id="btn-guardar-edit" onclick="guardarEdicion()">Guardar cambios</button>
+        <button class="btn-cancelar" onclick="cerrarEditar()" data-i18n="emp.cancelar">Cancelar</button>
+        <button class="btn-guardar" id="btn-guardar-edit" onclick="guardarEdicion()" data-i18n="emp.guardar">Guardar cambios</button>
       </div>
     </div>
   </div>
@@ -266,11 +268,13 @@
     var iconoEdificioSVG = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg>';
 
     async function verificarAcceso() {
-      if (!db) { document.getElementById("verificando").textContent = "Sin conexión a la base de datos."; return; }
+      if (!db) { document.getElementById("verificando").textContent = I18N.t("comun.sin_conexion"); return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+      I18N.aplicar();
+      I18N.onChange(function(){ I18N.aplicar(); renderLista(); });
       await cargarEdificios();
       cargarEmpleados();
       configurarFiltrosEmpleados();
@@ -378,7 +382,7 @@
       if (disponibles.length === 0 && !mostrarSinAsignar) {
         var vacioDiv = document.createElement("div");
         vacioDiv.className = "sug-vacio";
-        vacioDiv.textContent = texto ? "Sin coincidencias." : "Ya agregaste todos los edificios.";
+        vacioDiv.textContent = texto ? I18N.t("emp.sin_coincidencias") : I18N.t("emp.todos_agregados");
         sug.appendChild(vacioDiv);
         sug.classList.add("visible");
         return;
@@ -439,7 +443,7 @@
 
     async function cargarEmpleados() {
       var cont = document.getElementById("lista-empleados");
-      cont.innerHTML = '<div class="cargando">Cargando...</div>';
+      cont.innerHTML = '<div class="cargando" data-i18n="emp.cargando">Cargando...</div>';
       const { data, error } = await db.from("empleados").select("*").order("nombre", { ascending: true });
       if (error) {
         cont.innerHTML = "";
@@ -458,13 +462,13 @@
       var cont = document.getElementById("lista-empleados");
       cont.innerHTML = "";
       if (empleadosCache.length === 0) {
-        cont.innerHTML = '<div class="emp-vacio">A&uacute;n no hay empleados. Agrega el primero arriba.</div>';
+        cont.innerHTML = '<div class="emp-vacio"></div>'; cont.firstChild.textContent = I18N.t("emp.vacio_inicial");
         actualizarContadorEmpleados();
         return;
       }
       var visibles = empleadosVisibles();
       if (visibles.length === 0) {
-        cont.innerHTML = '<div class="emp-vacio">Sin coincidencias.</div>';
+        cont.innerHTML = '<div class="emp-vacio"></div>'; cont.firstChild.textContent = I18N.t("emp.sin_coincidencias");
         actualizarContadorEmpleados();
         return;
       }
@@ -494,12 +498,12 @@
         '</div>';
       div.querySelector(".emp-avatar").textContent = iniciales(emp.nombre);
       div.querySelector(".emp-nombre").textContent = emp.nombre || "";
-      div.querySelector(".emp-pin").textContent = "PIN: " + (emp.pin || "");
+      div.querySelector(".emp-pin").textContent = I18N.t("emp.pin_label") + (emp.pin || "");
       var edis = edificiosDe(emp);
       var contEdi = div.querySelector(".emp-edificios");
       if (edis.length === 0) {
         contEdi.className = "emp-sin-edificio";
-        contEdi.textContent = "Sin edificio asignado";
+        contEdi.textContent = I18N.t("emp.sin_edificio_asignado");
       } else {
         edis.forEach(function(ed){
           var chip = document.createElement("span");
