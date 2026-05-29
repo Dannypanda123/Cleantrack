@@ -11,6 +11,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="idiomas.js"></script>
   <script src="ui.js"></script>
 
   <style>
@@ -123,35 +124,36 @@
             <span class="marca-texto">CleanTrack</span>
           </div>
           <div class="cab-botones">
-            <a class="btn-cab" href="inicio.html">← Inicio</a>
-            <button class="btn-cab" onclick="cargar()">Actualizar</button>
-            <button class="btn-cab" onclick="salir()">Salir</button>
+            <a class="btn-cab" href="inicio.html" data-i18n="comun.inicio">← Inicio</a>
+            <button class="btn-cab" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+            <button class="btn-cab" onclick="cargar()" data-i18n="reg.actualizar">Actualizar</button>
+            <button class="btn-cab" onclick="salir()" data-i18n="comun.salir">Salir</button>
           </div>
         </div>
 
         <div class="cab-titulo">
-          <h1>Registros de limpieza</h1>
-          <div class="seccion-vivo"><span class="punto-vivo"></span> En tiempo real</div>
+          <h1 data-i18n="reg.titulo">Registros de limpieza</h1>
+          <div class="seccion-vivo"><span class="punto-vivo"></span> <span data-i18n="reg.tiempo_real">En tiempo real</span></div>
         </div>
 
         <div class="metricas">
-          <div class="metrica m-hoy"><div class="valor" id="m-hoy">—</div><div class="label">Registros hoy</div></div>
-          <div class="metrica m-foto"><div class="valor" id="m-foto">—</div><div class="label">Con foto</div></div>
-          <div class="metrica m-total"><div class="valor" id="m-total">—</div><div class="label">Total histórico</div></div>
+          <div class="metrica m-hoy"><div class="valor" id="m-hoy">—</div><div class="label" data-i18n="reg.m_hoy">Registros hoy</div></div>
+          <div class="metrica m-foto"><div class="valor" id="m-foto">—</div><div class="label" data-i18n="reg.m_foto">Con foto</div></div>
+          <div class="metrica m-total"><div class="valor" id="m-total">—</div><div class="label" data-i18n="reg.m_total">Total histórico</div></div>
         </div>
       </div>
     </header>
 
     <main class="main">
       <div class="selector-cont">
-        <div class="selector-label">Edificio</div>
+        <div class="selector-label" data-i18n="reg.edificio">Edificio</div>
         <select class="selector" id="selector-edificio" onchange="mostrar()">
           <option value="">Cargando edificios...</option>
         </select>
       </div>
 
       <div class="lista" id="lista">
-        <div class="cargando">Cargando registros...</div>
+        <div class="cargando" data-i18n="reg.cargando">Cargando registros...</div>
       </div>
     </main>
 
@@ -166,11 +168,13 @@
     var todosRegistros = [];
 
     async function verificarAcceso() {
-      if (!db) { document.getElementById("verificando").textContent = "Sin conexión a la base de datos."; return; }
+      if (!db) { document.getElementById("verificando").textContent = I18N.t("comun.sin_conexion"); return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+      I18N.aplicar();
+      I18N.onChange(function(){ I18N.aplicar(); mostrar(); });  // al cambiar idioma, re-traducir y re-pintar la lista
       cargar();
     }
 
@@ -204,8 +208,8 @@
       var hoy = new Date();
       var ayer = new Date(); ayer.setDate(ayer.getDate() - 1);
 
-      if (claveDia(fechaISO) === claveDia(hoy.toISOString())) return "Hoy";
-      if (claveDia(fechaISO) === claveDia(ayer.toISOString())) return "Ayer";
+      if (claveDia(fechaISO) === claveDia(hoy.toISOString())) return I18N.t("reg.hoy");
+      if (claveDia(fechaISO) === claveDia(ayer.toISOString())) return I18N.t("reg.ayer");
 
       var f0 = new Date(f.getFullYear(), f.getMonth(), f.getDate());
       var h0 = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
@@ -248,13 +252,13 @@
         sel.innerHTML = "";
         var optVacio = document.createElement("option");
         optVacio.value = "";
-        optVacio.textContent = "No hay datos aún";
+        optVacio.textContent = I18N.t("reg.sin_datos");
         sel.appendChild(optVacio);
       } else {
         sel.innerHTML = "";
         var optTodos = document.createElement("option");
         optTodos.value = "";
-        optTodos.textContent = "Todos los edificios";
+        optTodos.textContent = I18N.t("reg.todos_edificios");
         sel.appendChild(optTodos);
         lista.forEach(function(e){
           var o = document.createElement("option"); o.value = e; o.textContent = e; sel.appendChild(o);
@@ -283,7 +287,7 @@
         lista.innerHTML = "";
         var vacioDiv = document.createElement("div");
         vacioDiv.className = "vacio";
-        vacioDiv.textContent = edificio ? "Aún no hay registros en este edificio." : "Aún no hay registros. Cuando un empleado registre un área, aparecerá aquí.";
+        vacioDiv.textContent = edificio ? I18N.t("reg.vacio_edificio") : I18N.t("reg.vacio_todos");
         lista.appendChild(vacioDiv);
         return;
       }
@@ -309,8 +313,8 @@
 
         // Badge (HTML estático, seguro)
         var badge = r.con_foto
-          ? '<span class="badge badge-foto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>Con foto</span>'
-          : '<span class="badge badge-sinfoto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Registrado</span>';
+          ? '<span class="badge badge-foto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>' + I18N.t("reg.con_foto") + '</span>'
+          : '<span class="badge badge-sinfoto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' + I18N.t("reg.registrado") + '</span>';
 
         var div = document.createElement("div");
         div.className = "registro";
