@@ -474,7 +474,7 @@
         });
       }
       div.querySelector(".btn-icono.editar").addEventListener("click", function() { abrirEditar(emp.id); });
-      div.querySelector(".btn-icono.eliminar").addEventListener("click", function() { eliminarEmpleado(emp.id, emp.nombre); });
+      div.querySelector(".btn-icono.eliminar").addEventListener("click", function() { eliminarEmpleado(emp.id, emp.nombre, div); });
       div.querySelector(".switch input").addEventListener("change", function(e) { cambiarEstado(emp.id, e.target.checked, div); });
       return div;
     }
@@ -567,12 +567,21 @@
       }
     }
 
-    async function eliminarEmpleado(id, nombre) {
+    async function eliminarEmpleado(id, nombre, rowEl) {
       const ok = await uiConfirm("¿Eliminar a " + nombre + "? Esta acción no se puede deshacer. (Sus registros de limpieza se conservan.)", { titulo: "Eliminar empleado", textoOk: "Sí, eliminar", peligro: true });
       if (!ok) return;
       const { error } = await db.from("empleados").delete().eq("id", id);
       if (error) { uiToast("No se pudo eliminar: " + error.message, "error"); return; }
-      cargarEmpleados();
+      // Quitar de la cache en memoria
+      empleadosCache = empleadosCache.filter(function(e){ return e.id !== id; });
+      // Quitar solo esa fila, sin recargar (no salta arriba).
+      // Si ya no queda ninguna visible, re-render para mostrar el estado vacío correcto.
+      if (rowEl && empleadosVisibles().length > 0) {
+        rowEl.remove();
+        actualizarContadorEmpleados();
+      } else {
+        renderLista();
+      }
     }
 
     async function cambiarEstado(id, nuevoEstado, rowEl) {
