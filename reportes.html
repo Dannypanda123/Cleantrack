@@ -115,6 +115,8 @@
     var todasIncidencias = [];
     var todasAreas = [];
     var logoDataUrl = null;  // se carga al inicio
+    var empresaNombre = "CleanTrack";   // se reemplaza con el nombre real de la compañía
+    var empresaIniciales = "CT";        // iniciales para el cuadro de la cabecera
 
     // ============================================================
     // PALETA DE COLORES PARA LOS PDFs (RGB)
@@ -174,7 +176,33 @@
       cambioPeriodo();
       // Cargar el logo en paralelo a los datos
       logoDataUrl = await cargarLogoBase64();
+      await cargarEmpresa();
       cargarTodo();
+    }
+
+    // Carga el nombre de la compañía (RLS ya filtra a la empresa del usuario)
+    async function cargarEmpresa() {
+      try {
+        const { data, error } = await db.from("companias").select("nombre").limit(1);
+        if (!error && data && data.length > 0 && data[0].nombre) {
+          empresaNombre = data[0].nombre;
+          empresaIniciales = calcularIniciales(empresaNombre);
+        }
+      } catch (e) {
+        console.warn("No se pudo cargar la compañía para el informe:", e);
+      }
+    }
+
+    // Iniciales = primera letra de las 2 primeras palabras (con respaldos)
+    function calcularIniciales(nombre) {
+      var limpio = (nombre || "").trim();
+      if (!limpio) return "CT";
+      var palabras = limpio.split(/\s+/).filter(function(p){ return p.length > 0; });
+      if (palabras.length >= 2) {
+        return (palabras[0].charAt(0) + palabras[1].charAt(0)).toUpperCase();
+      }
+      // Una sola palabra: usar sus 2 primeras letras (o 1 si es muy corta)
+      return limpio.substring(0, 2).toUpperCase();
     }
 
     async function salir() {
@@ -268,30 +296,22 @@
       var pageW = doc.internal.pageSize.getWidth();
       var y = 18;
 
-      // Logo del pin (si está disponible)
-      if (logoDataUrl) {
-        try {
-          doc.addImage(logoDataUrl, 'PNG', 14, y, 12, 16);
-        } catch (e) {
-          // si falla, dibujamos un círculo verde como placeholder
-          fillRGB(doc, PDF_COLORS.verde);
-          doc.circle(20, y + 8, 6, "F");
-        }
-      } else {
-        // Sin logo cargado: dibujar pin geométrico simple
-        fillRGB(doc, PDF_COLORS.verde);
-        doc.circle(20, y + 8, 6, "F");
-      }
+      // Cuadro con las iniciales de la empresa (en vez del logo de CleanTrack)
+      fillRGB(doc, PDF_COLORS.azul);
+      doc.roundedRect(14, y, 13, 13, 2.5, 2.5, "F");
+      textRGB(doc, PDF_COLORS.blanco);
+      doc.setFontSize(11); doc.setFont(undefined, "bold");
+      doc.text(empresaIniciales, 20.5, y + 8.6, { align: "center" });
 
-      // "CleanTrack" en azul oscuro
+      // Nombre de la empresa en azul oscuro
       textRGB(doc, PDF_COLORS.azulOsc);
-      doc.setFontSize(22); doc.setFont(undefined, "bold");
-      doc.text("CleanTrack", 30, y + 8);
+      doc.setFontSize(20); doc.setFont(undefined, "bold");
+      doc.text(empresaNombre, 31, y + 7);
 
       // Subtítulo en cursiva azul
       textRGB(doc, PDF_COLORS.azul);
       doc.setFontSize(11); doc.setFont(undefined, "italic");
-      doc.text(subtitulo, 30, y + 16);
+      doc.text(subtitulo, 31, y + 14);
 
       // Bloque de info a la derecha
       var infoX = pageW - 14;
