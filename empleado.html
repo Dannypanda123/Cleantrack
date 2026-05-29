@@ -640,25 +640,26 @@
 
       estado.textContent = "Enviando reporte...";
       try {
-        const { error } = await db.from("incidencias").insert([{
-          tipo: incTipo,
-          descripcion: desc,
-          area: datosArea.area,
-          edificio: datosArea.edificio,
-          nombre_empleado: empleadoNombre || "Empleado",
-          foto_url: fotoUrl,
-          resuelto: false,
-          compania_id: datosArea.compania_id,
-          area_id: datosArea.id
-        }]);
+        const { data, error } = await db.rpc("registrar_incidencia", {
+          p_area_id: datosArea.id,
+          p_pin: pin,
+          p_tipo: incTipo,
+          p_descripcion: desc,
+          p_foto_url: fotoUrl
+        });
         if (error) {
           estado.className = "estado-guardado estado-error";
           estado.textContent = "No se pudo enviar: " + error.message;
           document.getElementById("inc-btn-enviar").disabled = false;
-        } else {
+        } else if (data && data.ok) {
           estado.className = "estado-guardado estado-ok";
           estado.textContent = "✓ Reporte enviado. ¡Gracias!";
           setTimeout(function(){ reiniciar(); }, 1400);
+        } else {
+          estado.className = "estado-guardado estado-error";
+          var motivo = (data && data.motivo) || "no_enviado";
+          estado.textContent = (motivo === "pin_invalido") ? "PIN no válido." : "No se pudo enviar.";
+          document.getElementById("inc-btn-enviar").disabled = false;
         }
       } catch (e) {
         estado.className = "estado-guardado estado-error";
