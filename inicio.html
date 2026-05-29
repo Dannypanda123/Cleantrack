@@ -340,9 +340,32 @@
       }
     }
 
+    function animarContador(els, destino) {
+      var sinMovimiento = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (sinMovimiento || destino === 0) {
+        els.forEach(function(el) { el.textContent = destino; });
+        return;
+      }
+      var duracion = 800, t0 = null;
+      function paso(ts) {
+        if (t0 === null) t0 = ts;
+        var p = Math.min((ts - t0) / duracion, 1);
+        var e = 1 - Math.pow(1 - p, 3); // suaviza el final (easeOutCubic)
+        var val = Math.round(destino * e);
+        els.forEach(function(el) { el.textContent = val; });
+        if (p < 1) { requestAnimationFrame(paso); }
+        else { els.forEach(function(el) { el.textContent = destino; }); }
+      }
+      requestAnimationFrame(paso);
+    }
+
     function ponerDato(clase, res) {
-      var valor = (res && !res.error && typeof res.count === "number") ? res.count : "—";
-      document.querySelectorAll("." + clase).forEach(function(el) { el.textContent = valor; });
+      var els = document.querySelectorAll("." + clase);
+      if (res && !res.error && typeof res.count === "number") {
+        animarContador(els, res.count);
+      } else {
+        els.forEach(function(el) { el.textContent = "—"; });
+      }
     }
 
     async function cargarIndicadores() {
