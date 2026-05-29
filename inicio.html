@@ -55,7 +55,16 @@
     }
     .btn-salir:hover { background: var(--blanco); border-color: #B5D4F4; }
     .btn-salir:active { transform: scale(0.97); }
-    .saludo-sub { font-size: 15px; color: var(--gris-texto); margin-bottom: 28px; }
+    .saludo-sub { font-size: 15px; color: var(--gris-texto); margin-bottom: 22px; }
+
+    /* Indicadores (tarjetas de cifra) */
+    .kpi { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 13px; padding: 12px 14px; }
+    .kpi-top { display: flex; align-items: center; gap: 7px; }
+    .kpi-svg { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .kpi-num { font-size: 22px; font-weight: 600; }
+    .kpi-lab { font-size: 11px; color: var(--gris-texto); margin-top: 3px; }
+    .kpis-movil { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 26px; }
+    .kpis-pc { display: none; }
 
     .seccion-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gris-texto); margin: 0 0 14px; }
 
@@ -123,20 +132,25 @@
     /* ===================== PC (pantallas anchas) ===================== */
     @media (min-width: 900px) {
       .barra-pc { display: block; background: var(--azul-osc); }
-      .barra-inner { max-width: 1100px; margin: 0 auto; padding: 22px 32px 24px; }
-      .cab-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-      .barra-marca { display: flex; align-items: center; gap: 10px; }
+      .barra-inner { max-width: 1100px; margin: 0 auto; padding: 20px 32px 22px; }
+      .cab-fila { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+      .barra-marca { grid-column: 2; justify-self: center; display: flex; align-items: center; gap: 10px; }
       .logo-simbolo { height: 34px; width: auto; display: block; }
       .marca-texto { font-size: 19px; font-weight: 600; color: var(--blanco); letter-spacing: -0.01em; }
-      .btn-salir-pc { color: var(--blanco); border-color: rgba(255,255,255,0.45); }
+      .btn-salir-pc { grid-column: 3; justify-self: end; color: var(--blanco); border-color: rgba(255,255,255,0.45); }
       .btn-salir-pc:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.65); }
-      .cab-saludo { font-size: 25px; font-weight: 600; color: var(--blanco); margin-top: 20px; }
-      .cab-sub { font-size: 14px; color: var(--azul-suave); margin-top: 3px; }
+      .cab-saludo { font-size: 24px; font-weight: 600; color: var(--blanco); }
+      .cab-sub { font-size: 13px; color: var(--azul-suave); margin-top: 3px; }
+      .cab-saludo-bloque { margin-top: 16px; }
 
-      /* En PC el saludo va en la cabecera, no en el cuerpo */
+      /* En PC el saludo y el logo grande del móvil no se muestran */
       .logo-movil { display: none; }
       .bienvenida { display: none; }
       .saludo-sub { display: none; }
+      .kpis-movil { display: none; }
+
+      /* Indicadores en la cabecera */
+      .kpis-pc { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
 
       .main { max-width: 1100px; padding: 26px 32px 48px; }
       .seccion-label { margin: 0 0 14px; }
@@ -155,14 +169,37 @@
     <header class="barra-pc">
       <div class="barra-inner">
         <div class="cab-fila">
+          <span></span>
           <div class="barra-marca">
             <img src="logo-simbolo.png" alt="" class="logo-simbolo" />
             <span class="marca-texto">CleanTrack</span>
           </div>
           <button class="btn-salir btn-salir-pc" onclick="salir()">Salir</button>
         </div>
-        <h1 class="titulo-saludo cab-saludo">Hola</h1>
-        <div class="cab-sub">Centro de control del supervisor</div>
+
+        <div class="cab-saludo-bloque">
+          <h1 class="titulo-saludo cab-saludo">Hola</h1>
+          <div class="cab-sub">Centro de control del supervisor</div>
+        </div>
+
+        <div class="kpis kpis-pc">
+          <div class="kpi">
+            <div class="kpi-top"><svg class="kpi-svg" style="stroke:#0C447C" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg><span class="kpi-num dato-limpiezas" style="color:#0C447C">—</span></div>
+            <div class="kpi-lab">Limpiezas hoy</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-top"><svg class="kpi-svg" style="stroke:#B23B3B" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12" y2="16.01"></line></svg><span class="kpi-num dato-incidencias" style="color:#B23B3B">—</span></div>
+            <div class="kpi-lab">Incidencias abiertas</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-top"><svg class="kpi-svg" style="stroke:#178A65" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span class="kpi-num dato-empleados" style="color:#178A65">—</span></div>
+            <div class="kpi-lab">Empleados activos</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-top"><svg class="kpi-svg" style="stroke:#854F0B" viewBox="0 0 24 24"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><line x1="9" y1="9" x2="9" y2="9.01"></line><line x1="9" y1="12" x2="9" y2="12.01"></line><line x1="9" y1="15" x2="9" y2="15.01"></line></svg><span class="kpi-num dato-edificios" style="color:#854F0B">—</span></div>
+            <div class="kpi-lab">Edificios</div>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -176,6 +213,25 @@
         <button class="btn-salir btn-salir-movil" onclick="salir()">Salir</button>
       </div>
       <div class="saludo-sub">Centro de control del supervisor</div>
+
+      <div class="kpis kpis-movil">
+        <div class="kpi">
+          <div class="kpi-top"><svg class="kpi-svg" style="stroke:#0C447C" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg><span class="kpi-num dato-limpiezas" style="color:#0C447C">—</span></div>
+          <div class="kpi-lab">Limpiezas hoy</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-top"><svg class="kpi-svg" style="stroke:#B23B3B" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12" y2="16.01"></line></svg><span class="kpi-num dato-incidencias" style="color:#B23B3B">—</span></div>
+          <div class="kpi-lab">Incidencias abiertas</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-top"><svg class="kpi-svg" style="stroke:#178A65" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span class="kpi-num dato-empleados" style="color:#178A65">—</span></div>
+          <div class="kpi-lab">Empleados activos</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-top"><svg class="kpi-svg" style="stroke:#854F0B" viewBox="0 0 24 24"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><line x1="9" y1="9" x2="9" y2="9.01"></line><line x1="9" y1="12" x2="9" y2="12.01"></line><line x1="9" y1="15" x2="9" y2="15.01"></line></svg><span class="kpi-num dato-edificios" style="color:#854F0B">—</span></div>
+          <div class="kpi-lab">Edificios</div>
+        </div>
+      </div>
 
       <div class="seccion-label">Disponible</div>
       <div class="grid">
@@ -266,6 +322,8 @@
 
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+
+      cargarIndicadores();
     }
 
     async function aplicarAdmin() {
@@ -279,6 +337,34 @@
         }
       } catch (e) {
         console.error("No se pudo verificar admin:", e);
+      }
+    }
+
+    function ponerDato(clase, res) {
+      var valor = (res && !res.error && typeof res.count === "number") ? res.count : "—";
+      document.querySelectorAll("." + clase).forEach(function(el) { el.textContent = valor; });
+    }
+
+    async function cargarIndicadores() {
+      try {
+        var d = new Date();
+        d.setHours(0, 0, 0, 0);            // medianoche de hoy (hora local)
+        var inicioDia = d.toISOString();
+
+        // Las reglas de seguridad (RLS) filtran cada conteo a tu empresa automáticamente
+        var resultados = await Promise.all([
+          db.from("registros").select("*", { count: "exact", head: true }).gte("created_at", inicioDia),
+          db.from("incidencias").select("*", { count: "exact", head: true }).or("resuelto.is.null,resuelto.eq.false"),
+          db.from("empleados").select("*", { count: "exact", head: true }).eq("activo", true),
+          db.from("edificios").select("*", { count: "exact", head: true }).eq("activo", true)
+        ]);
+
+        ponerDato("dato-limpiezas", resultados[0]);
+        ponerDato("dato-incidencias", resultados[1]);
+        ponerDato("dato-empleados", resultados[2]);
+        ponerDato("dato-edificios", resultados[3]);
+      } catch (e) {
+        console.error("No se pudieron cargar los indicadores:", e);
       }
     }
 
