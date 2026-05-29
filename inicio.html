@@ -324,6 +324,8 @@
       document.getElementById("contenedor").style.display = "block";
 
       cargarIndicadores();
+      setInterval(cargarIndicadores, 10000);   // refresco frecuente (respaldo)
+      suscribirCambios();                       // actualización instantánea si hay realtime
     }
 
     async function aplicarAdmin() {
@@ -341,17 +343,21 @@
     }
 
     function animarContador(els, destino) {
+      if (!els.length) return;
+      var txt = (els[0].textContent || "").replace(/[^0-9]/g, "");
+      var inicio = txt === "" ? 0 : parseInt(txt, 10);
+      if (isNaN(inicio)) inicio = 0;
       var sinMovimiento = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (sinMovimiento || destino === 0) {
+      if (sinMovimiento || inicio === destino) {
         els.forEach(function(el) { el.textContent = destino; });
         return;
       }
-      var duracion = 800, t0 = null;
+      var duracion = 700, t0 = null;
       function paso(ts) {
         if (t0 === null) t0 = ts;
         var p = Math.min((ts - t0) / duracion, 1);
         var e = 1 - Math.pow(1 - p, 3); // suaviza el final (easeOutCubic)
-        var val = Math.round(destino * e);
+        var val = Math.round(inicio + (destino - inicio) * e);
         els.forEach(function(el) { el.textContent = val; });
         if (p < 1) { requestAnimationFrame(paso); }
         else { els.forEach(function(el) { el.textContent = destino; }); }
@@ -388,6 +394,23 @@
         ponerDato("dato-edificios", resultados[3]);
       } catch (e) {
         console.error("No se pudieron cargar los indicadores:", e);
+      }
+    }
+
+    function suscribirCambios() {
+      // Si el proyecto tiene Realtime activado, refresca al instante cuando cambian los datos.
+      // Si no, el refresco periódico (cada 10 s) mantiene los números al día igualmente.
+      try {
+        var t;
+        function refrescar() { clearTimeout(t); t = setTimeout(cargarIndicadores, 400); }
+        db.channel("inicio-indicadores")
+          .on("postgres_changes", { event: "*", schema: "public", table: "registros" }, refrescar)
+          .on("postgres_changes", { event: "*", schema: "public", table: "incidencias" }, refrescar)
+          .on("postgres_changes", { event: "*", schema: "public", table: "empleados" }, refrescar)
+          .on("postgres_changes", { event: "*", schema: "public", table: "edificios" }, refrescar)
+          .subscribe();
+      } catch (e) {
+        console.error("Realtime no disponible:", e);
       }
     }
 
