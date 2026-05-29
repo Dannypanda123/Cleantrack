@@ -7,7 +7,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600&family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&display=swap" rel="stylesheet">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -16,28 +16,40 @@
 
   <style>
     :root {
-      --verde: #798C81; --verde-claro: #EAEEEB; --verde-texto: #5F7268;
-      --azul: #798C81; --azul-claro: #EAEEEB;
-      --gris-fondo: #F5F4EF; --gris-texto: #6B6A64; --gris-borde: #E2E0D8;
-      --texto: #2C2C2A; --blanco: #FFFFFF; --rojo: #A32D2D; --rojo-claro: #FCEBEB;
+      --azul-osc: #0C447C; --azul: #185FA5; --azul-suave: #BBD2EA;
+      --verde: #178A65; --verde-claro: #EAF3DE; --verde-texto: #27500A;
+      --gris-fondo: #F5F4EF; --gris-texto: #5A6573; --gris-borde: #E2E0D8;
+      --texto: #1B2733; --blanco: #FFFFFF; --rojo: #A32D2D; --rojo-claro: #FCEBEB;
       --ambar-claro: #FAEEDA;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
-    .contenedor { max-width: 600px; margin: 0 auto; display: none; }
-    .verificando { max-width: 600px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+    body { font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; }
+    .verificando { max-width: 600px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; padding: 0 20px; }
+    .contenedor { display: none; }
 
-    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-    .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
-    .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
-    .top-botones { display: flex; gap: 8px; }
-    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+    /* ===== Cabecera azul ===== */
+    .cabecera { background: var(--azul-osc); }
+    .cab-inner { max-width: 760px; margin: 0 auto; padding: 18px 20px 22px; }
+    .cab-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.16); }
+    .barra-marca { display: flex; align-items: center; gap: 9px; }
+    .logo-simbolo { height: 30px; width: auto; display: block; }
+    .marca-texto { font-family: "Sora", sans-serif; font-size: 18px; font-weight: 600; color: var(--blanco); letter-spacing: -0.01em; }
+    .cab-botones { display: flex; gap: 8px; }
+    .btn-cab { background: transparent; color: var(--blanco); border: 1.5px solid rgba(255,255,255,0.45); padding: 8px 15px; border-radius: 11px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; font-family: inherit; white-space: nowrap; }
+    .btn-cab:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.65); }
+    .btn-cab:active { transform: scale(0.97); }
+    .cab-titulo { margin-top: 16px; }
+    .cab-titulo h1 { font-size: 23px; font-weight: 600; color: var(--blanco); }
+    .cab-sub { font-size: 13px; color: var(--azul-suave); margin-top: 3px; }
+
+    /* ===== Cuerpo ===== */
+    .main { max-width: 760px; margin: 0 auto; padding: 22px 20px 40px; }
 
     .acciones { display: flex; gap: 12px; margin-bottom: 22px; }
-    .btn-accion { flex: 1; padding: 16px; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.08s; }
+    .btn-accion { flex: 1; padding: 15px; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.08s; font-family: inherit; }
     .btn-accion:active { transform: scale(0.98); }
-    .btn-edificio { background: #3C993C; color: #fff; box-shadow: 0 4px 12px rgba(60,153,60,0.3); }
-    .btn-area { background: #3C993C; color: #fff; box-shadow: 0 4px 12px rgba(60,153,60,0.3); }
+    .btn-edificio { background: var(--azul); color: #fff; box-shadow: 0 4px 12px rgba(24,95,165,0.28); }
+    .btn-area { background: var(--verde); color: #fff; box-shadow: 0 4px 12px rgba(23,138,101,0.28); }
     @media (max-width: 460px) { .acciones { flex-direction: column; } }
 
     .tarjeta { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
@@ -48,7 +60,7 @@
     .area-item:last-child { border-bottom: none; }
     .area-fila { display: flex; align-items: center; gap: 14px; }
     .area-ico { width: 42px; height: 42px; border-radius: 12px; background: var(--verde-claro); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .area-ico svg { width: 21px; height: 21px; stroke: #5F7268; }
+    .area-ico svg { width: 21px; height: 21px; stroke: var(--verde-texto); }
     .area-info { flex: 1; min-width: 0; }
     .area-nombre { font-size: 15px; font-weight: 600; word-break: break-word; }
     .area-detalle { font-size: 13px; color: var(--gris-texto); }
@@ -63,29 +75,27 @@
     .switch:active .switch-thumb { width: 21px; }
 
     .btn-qr-mini { width: 34px; height: 34px; border-radius: 9px; border: 1.5px solid var(--gris-borde); background: var(--blanco); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; }
-    .btn-qr-mini svg { width: 17px; height: 17px; stroke: #185FA5; }
+    .btn-qr-mini svg { width: 17px; height: 17px; stroke: var(--azul); }
     .btn-qr-mini:active { transform: scale(0.92); }
-    .btn-icono.imprimir-qr svg { stroke: #185FA5; }
+    .btn-icono.imprimir-qr svg { stroke: var(--azul); }
 
     .cargando { text-align: center; color: var(--gris-texto); padding: 20px; font-size: 14px; }
 
     .grupo-edificio { border: 1px solid var(--gris-borde); border-radius: 14px; margin-bottom: 12px; overflow: hidden; background: var(--blanco); }
-    .grupo-cabecera { display: flex; align-items: center; gap: 12px; padding: 16px; cursor: pointer; user-select: none; transition: background 0.15s; }
+    .grupo-cabecera { display: flex; align-items: center; gap: 12px; padding: 16px; user-select: none; transition: background 0.15s; cursor: default; }
     .grupo-cabecera:hover { background: var(--gris-fondo); }
-    .grupo-ico { width: 40px; height: 40px; border-radius: 10px; background: var(--verde-claro); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .grupo-ico svg { width: 20px; height: 20px; stroke: #5F7268; }
-    .grupo-info { flex: 1; min-width: 0; }
+    .grupo-ico { width: 40px; height: 40px; border-radius: 10px; background: #E6F1FB; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
+    .grupo-ico svg { width: 20px; height: 20px; stroke: var(--azul-osc); }
+    .grupo-info { flex: 1; min-width: 0; cursor: pointer; }
     .grupo-nombre { font-size: 15px; font-weight: 600; word-break: break-word; }
     .grupo-conteo { font-size: 12px; color: var(--gris-texto); margin-top: 2px; }
     .grupo-flecha { font-size: 14px; color: var(--gris-texto); transition: transform 0.2s; flex-shrink: 0; cursor: pointer; }
     .grupo-edificio.abierto .grupo-flecha { transform: rotate(90deg); }
     .grupo-cuerpo { display: none; padding: 0 16px 8px; border-top: 1px solid var(--gris-borde); }
     .grupo-edificio.abierto .grupo-cuerpo { display: block; }
-    .grupo-cabecera { cursor: default; }
-    .grupo-ico, .grupo-info { cursor: pointer; }
     .grupo-acciones { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .btn-icono { width: 34px; height: 34px; border-radius: 9px; border: 1.5px solid var(--gris-borde); background: var(--blanco); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
-    .btn-icono svg { width: 16px; height: 16px; stroke: var(--gris-verde-900, #5F7268); }
+    .btn-icono svg { width: 16px; height: 16px; stroke: #5A6573; }
     .btn-icono:active { transform: scale(0.92); }
     .edificio-inactivo .grupo-nombre, .edificio-inactivo .grupo-conteo { opacity: 0.5; }
     .sin-areas { font-size: 13px; color: var(--gris-texto); padding: 14px 4px; font-style: italic; }
@@ -105,11 +115,11 @@
     .checkbox-fila label { margin: 0; font-weight: 400; color: var(--texto); font-size: 14px; }
 
     .modal-botones { display: flex; gap: 10px; margin-top: 6px; }
-    .btn-guardar { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; color: #fff; }
-    .btn-guardar.azul { background: #3C993C; }
-    .btn-guardar.verde { background: #3C993C; }
+    .btn-guardar { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; color: #fff; font-family: inherit; }
+    .btn-guardar.azul { background: var(--azul); }
+    .btn-guardar.verde { background: var(--verde); }
     .btn-guardar:disabled { opacity: 0.6; }
-    .btn-cancelar { flex: 0 0 auto; padding: 14px 20px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: transparent; color: var(--gris-texto); font-size: 15px; font-weight: 600; cursor: pointer; }
+    .btn-cancelar { flex: 0 0 auto; padding: 14px 20px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: transparent; color: var(--gris-texto); font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
 
     .mensaje { text-align: center; font-size: 13px; margin-top: 12px; padding: 10px; border-radius: 10px; display: none; }
     .mensaje.ok { background: var(--verde-claro); color: var(--verde-texto); display: block; }
@@ -119,12 +129,19 @@
     .qr-ref-area { font-size: 13px; color: var(--gris-texto); margin-bottom: 14px; font-weight: 500; word-break: break-word; }
     .tarjeta-preview { border: 1px dashed #C0BEB6; border-radius: 14px; padding: 20px 18px; text-align: center; margin-bottom: 18px; }
     .tarjeta-preview .tp-marca { text-align: center; margin-bottom: 12px; }
-    .tarjeta-preview .tp-ini { display: inline-block; width: 26px; height: 26px; border-radius: 7px; background: #185FA5; color: #fff; font-weight: 700; font-size: 11px; line-height: 26px; vertical-align: middle; }
+    .tarjeta-preview .tp-ini { display: inline-block; width: 26px; height: 26px; border-radius: 7px; background: var(--azul); color: #fff; font-weight: 700; font-size: 11px; line-height: 26px; vertical-align: middle; }
     .tarjeta-preview .tp-nom { font-size: 12px; font-weight: 600; color: var(--texto); vertical-align: middle; margin-left: 7px; }
     #qr-canvas { display: flex; justify-content: center; margin: 0 auto; }
     #qr-canvas img, #qr-canvas canvas { width: 100% !important; height: auto !important; max-width: 200px; }
     .tarjeta-preview .tp-mensaje { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 500; font-size: 15px; color: var(--texto); margin-top: 12px; line-height: 1.28; }
     .tarjeta-preview .tp-pie { font-size: 9px; color: #C0BEB6; margin-top: 11px; border-top: 0.5px solid #EFEEE8; padding-top: 7px; letter-spacing: 0.03em; }
+
+    /* ===================== PC (pantallas anchas) ===================== */
+    @media (min-width: 900px) {
+      .cab-inner { max-width: 900px; padding: 20px 32px 24px; }
+      .cab-titulo h1 { font-size: 25px; }
+      .main { max-width: 900px; padding: 26px 32px 48px; }
+    }
   </style>
 </head>
 <body>
@@ -133,27 +150,39 @@
 
   <div class="contenedor" id="contenedor">
 
-    <div class="top">
-      <div>
-        <div class="marca">CleanTrack</div>
-        <h1>Edificios y áreas</h1>
+    <header class="cabecera">
+      <div class="cab-inner">
+        <div class="cab-fila">
+          <div class="barra-marca">
+            <img src="logo-simbolo.png" alt="" class="logo-simbolo" />
+            <span class="marca-texto">CleanTrack</span>
+          </div>
+          <div class="cab-botones">
+            <a class="btn-cab" href="inicio.html">← Inicio</a>
+            <button class="btn-cab" onclick="salir()">Salir</button>
+          </div>
+        </div>
+        <div class="cab-titulo">
+          <h1>Edificios y áreas</h1>
+          <div class="cab-sub">Gestiona espacios y genera códigos QR por área</div>
+        </div>
       </div>
-      <div class="top-botones">
-        <a class="btn-salir" href="inicio.html">← Inicio</a>
-        <button class="btn-salir" onclick="salir()">Salir</button>
+    </header>
+
+    <main class="main">
+
+      <div class="acciones">
+        <button class="btn-accion btn-edificio" onclick="abrirModalEdificio()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg> Crear edificio</button>
+        <button class="btn-accion btn-area" onclick="abrirModalArea()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Crear área</button>
       </div>
-    </div>
 
-    <div class="acciones">
-      <button class="btn-accion btn-edificio" onclick="abrirModalEdificio()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg> Crear edificio</button>
-      <button class="btn-accion btn-area" onclick="abrirModalArea()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Crear área</button>
-    </div>
+      <div class="tarjeta">
+        <h2>Edificios y sus áreas</h2>
+        <div class="sub">Cada edificio con sus áreas. Toca "Generar código QR" para descargar el QR de cada área.</div>
+        <div id="lista-areas"><div class="cargando">Cargando...</div></div>
+      </div>
 
-    <div class="tarjeta">
-      <h2>Edificios y sus áreas</h2>
-      <div class="sub">Cada edificio con sus áreas. Toca "Generar código QR" para descargar el QR de cada área.</div>
-      <div id="lista-areas"><div class="cargando">Cargando...</div></div>
-    </div>
+    </main>
 
   </div>
 
@@ -827,6 +856,6 @@
     }
 
     verificarAcceso();
-  </script>
+    </script>
 </body>
 </html>
