@@ -5,46 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CleanTrack — Panel de administración</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600&display=swap" rel="stylesheet" />
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
 
   <style>
     :root {
-      --verde-accion: #377D37;
-      --verde-claro: #E7F1E7;
-      --verde-texto: #2A5F2A;
-      --gris-verde-700: #798C81;
-      --gris-fondo: #ECEBE4;
-      --gris-texto: #6B6A64;
-      --gris-borde: #E2E0D8;
-      --texto: #1F2A37;
-      --blanco: #FFFFFF;
-      --ambar-claro: #FAEEDA;
-      --ambar-texto: #854F0B;
-      --azul-claro: #E6F1FB;
-      --azul-texto: #185FA5;
+      --azul-osc: #0C447C; --azul: #185FA5; --azul-suave: #BBD2EA;
+      --verde-accion: #178A65; --verde-claro: #E7F1E7; --verde-texto: #27500A;
+      --gris-fondo: #ECEBE4; --gris-texto: #5A6573; --gris-borde: #E2E0D8;
+      --texto: #1B2733; --blanco: #FFFFFF;
+      --ambar-claro: #FAEEDA; --ambar-texto: #854F0B;
+      --azul-claro: #E6F1FB; --azul-texto: #185FA5;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
-    .contenedor { max-width: 680px; margin: 0 auto; display: none; }
-    .verificando { max-width: 680px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
-    .sin-acceso { max-width: 680px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; display: none; }
+    body { font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; }
+    .verificando { max-width: 680px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; padding: 0 20px; }
+    .sin-acceso { max-width: 680px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; display: none; padding: 0 20px; }
+    .sin-acceso .btn-volver { background: transparent; color: var(--azul-osc); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; text-decoration: none; display: inline-block; }
+    .contenedor { display: none; }
 
-    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-    .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
-    .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
-    .top-botones { display: flex; gap: 8px; }
-    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+    /* ===== Cabecera azul ===== */
+    .cabecera { background: var(--azul-osc); }
+    .cab-inner { max-width: 680px; margin: 0 auto; padding: 18px 20px 22px; }
+    .cab-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.16); }
+    .barra-marca { display: flex; align-items: center; gap: 9px; }
+    .logo-simbolo { height: 30px; width: auto; display: block; }
+    .marca-texto { font-family: "Sora", sans-serif; font-size: 18px; font-weight: 600; color: var(--blanco); letter-spacing: -0.01em; }
+    .cab-botones { display: flex; gap: 8px; }
+    .btn-cab { background: transparent; color: var(--blanco); border: 1.5px solid rgba(255,255,255,0.45); padding: 8px 15px; border-radius: 11px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; font-family: inherit; white-space: nowrap; }
+    .btn-cab:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.65); }
+    .cab-titulo { margin-top: 16px; }
+    .cab-titulo h1 { font-size: 23px; font-weight: 600; color: var(--blanco); }
+    .cab-sub { font-size: 13px; color: var(--azul-suave); margin-top: 3px; }
+
+    /* ===== Cuerpo ===== */
+    .main { max-width: 680px; margin: 0 auto; padding: 22px 20px 40px; }
 
     .seccion { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 22px; margin-bottom: 18px; }
-    .seccion-titulo { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-texto); margin-bottom: 16px; }
+    .seccion-titulo { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-texto); margin-bottom: 16px; }
 
     /* Suscripción */
     .sub-fila { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--gris-fondo); gap: 12px; flex-wrap: wrap; }
     .sub-fila:last-child { border-bottom: none; }
     .sub-label { font-size: 14px; color: var(--gris-texto); }
     .sub-valor { font-size: 15px; font-weight: 600; word-break: break-word; text-align: right; }
-    .badge { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 10px; }
+    .badge { font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 10px; }
     .badge-activa { background: var(--verde-claro); color: var(--verde-texto); }
     .badge-prueba { background: var(--azul-claro); color: var(--azul-texto); }
     .badge-vencida { background: #F5C4B3; color: #712B13; }
@@ -52,22 +61,31 @@
     /* Resumen */
     .resumen { display: flex; gap: 12px; }
     .resumen .caja { flex: 1; background: var(--gris-fondo); border-radius: 12px; padding: 16px; text-align: center; }
-    .resumen .num { font-size: 26px; font-weight: 600; color: var(--verde-accion); }
+    .resumen .num { font-size: 26px; font-weight: 600; color: var(--azul); }
     .resumen .lbl { font-size: 11px; color: var(--gris-texto); margin-top: 2px; }
 
     /* Equipo */
     .sup-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--gris-fondo); }
     .sup-item:last-child { border-bottom: none; }
-    .sup-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--verde-claro); color: var(--verde-texto); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+    .sup-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--azul-claro); color: var(--azul-osc); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 16px; flex-shrink: 0; }
     .sup-info { flex: 1; min-width: 0; }
     .sup-nombre { font-size: 15px; font-weight: 600; word-break: break-word; }
     .sup-email { font-size: 13px; color: var(--gris-texto); word-break: break-all; }
-    .sup-rol { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 8px; flex-shrink: 0; }
+    .sup-rol { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 8px; flex-shrink: 0; }
     .sup-rol.admin { background: #FAC775; color: #633806; }
     .sup-rol.supervisor { background: var(--gris-fondo); color: var(--gris-texto); }
 
     .nota-futuro { background: var(--azul-claro); border-radius: 12px; padding: 14px; font-size: 13px; color: var(--azul-texto); margin-top: 4px; }
     .cargando { text-align: center; color: var(--gris-texto); padding: 20px; font-size: 14px; }
+
+    /* ===================== PC (pantallas anchas) ===================== */
+    @media (min-width: 900px) {
+      .cab-inner { max-width: 1000px; padding: 20px 32px 24px; }
+      .cab-titulo h1 { font-size: 25px; }
+      .main { max-width: 1000px; padding: 26px 32px 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+      .seccion { margin-bottom: 0; }
+      .seccion-equipo { grid-column: 1 / -1; }
+    }
   </style>
 </head>
 <body>
@@ -76,47 +94,62 @@
 
   <div class="sin-acceso" id="sin-acceso">
     Esta sección es solo para el administrador de la empresa.<br><br>
-    <a class="btn-salir" href="inicio.html">← Volver al inicio</a>
+    <a class="btn-volver" href="inicio.html">← Volver al inicio</a>
   </div>
 
   <div class="contenedor" id="contenedor">
 
-    <div class="top">
-      <div>
-        <div class="marca">CleanTrack</div>
-        <h1>Panel de administración</h1>
+    <header class="cabecera">
+      <div class="cab-inner">
+        <div class="cab-fila">
+          <div class="barra-marca">
+            <img src="logo-simbolo.png" alt="" class="logo-simbolo" />
+            <span class="marca-texto">CleanTrack</span>
+          </div>
+          <div class="cab-botones">
+            <a class="btn-cab" href="inicio.html">← Inicio</a>
+          </div>
+        </div>
+        <div class="cab-titulo">
+          <h1>Panel de administración</h1>
+          <div class="cab-sub">Suscripción, resumen y equipo de tu empresa</div>
+        </div>
       </div>
-      <div class="top-botones">
-        <a class="btn-salir" href="inicio.html">← Inicio</a>
+    </header>
+
+    <main class="main">
+
+      <!-- SUSCRIPCIÓN -->
+      <div class="seccion">
+        <div class="seccion-titulo">Tu suscripción</div>
+        <div id="sub-contenido"><div class="cargando">Cargando...</div></div>
       </div>
-    </div>
 
-    <!-- SUSCRIPCIÓN -->
-    <div class="seccion">
-      <div class="seccion-titulo">Tu suscripción</div>
-      <div id="sub-contenido"><div class="cargando">Cargando...</div></div>
-    </div>
-
-    <!-- RESUMEN -->
-    <div class="seccion">
-      <div class="seccion-titulo">Resumen de tu empresa</div>
-      <div class="resumen">
-        <div class="caja"><div class="num" id="r-edificios">—</div><div class="lbl">Edificios</div></div>
-        <div class="caja"><div class="num" id="r-empleados">—</div><div class="lbl">Empleados</div></div>
-        <div class="caja"><div class="num" id="r-registros">—</div><div class="lbl">Registros del mes</div></div>
+      <!-- RESUMEN -->
+      <div class="seccion">
+        <div class="seccion-titulo">Resumen de tu empresa</div>
+        <div class="resumen">
+          <div class="caja"><div class="num" id="r-edificios">—</div><div class="lbl">Edificios</div></div>
+          <div class="caja"><div class="num" id="r-empleados">—</div><div class="lbl">Empleados</div></div>
+          <div class="caja"><div class="num" id="r-registros">—</div><div class="lbl">Registros del mes</div></div>
+        </div>
       </div>
-    </div>
 
-    <!-- EQUIPO -->
-    <div class="seccion">
-      <div class="seccion-titulo">Tu equipo de supervisores</div>
-      <div id="equipo-contenido"><div class="cargando">Cargando...</div></div>
-      <div class="nota-futuro">Para agregar o quitar supervisores, contacta a soporte técnico por ahora. Pronto podrás gestionarlos directamente desde aquí.</div>
-    </div>
+      <!-- EQUIPO -->
+      <div class="seccion seccion-equipo">
+        <div class="seccion-titulo">Tu equipo de supervisores</div>
+        <div id="equipo-contenido"><div class="cargando">Cargando...</div></div>
+        <div class="nota-futuro">Para agregar o quitar supervisores, contacta a soporte técnico por ahora. Pronto podrás gestionarlos directamente desde aquí.</div>
+      </div>
+
+    </main>
 
   </div>
 
   <script>
+    // El cliente de Supabase (db) viene de config.js
+    var db = window.db;
+
     async function verificarAcceso() {
       if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
       const { data } = await db.auth.getSession();
