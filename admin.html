@@ -293,10 +293,16 @@
       return (partes[0][0] + partes[partes.length-1][0]).toUpperCase();
     }
 
+    var mapaEdificioId = {};   // nombre -> id
+    var mapaIdEdificio = {};   // id -> nombre
+
     async function cargarEdificios() {
       const { data, error } = await db.from("edificios").select("*").eq("activo", true).order("nombre", { ascending: true });
       if (error || !data) { listaEdificios = []; return; }
       listaEdificios = data.map(function(e){ return e.nombre; });
+      mapaEdificioId = {};
+      mapaIdEdificio = {};
+      data.forEach(function(e){ mapaEdificioId[e.nombre] = e.id; mapaIdEdificio[e.id] = e.nombre; });
     }
 
     // ===== SELECTOR DE CHIPS + BUSCADOR (reutilizable) =====
@@ -413,6 +419,9 @@
     var filtroActual = "todos";
 
     function edificiosDe(emp) {
+      // Lee de la tabla normalizada (adjuntada como emp._edificios).
+      // Respaldo al campo de texto antiguo por si algún empleado aún no tuviera vínculos.
+      if (emp._edificios && emp._edificios.length) return emp._edificios;
       return (emp.edificios || "").split(",").map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
     }
     function coincideFiltro(emp) {
@@ -455,6 +464,21 @@
         return;
       }
       empleadosCache = data || [];
+
+      // Traer los vínculos empleado-edificio (tabla normalizada) y adjuntarlos a cada empleado
+      const vinc = await db.from("empleado_edificios").select("empleado_id, edificio_id");
+      var porEmpleado = {};
+      if (!vinc.error && vinc.data) {
+        vinc.data.forEach(function(v){
+          if (!porEmpleado[v.empleado_id]) porEmpleado[v.empleado_id] = [];
+          var nombre = mapaIdEdificio[v.edificio_id];
+          if (nombre) porEmpleado[v.empleado_id].push(nombre);
+        });
+      }
+      empleadosCache.forEach(function(emp){
+        emp._edificios = (porEmpleado[emp.id] || []).sort();   // lista de nombres desde la tabla nueva
+      });
+
       renderLista();
     }
 
@@ -574,19 +598,51 @@
       document.getElementById("btn-agregar").disabled = true;
       msg.textContent = "Agregando..."; msg.className = "mensaje"; msg.style.display = "block";
 
-      const { error } = await db.from("empleados").insert([{ nombre: nombre, pin: pin, activo: true, edificios: seleccion.add.join(", ") }]);
+      // 1) Crear el empleado (la columna de texto 'edificios' se mantiene por compatibilidad)
+      const { data: creado, error } = await db.from("empleados")
+        .insert([{ nombre: nombre, pin: pin, activo: true, edificios: seleccion.add.join(", ") }])
+        .select()
+        .single();
 
       if (error) {
         msg.textContent = "Error: " + error.message; msg.className = "mensaje error";
+        document.getElementById("btn-agregar").disabled = false;
+        return;
+      }
+
+      // 2) Insertar los vínculos empleado-edificio en la tabla normalizada
+      var errVinc = await guardarVinculos(creado.id, creado.compania_id, seleccion.add);
+      if (errVinc) {
+        msg.textContent = "Empleado creado, pero hubo un problema al asignar edificios: " + errVinc; msg.className = "mensaje error";
       } else {
         msg.textContent = "✓ Empleado agregado"; msg.className = "mensaje ok";
-        document.getElementById("nombre").value = "";
-        document.getElementById("pin").value = "";
-        seleccion.add = [];
-        pintarChips("add");
-        cargarEmpleados();
       }
+      document.getElementById("nombre").value = "";
+      document.getElementById("pin").value = "";
+      seleccion.add = [];
+      pintarChips("add");
+      cargarEmpleados();
       document.getElementById("btn-agregar").disabled = false;
+    }
+
+    // Reemplaza los vínculos de un empleado: borra los actuales e inserta los nuevos.
+    // Devuelve null si todo OK, o un mensaje de error.
+    async function guardarVinculos(empleadoId, companiaId, nombresEdificios) {
+      // Borrar los vínculos actuales del empleado
+      const del = await db.from("empleado_edificios").delete().eq("empleado_id", empleadoId);
+      if (del.error) return del.error.message;
+
+      // Convertir nombres -> ids y armar las filas a insertar
+      var filas = [];
+      nombresEdificios.forEach(function(nombre){
+        var idEd = mapaEdificioId[nombre];
+        if (idEd) filas.push({ empleado_id: empleadoId, edificio_id: idEd, compania_id: companiaId });
+      });
+      if (filas.length === 0) return null;   // sin edificios: nada que insertar
+
+      const ins = await db.from("empleado_edificios").insert(filas);
+      if (ins.error) return ins.error.message;
+      return null;
     }
 
     function abrirEditar(id) {
@@ -598,7 +654,7 @@
       document.getElementById("mensaje-editar").className = "mensaje";
       document.getElementById("edit-buscador").value = "";
 
-      seleccion.edit = (emp.edificios || "").split(",").map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+      seleccion.edit = edificiosDe(emp).slice();   // desde la tabla normalizada (_edificios)
       pintarChips("edit");
       document.getElementById("edit-sugerencias").classList.remove("visible");
       document.getElementById("modal-editar").classList.add("abierto");
@@ -623,11 +679,23 @@
       document.getElementById("btn-guardar-edit").disabled = true;
       msg.textContent = "Guardando..."; msg.className = "mensaje"; msg.style.display = "block";
 
+      // 1) Actualizar datos del empleado (mantenemos el texto 'edificios' por compatibilidad)
       const { error } = await db.from("empleados").update({ nombre: nombre, pin: pin, edificios: seleccion.edit.join(", ") }).eq("id", editandoId);
 
-      document.getElementById("btn-guardar-edit").disabled = false;
       if (error) {
+        document.getElementById("btn-guardar-edit").disabled = false;
         msg.textContent = "Error: " + error.message; msg.className = "mensaje error";
+        return;
+      }
+
+      // 2) Actualizar los vínculos en la tabla normalizada
+      var emp = empleadosCache.find(function(e){ return e.id === editandoId; });
+      var companiaId = emp ? emp.compania_id : null;
+      var errVinc = await guardarVinculos(editandoId, companiaId, seleccion.edit);
+
+      document.getElementById("btn-guardar-edit").disabled = false;
+      if (errVinc) {
+        msg.textContent = "Guardado, pero hubo un problema con los edificios: " + errVinc; msg.className = "mensaje error";
       } else {
         cerrarEditar();
         cargarEmpleados();
