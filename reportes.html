@@ -375,61 +375,36 @@
         fillRGB(doc, PDF_COLORS.cabeceraBg);
         doc.roundedRect(x, y, cardW, cardH, 3, 3, "F");
 
-        // Círculo de color con icono
-        var cx = x + cardW / 2;
-        var cy = y + 9;
+        // Línea de color de acento en la parte superior
         fillRGB(doc, c.color);
-        doc.circle(cx, cy, 4.5, "F");
-        // Dibujar el icono dentro del círculo (color blanco)
-        dibujarIcono(doc, c.icono, cx, cy, PDF_COLORS.blanco);
+        doc.roundedRect(x, y, cardW, 2.2, 1, 1, "F");
 
-        // Número grande
-        textRGB(doc, PDF_COLORS.azulOsc);
-        doc.setFontSize(18); doc.setFont(undefined, "bold");
-        doc.text(String(c.valor), cx, y + 22, { align: "center" });
+        var cx = x + cardW / 2;
+
+        // Número grande en el color de la tarjeta
+        textRGB(doc, c.color);
+        doc.setFontSize(20); doc.setFont(undefined, "bold");
+        doc.text(String(c.valor), cx, y + 18, { align: "center" });
 
         // Etiqueta
         textRGB(doc, PDF_COLORS.textoSoft);
         doc.setFontSize(8); doc.setFont(undefined, "normal");
-        doc.text(c.etiqueta, cx, y + 30, { align: "center" });
+        doc.text(c.etiqueta, cx, y + 28, { align: "center" });
       });
 
       return y + cardH + 10;
     }
 
-    // Dibujar un símbolo nítido dentro de un círculo de color.
-    // En vez de dibujar formas a mano (que se ven mal a tamaño pequeño),
-    // usamos un carácter de texto bien centrado: nítido y profesional.
-    function dibujarIcono(doc, tipo, cx, cy, color) {
-      var simbolo = {
-        check:    "\u2713",  // ✓ palomita
-        camara:   "F",       // Foto
-        persona:  "E",       // Empleados
-        edificio: "A",       // Áreas
-        reloj:    "D",       // Días
-        alerta:   "!",       // Incidencias
-        escoba:   "\u2713"   // (respaldo)
-      }[tipo] || "\u2022";
-
-      textRGB(doc, color);
-      var tam = (simbolo === "\u2713") ? 8 : 7;
-      doc.setFontSize(tam);
-      doc.setFont(undefined, "bold");
-      doc.text(simbolo, cx, cy, { align: "center", baseline: "middle" });
-    }
-
-    // Título de sección (icono cuadrado azul + título)
+    // Título de sección (cuadrito de color de acento + título)
     function dibujarTituloSeccion(doc, y, icono, titulo) {
-      // Cuadrado azul con icono blanco
+      // Pequeño cuadrado azul como acento (sin icono dentro: limpio y fiable)
       fillRGB(doc, PDF_COLORS.azulOsc);
-      doc.roundedRect(14, y - 5, 7, 7, 1.5, 1.5, "F");
-      // Dibujar icono dentro
-      dibujarIcono(doc, icono, 17.5, y - 1.5, PDF_COLORS.blanco);
+      doc.roundedRect(14, y - 4.5, 4, 4.5, 1, 1, "F");
 
       // Título
       textRGB(doc, PDF_COLORS.azulOsc);
       doc.setFontSize(13); doc.setFont(undefined, "bold");
-      doc.text(titulo, 24, y);
+      doc.text(titulo, 21, y);
 
       return y + 8;
     }
