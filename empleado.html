@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Fraunces:ital,opsz,wght@1,9..144,500&display=swap" rel="stylesheet">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
 
   <style>
     :root {
@@ -305,16 +306,8 @@
   </div>
 
   <script>
-    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
-
-    let db = null;
-    try {
-      const { createClient } = supabase;
-      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) {
-      console.error("No se pudo conectar a Supabase:", e);
-    }
+    // El cliente de Supabase (db) y las credenciales vienen de config.js
+    const db = window.db;
 
     var datosArea = { id: null, area: "Cargando área...", edificio: "", compania_id: null };
     var pin = "";
@@ -392,8 +385,15 @@
       document.getElementById("label-pin").textContent = "Verificando...";
       document.getElementById("label-pin").className = "label";
       try {
-        const { data, error } = await db.rpc("verificar_pin", { pin_ingresado: pin });
-        if (error) { mostrarErrorPin("Error al verificar. Intenta de nuevo."); return; }
+        const { data, error } = await db.rpc("verificar_pin_area", { p_area_id: datosArea.id, p_pin: pin });
+        if (error) {
+          if (error.message && error.message.indexOf("demasiados_intentos") !== -1) {
+            mostrarErrorPin("Demasiados intentos. Espera un momento.");
+          } else {
+            mostrarErrorPin("Error al verificar. Intenta de nuevo.");
+          }
+          return;
+        }
         if (data && data.length > 0) {
           empleadoNombre = data[0].nombre;
           verificando = false;
@@ -495,22 +495,22 @@
 
       estado.textContent = "Guardando registro...";
       try {
-        const { data, error } = await db.from("registros").insert([{
-          pin_empleado: pin,
-          nombre_empleado: empleadoNombre,
-          area: datosArea.area,
-          edificio: datosArea.edificio,
-          con_foto: conFoto,
-          foto_url: fotoUrl,
-          compania_id: datosArea.compania_id,
-          area_id: datosArea.id
-        }]);
+        const { data, error } = await db.rpc("registrar_limpieza", {
+          p_area_id: datosArea.id,
+          p_pin: pin,
+          p_con_foto: conFoto,
+          p_foto_url: fotoUrl
+        });
         if (error) {
           estado.className = "estado-guardado estado-error";
           estado.textContent = "No se pudo guardar: " + error.message;
-        } else {
+        } else if (data && data.ok) {
           estado.className = "estado-guardado estado-ok";
           estado.textContent = conFoto ? "Guardado con foto" : "Guardado correctamente";
+        } else {
+          estado.className = "estado-guardado estado-error";
+          var motivo = (data && data.motivo) || "no_guardado";
+          estado.textContent = (motivo === "pin_invalido") ? "PIN no válido al guardar." : "No se pudo guardar.";
         }
       } catch (e) {
         estado.className = "estado-guardado estado-error";
