@@ -343,17 +343,16 @@
         return;
       }
       if (!db) return;
-      const { data, error } = await db.from("areas").select("*").eq("id", areaId).eq("activa", true).limit(1);
+      const { data, error } = await db.rpc("obtener_area", { p_area_id: Number(areaId) });
       if (error || !data || data.length === 0) {
         document.getElementById("area-nombre").textContent = "Área no encontrada";
         document.getElementById("area-edificio").textContent = "Verifica el código QR";
         return;
       }
       var a = data[0];
-      datosArea.id = a.id;
+      datosArea.id = Number(areaId);
       datosArea.area = a.nombre;
       datosArea.edificio = a.edificio;
-      datosArea.compania_id = a.compania_id;
       pideFoto = a.requiere_foto;
       document.getElementById("area-nombre").textContent = a.nombre;
       document.getElementById("area-edificio").textContent = a.edificio;
