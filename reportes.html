@@ -73,7 +73,7 @@
 
     <div class="tarjeta">
       <h2>Generar informe</h2>
-      <div class="sub">Crea un informe en PDF para presentar al property manager</div>
+      <div class="sub">Crea un informe en PDF para presentar a tu cliente</div>
 
       <label for="sel-edificio">Edificio</label>
       <select id="sel-edificio"><option value="">Cargando...</option></select>
@@ -260,14 +260,21 @@
     function nombrePeriodo(periodo) {
       var meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
       var ahora = new Date();
+      var texto;
       if (periodo === "diario") {
         var val = document.getElementById("sel-fecha").value;
         var partes = val.split("-");
-        return partes[2] + " de " + meses[partes[1]-1] + " " + partes[0];
+        texto = partes[2] + " de " + meses[partes[1]-1] + " " + partes[0];
+      } else if (periodo === "mes-actual") {
+        texto = meses[ahora.getMonth()] + " " + ahora.getFullYear();
+      } else if (periodo === "mes-pasado") {
+        var m = ahora.getMonth() - 1; var y = ahora.getFullYear(); if (m < 0) { m = 11; y--; }
+        texto = meses[m] + " " + y;
+      } else {
+        texto = "últimos 7 días";
       }
-      if (periodo === "mes-actual") return meses[ahora.getMonth()] + " " + ahora.getFullYear();
-      if (periodo === "mes-pasado") { var m = ahora.getMonth() - 1; var y = ahora.getFullYear(); if (m < 0) { m = 11; y--; } return meses[m] + " " + y; }
-      return "últimos 7 días";
+      // Mayúscula inicial
+      return texto.charAt(0).toUpperCase() + texto.slice(1);
     }
 
     function fmtFecha(iso) {
@@ -301,7 +308,8 @@
       doc.roundedRect(14, y, 13, 13, 2.5, 2.5, "F");
       textRGB(doc, PDF_COLORS.blanco);
       doc.setFontSize(11); doc.setFont(undefined, "bold");
-      doc.text(empresaIniciales, 20.5, y + 8.6, { align: "center" });
+      // Centrado horizontal (centro del cuadro = 14 + 6.5 = 20.5) y vertical con baseline middle
+      doc.text(empresaIniciales, 20.5, y + 6.5, { align: "center", baseline: "middle" });
 
       // Nombre de la empresa en azul oscuro
       textRGB(doc, PDF_COLORS.azulOsc);
@@ -530,23 +538,27 @@
         else if (align === "center") tx = cx + c.width / 2;
 
         if (c.tipo === "boton-ver") {
-          // Dibujar botón "Ver" azul
+          // Dibujar botón "Ver" azul, centrado en la columna (tx = centro)
           if (reg.con_foto && reg.foto_url) {
+            var btnW = 17, btnH = 6.2;
+            var btnX = tx - btnW / 2;          // centrado respecto a tx
+            var btnY = y + 1;
             // Botón con borde azul, fondo blanco
             strokeRGB(doc, PDF_COLORS.azul);
             doc.setLineWidth(0.6);
             doc.setFillColor(255, 255, 255);
-            doc.roundedRect(tx - 9, y + 1, 18, 6, 1.5, 1.5, "FD");
-            textRGB(doc, PDF_COLORS.azul);
-            doc.setFontSize(8); doc.setFont(undefined, "bold");
-            doc.textWithLink("Ver", tx + 1.5, y + 5, { url: reg.foto_url, align: "center" });
-            // Icono de imagen pequeño antes del texto
-            // (cuadradito con esquina diagonal)
+            doc.roundedRect(btnX, btnY, btnW, btnH, 1.5, 1.5, "FD");
+            // Icono de imagen pequeño (cuadradito con "montaña")
             strokeRGB(doc, PDF_COLORS.azul);
             doc.setLineWidth(0.5);
-            doc.rect(tx - 6, y + 2.3, 3.5, 2.7, "S");
-            doc.line(tx - 6, y + 4.5, tx - 4.5, y + 3.5);
-            doc.line(tx - 4.5, y + 3.5, tx - 2.5, y + 4.8);
+            var icoX = btnX + 3, icoY = btnY + 1.9;
+            doc.rect(icoX, icoY, 3.4, 2.6, "S");
+            doc.line(icoX, icoY + 2.1, icoX + 1.4, icoY + 1.1);
+            doc.line(icoX + 1.4, icoY + 1.1, icoX + 3.4, icoY + 2.4);
+            // Texto "Ver" como enlace, centrado en el espacio restante del botón
+            textRGB(doc, PDF_COLORS.azul);
+            doc.setFontSize(8); doc.setFont(undefined, "bold");
+            doc.textWithLink("Ver", btnX + btnW / 2 + 2.5, btnY + 4.3, { url: reg.foto_url, align: "center" });
             doc.setFontSize(9.5);
           } else {
             textRGB(doc, PDF_COLORS.gris);
@@ -743,7 +755,7 @@
 
       // 4 TARJETAS DE MÉTRICAS (como en el mockup)
       var cards = [
-        { icono: 'escoba',  color: PDF_COLORS.azul,  valor: resumen.total,    etiqueta: "Áreas limpiadas" },
+        { icono: 'check',   color: PDF_COLORS.azul,  valor: resumen.total,    etiqueta: "Áreas limpiadas" },
         { icono: 'camara',  color: PDF_COLORS.verde, valor: resumen.conFoto,  etiqueta: "Con foto" },
         { icono: 'persona', color: PDF_COLORS.ambar, valor: resumen.nEmps,    etiqueta: "Empleados" },
         { icono: 'alerta',  color: PDF_COLORS.rojo,  valor: incs.length,      etiqueta: "Incidencias" }
@@ -757,7 +769,7 @@
         { label: "Fecha/Hora", width: 40, get: function(r){ return fmtFecha(r.created_at); } },
         { label: "Área",       width: 55, get: function(r){ return r.area || ""; } },
         { label: "Empleado",   width: 55, get: function(r){ return r.nombre_empleado || ""; } },
-        { label: "Foto",       width: 32, align: "right", tipo: "boton-ver" }
+        { label: "Foto",       width: 32, align: "center", tipo: "boton-ver" }
       ];
       y = dibujarTablaCabecera(doc, y, cols);
 
@@ -813,7 +825,7 @@
         ? (datos.nAreasCubiertas + "/" + datos.nAreasTotal)
         : String(datos.nAreasCubiertas);
       var cards = [
-        { icono: 'escoba',   color: PDF_COLORS.azul,  valor: datos.total,        etiqueta: "Limpiezas" },
+        { icono: 'check',    color: PDF_COLORS.azul,  valor: datos.total,        etiqueta: "Limpiezas" },
         { icono: 'reloj',    color: PDF_COLORS.verde, valor: datos.nDias,        etiqueta: "Días trabajados" },
         { icono: 'edificio', color: PDF_COLORS.ambar, valor: areasCobertura,     etiqueta: "Áreas cubiertas" },
         { icono: 'alerta',   color: PDF_COLORS.rojo,  valor: incs.length,        etiqueta: "Incidencias" }
@@ -921,7 +933,7 @@
         ? (datos.nAreasCubiertas + "/" + datos.nAreasTotal)
         : String(datos.nAreasCubiertas);
       var cards = [
-        { icono: 'escoba',   color: PDF_COLORS.azul,  valor: datos.total,            etiqueta: "Limpiezas realizadas" },
+        { icono: 'check',    color: PDF_COLORS.azul,  valor: datos.total,            etiqueta: "Limpiezas realizadas" },
         { icono: 'reloj',    color: PDF_COLORS.verde, valor: datos.nDias,            etiqueta: "Días trabajados" },
         { icono: 'edificio', color: PDF_COLORS.ambar, valor: areasCobertura,         etiqueta: "Áreas cubiertas" },
         { icono: 'check',    color: PDF_COLORS.verde, valor: datos.incResueltas + "/" + incs.length, etiqueta: "Incid. resueltas" }
@@ -1027,22 +1039,6 @@
           y = dibujarFilaIncidencia(doc, y, inc);
         });
       }
-
-      // Espacio para comentarios del property manager
-      y += 8;
-      if (y > 230) { doc.addPage(); y = 22; }
-      strokeRGB(doc, PDF_COLORS.borde);
-      doc.setLineWidth(0.4);
-      fillRGB(doc, PDF_COLORS.cabeceraBg);
-      doc.roundedRect(14, y, pageW - 28, 32, 3, 3, "FD");
-      textRGB(doc, PDF_COLORS.azulOsc);
-      doc.setFontSize(10); doc.setFont(undefined, "bold");
-      doc.text("Comentarios del property manager:", 20, y + 7);
-      strokeRGB(doc, PDF_COLORS.borde);
-      doc.setLineWidth(0.3);
-      doc.line(20, y + 17, pageW - 20, y + 17);
-      doc.line(20, y + 25, pageW - 20, y + 25);
-      y += 36;
 
       dibujarPie(doc, y, null);
       doc.save("Informe_mensual_" + edificio.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf");
