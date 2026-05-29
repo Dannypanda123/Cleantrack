@@ -480,7 +480,7 @@
       var inputSwitch = document.createElement("input");
       inputSwitch.type = "checkbox";
       inputSwitch.checked = !!edi.activo;
-      inputSwitch.addEventListener("change", function(e){ cambiarEstadoEdificio(edi.id, e.target.checked); });
+      inputSwitch.addEventListener("change", function(e){ cambiarEstadoEdificio(edi.id, e.target.checked, e.target); });
       var track = document.createElement("span"); track.className = "switch-track";
       var thumb = document.createElement("span"); thumb.className = "switch-thumb";
       labelSwitch.appendChild(inputSwitch);
@@ -525,6 +525,7 @@
     function construirFilaArea(a, nombreEd) {
       var item = document.createElement("div");
       item.className = "area-item" + (a.activa ? "" : " area-inactiva");
+      item.dataset.requiereFoto = a.requiere_foto ? "1" : "0";
 
       var fila = document.createElement("div");
       fila.className = "area-fila";
@@ -555,7 +556,7 @@
       var inputSwitch = document.createElement("input");
       inputSwitch.type = "checkbox";
       inputSwitch.checked = !!a.activa;
-      inputSwitch.addEventListener("change", function(e){ cambiarEstadoArea(a.id, e.target.checked); });
+      inputSwitch.addEventListener("change", function(e){ cambiarEstadoArea(a.id, e.target.checked, e.target); });
       var track = document.createElement("span"); track.className = "switch-track";
       var thumb = document.createElement("span"); thumb.className = "switch-thumb";
       labelSwitch.appendChild(inputSwitch);
@@ -570,24 +571,68 @@
       return item;
     }
 
-    async function cambiarEstadoArea(id, nuevoEstado) {
-      const { error } = await db.from("areas").update({ activa: nuevoEstado }).eq("id", id);
-      if (error) uiToast("No se pudo cambiar: " + error.message, "error");
-      cargarAreas();
+    // Actualiza el contador "X áreas · Y activas" de un grupo a partir del DOM
+    function actualizarConteoGrupo(grupo) {
+      if (!grupo) return;
+      var total = grupo.querySelectorAll(".area-item").length;
+      var activas = grupo.querySelectorAll(".area-item:not(.area-inactiva)").length;
+      var conteo = grupo.querySelector(".grupo-conteo");
+      if (conteo) conteo.textContent = total + ' área' + (total !== 1 ? 's' : '') + ' · ' + activas + ' activa' + (activas !== 1 ? 's' : '');
     }
 
-    async function cambiarEstadoEdificio(id, nuevoEstado) {
+    // Actualiza el texto "Activa/Inactiva" de una fila de área
+    function actualizarDetalleArea(item, activa) {
+      var det = item.querySelector(".area-detalle");
+      if (!det) return;
+      var requiereFoto = item.dataset.requiereFoto === "1";
+      det.textContent = (requiereFoto ? 'Requiere foto · ' : '') + (activa ? 'Activa' : 'Inactiva');
+    }
+
+    async function cambiarEstadoArea(id, nuevoEstado, el) {
+      const { error } = await db.from("areas").update({ activa: nuevoEstado }).eq("id", id);
+      if (error) {
+        uiToast("No se pudo cambiar: " + error.message, "error");
+        if (el) el.checked = !nuevoEstado;  // revertir el switch si falló
+        return;
+      }
+      // Actualizar SOLO esta fila, sin recargar toda la lista (no salta arriba)
+      var item = el ? el.closest(".area-item") : null;
+      if (item) {
+        item.classList.toggle("area-inactiva", !nuevoEstado);
+        actualizarDetalleArea(item, nuevoEstado);
+        actualizarConteoGrupo(item.closest(".grupo-edificio"));
+      }
+    }
+
+    async function cambiarEstadoEdificio(id, nuevoEstado, el) {
       var edi = edificiosCache.find(function(e){ return e.id === id; });
 
       const { error } = await db.from("edificios").update({ activo: nuevoEstado }).eq("id", id);
-      if (error) { uiToast("No se pudo cambiar: " + error.message, "error"); return; }
+      if (error) { uiToast("No se pudo cambiar: " + error.message, "error"); if (el) el.checked = !nuevoEstado; return; }
 
       if (nuevoEstado === false && edi) {
         const { error: errAreas } = await db.from("areas").update({ activa: false }).eq("edificio", edi.nombre);
         if (errAreas) uiToast("El edificio se desactivó, pero hubo un problema al desactivar sus áreas: " + errAreas.message, "error");
       }
+      if (edi) edi.activo = nuevoEstado;  // mantener la cache al día
 
-      cargarAreas();
+      // Actualizar SOLO este grupo, sin recargar toda la lista (no salta arriba)
+      var grupo = el ? el.closest(".grupo-edificio") : null;
+      if (grupo) {
+        grupo.classList.toggle("edificio-inactivo", !nuevoEstado);
+        var nombreDiv = grupo.querySelector(".grupo-nombre");
+        if (nombreDiv && edi) nombreDiv.textContent = edi.nombre + (nuevoEstado ? "" : " · Inactivo");
+        if (nuevoEstado === false) {
+          // Al desactivar el edificio, sus áreas quedan inactivas: reflejarlo en pantalla
+          grupo.querySelectorAll(".area-item").forEach(function(item){
+            item.classList.add("area-inactiva");
+            actualizarDetalleArea(item, false);
+            var sw = item.querySelector(".switch input");
+            if (sw) sw.checked = false;
+          });
+        }
+        actualizarConteoGrupo(grupo);
+      }
     }
 
     // ===== EDITAR EDIFICIO =====
