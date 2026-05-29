@@ -11,6 +11,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="idiomas.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 
   <style>
@@ -112,27 +113,28 @@
             <span class="marca-texto">CleanTrack</span>
           </div>
           <div class="cab-botones">
-            <a class="btn-cab" href="inicio.html">← Inicio</a>
-            <button class="btn-cab" onclick="salir()">Salir</button>
+            <a class="btn-cab" href="inicio.html" data-i18n="comun.inicio">← Inicio</a>
+            <button class="btn-cab" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+            <button class="btn-cab" onclick="salir()" data-i18n="comun.salir">Salir</button>
           </div>
         </div>
         <div class="cab-titulo">
-          <h1>Estadísticas</h1>
-          <div class="cab-sub">Rendimiento y tendencias por edificio</div>
+          <h1 data-i18n="est.titulo">Estadísticas</h1>
+          <div class="cab-sub" data-i18n="est.subtitulo">Rendimiento y tendencias por edificio</div>
         </div>
       </div>
     </header>
 
     <main class="main">
       <div class="selector-cont">
-        <div class="selector-label">Edificio</div>
+        <div class="selector-label" data-i18n="reg.edificio">Edificio</div>
         <select class="selector" id="selector-edificio" onchange="mostrarEdificio()">
           <option value="">Cargando edificios...</option>
         </select>
       </div>
 
       <div id="contenido-edificio">
-        <div class="cargando">Cargando estadísticas...</div>
+        <div class="cargando" data-i18n="est.cargando">Cargando estadísticas...</div>
       </div>
     </main>
 
@@ -145,7 +147,7 @@
     var PALETA = ["#185FA5", "#378ADD", "#85B7EB", "#1D9E75", "#5DCAA5", "#9FE1CB", "#B4B2A9"];
 
     async function verificarAcceso() {
-      if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
+      if (!db) { document.getElementById("verificando").textContent = I18N.t("comun.sin_conexion"); return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
 
@@ -155,6 +157,8 @@
 
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+      I18N.aplicar();
+      I18N.onChange(function(){ I18N.aplicar(); if (document.getElementById("selector-edificio").value) mostrarEdificio(); });
       cargarDatos();
     }
 
@@ -181,13 +185,13 @@
         sel.innerHTML = "";
         var optVacio = document.createElement("option");
         optVacio.value = "";
-        optVacio.textContent = "No hay datos aún";
+        optVacio.textContent = I18N.t("est.sin_datos");
         sel.appendChild(optVacio);
 
         document.getElementById("contenido-edificio").innerHTML = "";
         var vacioDiv = document.createElement("div");
         vacioDiv.className = "vacio";
-        vacioDiv.textContent = "Aún no hay registros. Cuando los empleados registren áreas, sus estadísticas aparecerán aquí agrupadas por edificio.";
+        vacioDiv.textContent = I18N.t("est.vacio");
         document.getElementById("contenido-edificio").appendChild(vacioDiv);
         return;
       }
@@ -219,17 +223,17 @@
 
       cont.innerHTML =
         '<div class="titulo-edificio"><svg viewBox="0 0 24 24" fill="none" stroke="#5A6573" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;flex-shrink:0;"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg><span class="nombre-edificio"></span></div>' +
-        '<div class="subtitulo-edificio">Estadísticas de este edificio</div>' +
+        '<div class="subtitulo-edificio">' + I18N.t("est.de_edificio") + '</div>' +
         '<div class="metricas">' +
-          '<div class="metrica"><div class="label">Total registros</div><div class="valor">' + total + '</div></div>' +
-          '<div class="metrica"><div class="label">Hoy</div><div class="valor">' + nHoy + '</div></div>' +
-          '<div class="metrica"><div class="label">Esta semana</div><div class="valor">' + nSemana + '</div></div>' +
-          '<div class="metrica foto"><div class="label">% con foto</div><div class="valor">' + pctFoto + '%</div></div>' +
+          '<div class="metrica"><div class="label">' + I18N.t("est.m_total") + '</div><div class="valor">' + total + '</div></div>' +
+          '<div class="metrica"><div class="label">' + I18N.t("est.m_hoy") + '</div><div class="valor">' + nHoy + '</div></div>' +
+          '<div class="metrica"><div class="label">' + I18N.t("est.m_semana") + '</div><div class="valor">' + nSemana + '</div></div>' +
+          '<div class="metrica foto"><div class="label">' + I18N.t("est.m_foto") + '</div><div class="valor">' + pctFoto + '%</div></div>' +
         '</div>' +
         '<div class="graficos">' +
-          '<div class="tarjeta"><h2>Actividad últimos 7 días</h2><div class="grafico-cont" style="height:200px;"><canvas id="cv-dias"></canvas></div></div>' +
-          '<div class="tarjeta"><h2>Áreas más atendidas</h2><div id="leyenda-areas" class="leyenda"></div><div class="grafico-cont" style="height:240px;"><canvas id="cv-areas"></canvas></div></div>' +
-          '<div class="tarjeta ancho-completo"><h2>Actividad por empleado</h2><div class="grafico-cont" id="cont-emp"><canvas id="cv-emp"></canvas></div></div>' +
+          '<div class="tarjeta"><h2>' + I18N.t("est.g_dias") + '</h2><div class="grafico-cont" style="height:200px;"><canvas id="cv-dias"></canvas></div></div>' +
+          '<div class="tarjeta"><h2>' + I18N.t("est.g_areas") + '</h2><div id="leyenda-areas" class="leyenda"></div><div class="grafico-cont" style="height:240px;"><canvas id="cv-areas"></canvas></div></div>' +
+          '<div class="tarjeta ancho-completo"><h2>' + I18N.t("est.g_emp") + '</h2><div class="grafico-cont" id="cont-emp"><canvas id="cv-emp"></canvas></div></div>' +
         '</div>';
 
       // Nombre del edificio con textContent (anti-XSS)
@@ -273,7 +277,7 @@
       var restoA = arrA.slice(6);
       if (restoA.length > 0) {
         var sumaResto = restoA.reduce(function(s,x){ return s + x.valor; }, 0);
-        topA.push({ nombre: "Otras", valor: sumaResto });
+        topA.push({ nombre: I18N.t("est.otras"), valor: sumaResto });
       }
       var totalA = topA.reduce(function(s,x){ return s + x.valor; }, 0);
       var labelsA = topA.map(function(x){ return x.nombre; });
