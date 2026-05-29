@@ -11,6 +11,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="idiomas.js"></script>
   <script src="ui.js"></script>
 
   <style>
@@ -141,39 +142,40 @@
             <span class="marca-texto">CleanTrack</span>
           </div>
           <div class="cab-botones">
-            <a class="btn-cab" href="inicio.html">← Inicio</a>
-            <button class="btn-cab" onclick="salir()">Salir</button>
+            <a class="btn-cab" href="inicio.html" data-i18n="comun.inicio">← Inicio</a>
+            <button class="btn-cab" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+            <button class="btn-cab" onclick="salir()" data-i18n="comun.salir">Salir</button>
           </div>
         </div>
 
         <div class="cab-titulo">
-          <h1>Incidencias</h1>
-          <div class="cab-sub">Insumos faltantes y problemas reportados</div>
+          <h1 data-i18n="inc.titulo">Incidencias</h1>
+          <div class="cab-sub" data-i18n="inc.subtitulo">Insumos faltantes y problemas reportados</div>
         </div>
 
         <div class="resumen">
-          <div class="caja"><div class="num pendientes" id="n-pendientes">—</div><div class="lbl">Pendientes</div></div>
-          <div class="caja"><div class="num resueltas" id="n-resueltas">—</div><div class="lbl">Resueltas</div></div>
-          <div class="caja"><div class="num total" id="n-total">—</div><div class="lbl">Total</div></div>
+          <div class="caja"><div class="num pendientes" id="n-pendientes">—</div><div class="lbl" data-i18n="inc.pendientes">Pendientes</div></div>
+          <div class="caja"><div class="num resueltas" id="n-resueltas">—</div><div class="lbl" data-i18n="inc.resueltas">Resueltas</div></div>
+          <div class="caja"><div class="num total" id="n-total">—</div><div class="lbl" data-i18n="inc.total">Total</div></div>
         </div>
 
         <div class="filtros">
-          <button class="filtro activo" id="f-pendientes" onclick="filtrar('pendientes')">Pendientes</button>
-          <button class="filtro" id="f-resueltas" onclick="filtrar('resueltas')">Resueltas</button>
-          <button class="filtro" id="f-todas" onclick="filtrar('todas')">Todas</button>
+          <button class="filtro activo" id="f-pendientes" onclick="filtrar('pendientes')" data-i18n="inc.f_pendientes">Pendientes</button>
+          <button class="filtro" id="f-resueltas" onclick="filtrar('resueltas')" data-i18n="inc.f_resueltas">Resueltas</button>
+          <button class="filtro" id="f-todas" onclick="filtrar('todas')" data-i18n="inc.f_todas">Todas</button>
         </div>
       </div>
     </header>
 
     <main class="main">
       <div class="selector-cont">
-        <div class="selector-label">Edificio</div>
+        <div class="selector-label" data-i18n="reg.edificio">Edificio</div>
         <select class="selector" id="selector-edificio" onchange="mostrar()">
           <option value="">Cargando edificios...</option>
         </select>
       </div>
 
-      <div class="lista-inc" id="lista"><div class="cargando">Cargando incidencias...</div></div>
+      <div class="lista-inc" id="lista"><div class="cargando" data-i18n="inc.cargando">Cargando incidencias...</div></div>
     </main>
 
   </div>
@@ -189,11 +191,13 @@
     var filtroActual = "pendientes";
 
     async function verificarAcceso() {
-      if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
+      if (!db) { document.getElementById("verificando").textContent = I18N.t("comun.sin_conexion"); return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+      I18N.aplicar();
+      I18N.onChange(function(){ I18N.aplicar(); mostrar(); });
       cargar();
     }
 
@@ -236,7 +240,7 @@
       sel.innerHTML = "";
       var optTodos = document.createElement("option");
       optTodos.value = "";
-      optTodos.textContent = "Todos los edificios";
+      optTodos.textContent = I18N.t("reg.todos_edificios");
       sel.appendChild(optTodos);
       listaEd.forEach(function(e){
         var o = document.createElement("option");
@@ -273,7 +277,7 @@
 
       var lista = document.getElementById("lista");
       if (items.length === 0) {
-        var msg = filtroActual === "pendientes" ? "No hay incidencias pendientes. ¡Todo en orden!" : (filtroActual === "resueltas" ? "Aún no hay incidencias resueltas." : "No hay incidencias.");
+        var msg = filtroActual === "pendientes" ? I18N.t("inc.vacio_pend") : (filtroActual === "resueltas" ? I18N.t("inc.vacio_resueltas") : I18N.t("inc.vacio_todas"));
         // msg es texto literal nuestro (no de la BD), pero por consistencia usamos textContent
         lista.innerHTML = "";
         var vacio = document.createElement("div");
@@ -293,11 +297,11 @@
           : '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>';
 
         var badgeTipoHTML = esInsumo
-          ? '<span class="badge-tipo insumo">Falta insumo</span>'
-          : '<span class="badge-tipo problema">Problema</span>';
+          ? '<span class="badge-tipo insumo">' + I18N.t("inc.tipo_insumo") + '</span>'
+          : '<span class="badge-tipo problema">' + I18N.t("inc.tipo_problema") + '</span>';
         var badgeEstadoHTML = i.resuelto
-          ? '<span class="badge-estado badge-resuelto">Resuelta</span>'
-          : '<span class="badge-estado badge-pendiente">Pendiente</span>';
+          ? '<span class="badge-estado badge-resuelto">' + I18N.t("inc.estado_resuelta") + '</span>'
+          : '<span class="badge-estado badge-pendiente">' + I18N.t("inc.estado_pendiente") + '</span>';
 
         var card = document.createElement("div");
         card.className = "inc-card" + (i.resuelto ? " resuelta" : "");
@@ -343,11 +347,11 @@
         var boton = document.createElement("button");
         if (i.resuelto) {
           boton.className = "btn-reabrir";
-          boton.textContent = "Reabrir";
+          boton.textContent = I18N.t("inc.btn_reabrir");
           boton.addEventListener("click", function() { cambiarEstado(i.id, false); });
         } else {
           boton.className = "btn-resolver";
-          boton.textContent = "Marcar como resuelta";
+          boton.textContent = I18N.t("inc.btn_resolver");
           boton.addEventListener("click", function() { cambiarEstado(i.id, true); });
         }
         card.querySelector(".inc-acciones").appendChild(boton);
@@ -358,7 +362,7 @@
 
     async function cambiarEstado(id, resuelto) {
       const { error } = await db.from("incidencias").update({ resuelto: resuelto }).eq("id", id);
-      if (error) { uiToast("No se pudo actualizar: " + error.message, "error"); return; }
+      if (error) { uiToast(I18N.t("inc.error_actualizar") + error.message, "error"); return; }
       cargar();
     }
 
