@@ -11,6 +11,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="idiomas.js"></script>
 
   <style>
     :root {
@@ -93,8 +94,8 @@
   <div class="verificando" id="verificando">Verificando acceso...</div>
 
   <div class="sin-acceso" id="sin-acceso">
-    Esta sección es solo para el administrador de la empresa.<br><br>
-    <a class="btn-volver" href="inicio.html">← Volver al inicio</a>
+    <span data-i18n="pan.sin_acceso">Esta sección es solo para el administrador de la empresa.</span><br><br>
+    <a class="btn-volver" href="inicio.html" data-i18n="pan.volver">← Volver al inicio</a>
   </div>
 
   <div class="contenedor" id="contenedor">
@@ -107,12 +108,13 @@
             <span class="marca-texto">CleanTrack</span>
           </div>
           <div class="cab-botones">
-            <a class="btn-cab" href="inicio.html">← Inicio</a>
+            <a class="btn-cab" href="inicio.html" data-i18n="comun.inicio">← Inicio</a>
+            <button class="btn-cab" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
           </div>
         </div>
         <div class="cab-titulo">
-          <h1>Panel de administración</h1>
-          <div class="cab-sub">Suscripción, resumen y equipo de tu empresa</div>
+          <h1 data-i18n="pan.titulo">Panel de administración</h1>
+          <div class="cab-sub" data-i18n="pan.subtitulo">Suscripción, resumen y equipo de tu empresa</div>
         </div>
       </div>
     </header>
@@ -121,25 +123,25 @@
 
       <!-- SUSCRIPCIÓN -->
       <div class="seccion">
-        <div class="seccion-titulo">Tu suscripción</div>
-        <div id="sub-contenido"><div class="cargando">Cargando...</div></div>
+        <div class="seccion-titulo" data-i18n="pan.sub_titulo">Tu suscripción</div>
+        <div id="sub-contenido"><div class="cargando" data-i18n="pan.sub_cargando">Cargando...</div></div>
       </div>
 
       <!-- RESUMEN -->
       <div class="seccion">
-        <div class="seccion-titulo">Resumen de tu empresa</div>
+        <div class="seccion-titulo" data-i18n="pan.resumen_titulo">Resumen de tu empresa</div>
         <div class="resumen">
-          <div class="caja"><div class="num" id="r-edificios">—</div><div class="lbl">Edificios</div></div>
-          <div class="caja"><div class="num" id="r-empleados">—</div><div class="lbl">Empleados</div></div>
-          <div class="caja"><div class="num" id="r-registros">—</div><div class="lbl">Registros del mes</div></div>
+          <div class="caja"><div class="num" id="r-edificios">—</div><div class="lbl" data-i18n="pan.r_edificios">Edificios</div></div>
+          <div class="caja"><div class="num" id="r-empleados">—</div><div class="lbl" data-i18n="pan.r_empleados">Empleados</div></div>
+          <div class="caja"><div class="num" id="r-registros">—</div><div class="lbl" data-i18n="pan.r_registros">Registros del mes</div></div>
         </div>
       </div>
 
       <!-- EQUIPO -->
       <div class="seccion seccion-equipo">
-        <div class="seccion-titulo">Tu equipo de supervisores</div>
-        <div id="equipo-contenido"><div class="cargando">Cargando...</div></div>
-        <div class="nota-futuro">Para agregar o quitar supervisores, contacta a soporte técnico por ahora. Pronto podrás gestionarlos directamente desde aquí.</div>
+        <div class="seccion-titulo" data-i18n="pan.equipo_titulo">Tu equipo de supervisores</div>
+        <div id="equipo-contenido"><div class="cargando" data-i18n="pan.equipo_cargando">Cargando...</div></div>
+        <div class="nota-futuro" data-i18n="pan.nota">Para agregar o quitar supervisores, contacta a soporte técnico por ahora. Pronto podrás gestionarlos directamente desde aquí.</div>
       </div>
 
     </main>
@@ -151,7 +153,7 @@
     var db = window.db;
 
     async function verificarAcceso() {
-      if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
+      if (!db) { document.getElementById("verificando").textContent = I18N.t("comun.sin_conexion"); return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
 
@@ -171,6 +173,8 @@
 
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+      I18N.aplicar();
+      I18N.onChange(function(){ I18N.aplicar(); cargarTodo(); });
       cargarTodo();
     }
 
@@ -190,36 +194,36 @@
       const cont = document.getElementById("sub-contenido");
       const { data, error } = await db.from("companias").select("*").limit(1);
       if (error || !data || data.length === 0) {
-        cont.innerHTML = '<div class="cargando">No se pudo cargar la suscripción.</div>';
+        cont.innerHTML = '<div class="cargando">' + I18N.t("pan.sub_error") + '</div>';
         return;
       }
       var c = data[0];
 
       // Calcular estado segun fechas de prueba
-      var estadoTexto = "Activa";
+      var estadoTexto = I18N.t("pan.est_activa");
       var estadoClase = "badge-activa";
       var hoy = new Date(); hoy.setHours(0,0,0,0);
       if (c.fecha_fin_prueba) {
         var fin = new Date(c.fecha_fin_prueba + "T00:00:00");
         if (fin >= hoy) {
-          estadoTexto = "En prueba gratis";
+          estadoTexto = I18N.t("pan.est_prueba");
           estadoClase = "badge-prueba";
         }
       }
       if (c.activa === false) {
-        estadoTexto = "Suspendida";
+        estadoTexto = I18N.t("pan.est_suspendida");
         estadoClase = "badge-vencida";
       }
 
       // Construir UI de forma segura (sin meter datos de la BD en innerHTML)
       cont.innerHTML = "";
 
-      cont.appendChild(filaSub("Empresa", c.nombre || "—"));
-      cont.appendChild(filaSubBadge("Estado", estadoTexto, estadoClase));
-      cont.appendChild(filaSub("Inicio de prueba", fmtFecha(c.fecha_inicio_prueba)));
-      cont.appendChild(filaSub("Fin de prueba", fmtFecha(c.fecha_fin_prueba)));
-      cont.appendChild(filaSub("Edificios contratados", c.edificios_contratados != null ? c.edificios_contratados : "—"));
-      cont.appendChild(filaSub("Precio mensual", c.precio_mensual != null ? ("$" + c.precio_mensual) : "—"));
+      cont.appendChild(filaSub(I18N.t("pan.f_empresa"), c.nombre || "—"));
+      cont.appendChild(filaSubBadge(I18N.t("pan.f_estado"), estadoTexto, estadoClase));
+      cont.appendChild(filaSub(I18N.t("pan.f_inicio"), fmtFecha(c.fecha_inicio_prueba)));
+      cont.appendChild(filaSub(I18N.t("pan.f_fin"), fmtFecha(c.fecha_fin_prueba)));
+      cont.appendChild(filaSub(I18N.t("pan.f_edificios"), c.edificios_contratados != null ? c.edificios_contratados : "—"));
+      cont.appendChild(filaSub(I18N.t("pan.f_precio"), c.precio_mensual != null ? ("$" + c.precio_mensual) : "—"));
     }
 
     // Crea una fila de "label -> valor" de forma segura (anti-XSS)
@@ -267,7 +271,7 @@
       const cont = document.getElementById("equipo-contenido");
       const { data, error } = await db.from("supervisores").select("*").order("created_at", { ascending: true });
       if (error || !data || data.length === 0) {
-        cont.innerHTML = '<div class="cargando">No hay supervisores registrados.</div>';
+        cont.innerHTML = '<div class="cargando">' + I18N.t("pan.equipo_vacio") + '</div>';
         return;
       }
       cont.innerHTML = "";
@@ -275,7 +279,7 @@
         var nombre = s.nombre || "Supervisor";
         var inicial = nombre.charAt(0).toUpperCase();
         var rol = (s.rol === "admin") ? "admin" : "supervisor";
-        var rolTxt = (rol === "admin") ? "Administrador" : "Supervisor";
+        var rolTxt = (rol === "admin") ? I18N.t("pan.rol_admin") : I18N.t("pan.rol_supervisor");
 
         // Estructura base sin datos del usuario
         var item = document.createElement("div");
