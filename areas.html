@@ -691,6 +691,10 @@
       var msg = document.getElementById("mensaje-editar-edificio");
       if (!nombre) { msg.textContent = I18N.t("area.req_nombre_ed"); msg.className = "mensaje error"; return; }
 
+      // Nombre anterior, para detectar si hubo renombrado
+      var ediPrevio = edificiosCache.find(function(e){ return e.id === editandoEdificioId; });
+      var nombreViejo = ediPrevio ? (ediPrevio.nombre || "") : "";
+
       document.getElementById("btn-guardar-editar-edificio").disabled = true;
       msg.textContent = I18N.t("area.guardando"); msg.className = "mensaje"; msg.style.display = "block";
 
@@ -704,13 +708,24 @@
         notas: document.getElementById("ee-notas").value.trim()
       }).eq("id", editandoEdificioId);
 
-      document.getElementById("btn-guardar-editar-edificio").disabled = false;
       if (error) {
+        document.getElementById("btn-guardar-editar-edificio").disabled = false;
         msg.textContent = "Error: " + error.message; msg.className = "mensaje error";
-      } else {
-        cerrar("modal-editar-edificio");
-        cargarAreas();
+        return;
       }
+
+      // RED DE SEGURIDAD: si cambió el nombre, propagarlo a todo lo que referencia
+      // al edificio por su nombre (áreas, registros e incidencias), para que nada
+      // quede "huérfano". Tu RLS por compañía protege estos updates.
+      if (nombreViejo && nombreViejo !== nombre) {
+        await db.from("areas").update({ edificio: nombre }).eq("edificio", nombreViejo);
+        await db.from("registros").update({ edificio: nombre }).eq("edificio", nombreViejo);
+        await db.from("incidencias").update({ edificio: nombre }).eq("edificio", nombreViejo);
+      }
+
+      document.getElementById("btn-guardar-editar-edificio").disabled = false;
+      cerrar("modal-editar-edificio");
+      cargarAreas();
     }
 
     // ===== QR individual =====
