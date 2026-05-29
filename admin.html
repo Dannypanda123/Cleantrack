@@ -115,6 +115,20 @@
     .grupo-sin-asignar .ico-sin-asignar svg { stroke: #854F0B; }
     .grupo-sin-asignar .grupo-nombre { color: #854F0B; }
 
+    /* ===== Lista de empleados: buscador + filtros + chips ===== */
+    .emp-lista-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+    .emp-lista-head h2 { margin-bottom: 0; }
+    .emp-contador { font-size: 12px; color: var(--gris-texto); }
+    .emp-buscador { margin-bottom: 12px; }
+    .emp-filtros { display: flex; gap: 8px; margin-bottom: 16px; }
+    .emp-filtro { flex: 1; padding: 8px 10px; border: 1.5px solid var(--gris-borde); background: var(--blanco); color: var(--gris-texto); border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .emp-filtro.activo { background: var(--verde-accion-claro); border-color: var(--verde-accion); color: var(--verde-texto); }
+    .emp-edificios { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+    .emp-chip { font-size: 11px; font-weight: 600; background: var(--gris-verde-claro); color: var(--gris-verde-900); padding: 3px 8px; border-radius: 7px; }
+    .emp-sin-edificio { font-size: 12px; color: #9C7B3A; margin-top: 5px; }
+    .emp-vacio { text-align: center; color: var(--gris-texto); padding: 18px; font-size: 14px; }
+    .emp-inactivo .emp-avatar, .emp-inactivo .emp-edificios { opacity: 0.45; }
+
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
     .modal.abierto { display: flex; }
     .modal-caja { background: #fff; border-radius: 18px; padding: 26px; max-width: 420px; width: 100%; margin: auto; }
@@ -163,7 +177,16 @@
     </div>
 
     <div class="tarjeta">
-      <h2>Empleados por edificio</h2>
+      <div class="emp-lista-head">
+        <h2>Empleados</h2>
+        <span class="emp-contador" id="emp-contador"></span>
+      </div>
+      <input type="text" class="campo-texto emp-buscador" id="emp-buscador" placeholder="Buscar por nombre o edificio..." autocomplete="off" />
+      <div class="emp-filtros" id="emp-filtros">
+        <button type="button" class="emp-filtro activo" data-filtro="todos">Todos</button>
+        <button type="button" class="emp-filtro" data-filtro="activos">Activos</button>
+        <button type="button" class="emp-filtro" data-filtro="inactivos">Inactivos</button>
+      </div>
       <div id="lista-empleados">
         <div class="cargando">Cargando...</div>
       </div>
@@ -215,6 +238,7 @@
       document.getElementById("contenedor").style.display = "block";
       await cargarEdificios();
       cargarEmpleados();
+      configurarFiltrosEmpleados();
       configurarSelector("add");
       configurarSelector("edit");
     }
@@ -347,10 +371,41 @@
     }
 
     // ===== LISTA DE EMPLEADOS AGRUPADA =====
+    var filtroActual = "todos";
+
+    function edificiosDe(emp) {
+      return (emp.edificios || "").split(",").map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+    }
+    function coincideFiltro(emp) {
+      if (filtroActual === "activos") return !!emp.activo;
+      if (filtroActual === "inactivos") return !emp.activo;
+      return true;
+    }
+    function coincideBusqueda(emp, termino) {
+      if (!termino) return true;
+      if ((emp.nombre || "").toLowerCase().indexOf(termino) !== -1) return true;
+      return edificiosDe(emp).some(function(ed){ return ed.toLowerCase().indexOf(termino) !== -1; });
+    }
+    function empleadosVisibles() {
+      var b = document.getElementById("emp-buscador");
+      var termino = b ? b.value.trim().toLowerCase() : "";
+      return empleadosCache.filter(function(emp){ return coincideFiltro(emp) && coincideBusqueda(emp, termino); });
+    }
+    function actualizarContadorEmpleados() {
+      var el = document.getElementById("emp-contador");
+      if (!el) return;
+      var b = document.getElementById("emp-buscador");
+      var termino = b ? b.value.trim().toLowerCase() : "";
+      var total = empleadosCache.length;
+      var vis = empleadosVisibles().length;
+      if (termino || filtroActual !== "todos") el.textContent = "Mostrando " + vis + " de " + total;
+      else el.textContent = total + (total === 1 ? " empleado" : " empleados");
+    }
+
     async function cargarEmpleados() {
       var cont = document.getElementById("lista-empleados");
       cont.innerHTML = '<div class="cargando">Cargando...</div>';
-      const { data, error } = await db.from("empleados").select("*").order("created_at", { ascending: true });
+      const { data, error } = await db.from("empleados").select("*").order("nombre", { ascending: true });
       if (error) {
         cont.innerHTML = "";
         var errDiv = document.createElement("div");
@@ -360,123 +415,38 @@
         cont.appendChild(errDiv);
         return;
       }
-      if (!data || data.length === 0) { cont.innerHTML = '<div class="cargando">Aún no hay empleados. Agrega el primero arriba.</div>'; return; }
-
-      empleadosCache = data;
-
-      var grupos = {};
-      var huerfanos = [];
-
-      data.forEach(function(emp) {
-        var edificiosEmp = (emp.edificios || "").split(",").map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
-        var edificiosActivos = edificiosEmp.filter(function(ed){ return listaEdificios.indexOf(ed) !== -1; });
-
-        if (edificiosActivos.length === 0) {
-          huerfanos.push(emp);
-        } else {
-          edificiosActivos.forEach(function(ed) {
-            if (!grupos[ed]) grupos[ed] = [];
-            grupos[ed].push(emp);
-          });
-        }
-      });
-
-      cont.innerHTML = "";
-
-      var nombresEdificios = Object.keys(grupos).sort();
-
-      if (nombresEdificios.length === 0 && huerfanos.length === 0) {
-        cont.innerHTML = '<div class="cargando">Aún no hay empleados. Agrega el primero arriba.</div>';
-        return;
-      }
-
-      // Grupos de edificios activos
-      nombresEdificios.forEach(function(edificio, idx) {
-        var emps = grupos[edificio];
-        var activos = emps.filter(function(e){ return e.activo; }).length;
-
-        var grupo = construirGrupo({
-          nombre: edificio,
-          conteoTexto: emps.length + ' empleado' + (emps.length !== 1 ? 's' : '') + ' · ' + activos + ' activo' + (activos !== 1 ? 's' : ''),
-          abierto: idx === 0,
-          sinAsignar: false,
-          empleados: emps
-        });
-        cont.appendChild(grupo);
-      });
-
-      // Grupo especial "Sin asignar"
-      if (huerfanos.length > 0) {
-        var grupoH = construirGrupo({
-          nombre: "Sin asignar",
-          conteoTexto: huerfanos.length + ' empleado' + (huerfanos.length !== 1 ? 's' : '') + ' esperando edificio · edítalos para reasignar',
-          abierto: nombresEdificios.length === 0,
-          sinAsignar: true,
-          empleados: huerfanos
-        });
-        cont.appendChild(grupoH);
-      }
+      empleadosCache = data || [];
+      renderLista();
     }
 
-    // Construye un grupo de edificio completo de forma segura (sin meter datos en innerHTML)
-    function construirGrupo(opts) {
-      var grupo = document.createElement("div");
-      grupo.className = "grupo-edificio" + (opts.sinAsignar ? " grupo-sin-asignar" : "") + (opts.abierto ? " abierto" : "");
-
-      var cabecera = document.createElement("div");
-      cabecera.className = "grupo-cabecera";
-      cabecera.addEventListener("click", function() { grupo.classList.toggle("abierto"); });
-
-      // Icono (SVG estático, seguro)
-      var ico = document.createElement("div");
-      ico.className = "grupo-ico" + (opts.sinAsignar ? " ico-sin-asignar" : "");
-      if (opts.sinAsignar) {
-        ico.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="17" y1="8" x2="22" y2="13"></line><line x1="22" y1="8" x2="17" y2="13"></line></svg>';
-      } else {
-        ico.innerHTML = iconoEdificioSVG;
+    function renderLista() {
+      var cont = document.getElementById("lista-empleados");
+      cont.innerHTML = "";
+      if (empleadosCache.length === 0) {
+        cont.innerHTML = '<div class="emp-vacio">A&uacute;n no hay empleados. Agrega el primero arriba.</div>';
+        actualizarContadorEmpleados();
+        return;
       }
-
-      // Info (nombre y conteo como texto, anti-XSS)
-      var info = document.createElement("div");
-      info.className = "grupo-info";
-      var nombreDiv = document.createElement("div");
-      nombreDiv.className = "grupo-nombre";
-      nombreDiv.textContent = opts.nombre;
-      var conteoDiv = document.createElement("div");
-      conteoDiv.className = "grupo-conteo";
-      conteoDiv.textContent = opts.conteoTexto;
-      info.appendChild(nombreDiv);
-      info.appendChild(conteoDiv);
-
-      var flecha = document.createElement("div");
-      flecha.className = "grupo-flecha";
-      flecha.textContent = "▶";
-
-      cabecera.appendChild(ico);
-      cabecera.appendChild(info);
-      cabecera.appendChild(flecha);
-
-      var cuerpo = document.createElement("div");
-      cuerpo.className = "grupo-cuerpo";
-      opts.empleados.forEach(function(emp){ cuerpo.appendChild(filaEmpleado(emp)); });
-
-      grupo.appendChild(cabecera);
-      grupo.appendChild(cuerpo);
-      return grupo;
+      var visibles = empleadosVisibles();
+      if (visibles.length === 0) {
+        cont.innerHTML = '<div class="emp-vacio">Sin coincidencias.</div>';
+        actualizarContadorEmpleados();
+        return;
+      }
+      visibles.forEach(function(emp){ cont.appendChild(filaEmpleado(emp)); });
+      actualizarContadorEmpleados();
     }
 
     // Construye la fila de un empleado de forma SEGURA contra XSS.
-    // Usa textContent para el nombre/PIN y addEventListener para los botones,
-    // así el nombre del empleado nunca se interpreta como HTML ni se cuela en un atributo.
     function filaEmpleado(emp) {
       var div = document.createElement("div");
       div.className = "empleado" + (emp.activo ? "" : " emp-inactivo");
-
-      // Estructura base sin datos del usuario (HTML estático)
+      div.dataset.id = emp.id;
       div.innerHTML =
         '<div class="emp-avatar"></div>' +
         '<div class="emp-info">' +
           '<div class="emp-nombre"></div>' +
+          '<div class="emp-edificios"></div>' +
           '<div class="emp-pin"></div>' +
         '</div>' +
         '<div class="emp-acciones">' +
@@ -487,24 +457,40 @@
             '<span class="switch-track"></span><span class="switch-thumb"></span>' +
           '</label>' +
         '</div>';
-
-      // Datos del usuario con textContent (ANTI-XSS)
       div.querySelector(".emp-avatar").textContent = iniciales(emp.nombre);
       div.querySelector(".emp-nombre").textContent = emp.nombre || "";
-      div.querySelector(".emp-pin").textContent = "PIN: " + (emp.pin || "") + " · " + (emp.activo ? "Activo" : "Inactivo");
-
-      // Eventos con addEventListener (sin pasar datos por onclick)
-      div.querySelector(".btn-icono.editar").addEventListener("click", function() {
-        abrirEditar(emp.id);
-      });
-      div.querySelector(".btn-icono.eliminar").addEventListener("click", function() {
-        eliminarEmpleado(emp.id, emp.nombre);
-      });
-      div.querySelector(".switch input").addEventListener("change", function(e) {
-        cambiarEstado(emp.id, e.target.checked);
-      });
-
+      div.querySelector(".emp-pin").textContent = "PIN: " + (emp.pin || "");
+      var edis = edificiosDe(emp);
+      var contEdi = div.querySelector(".emp-edificios");
+      if (edis.length === 0) {
+        contEdi.className = "emp-sin-edificio";
+        contEdi.textContent = "Sin edificio asignado";
+      } else {
+        edis.forEach(function(ed){
+          var chip = document.createElement("span");
+          chip.className = "emp-chip";
+          chip.textContent = ed;
+          contEdi.appendChild(chip);
+        });
+      }
+      div.querySelector(".btn-icono.editar").addEventListener("click", function() { abrirEditar(emp.id); });
+      div.querySelector(".btn-icono.eliminar").addEventListener("click", function() { eliminarEmpleado(emp.id, emp.nombre); });
+      div.querySelector(".switch input").addEventListener("change", function(e) { cambiarEstado(emp.id, e.target.checked, div); });
       return div;
+    }
+
+    function configurarFiltrosEmpleados() {
+      var buscador = document.getElementById("emp-buscador");
+      if (buscador) buscador.addEventListener("input", function(){ renderLista(); });
+      var filtros = document.querySelectorAll(".emp-filtro");
+      filtros.forEach(function(btn){
+        btn.addEventListener("click", function(){
+          filtros.forEach(function(b){ b.classList.remove("activo"); });
+          btn.classList.add("activo");
+          filtroActual = btn.dataset.filtro;
+          renderLista();
+        });
+      });
     }
 
     async function agregarEmpleado() {
@@ -589,10 +575,26 @@
       cargarEmpleados();
     }
 
-    async function cambiarEstado(id, nuevoEstado) {
+    async function cambiarEstado(id, nuevoEstado, rowEl) {
       const { error } = await db.from("empleados").update({ activo: nuevoEstado }).eq("id", id);
-      if (error) uiToast("No se pudo cambiar el estado: " + error.message, "error");
-      cargarEmpleados();
+      if (error) {
+        uiToast("No se pudo cambiar el estado: " + error.message, "error");
+        var sw = rowEl ? rowEl.querySelector(".switch input") : null;
+        if (sw) sw.checked = !nuevoEstado;  // revertir si falló
+        return;
+      }
+      // Actualizar la cache en memoria
+      var emp = empleadosCache.find(function(e){ return e.id === id; });
+      if (emp) emp.activo = nuevoEstado;
+
+      if (!rowEl) { renderLista(); return; }
+      // Si con el filtro actual la fila ya no debe verse, quitarla; si no, actualizarla en sitio
+      if (emp && !coincideFiltro(emp)) {
+        rowEl.remove();
+      } else {
+        rowEl.classList.toggle("emp-inactivo", !nuevoEstado);
+      }
+      actualizarContadorEmpleados();
     }
 
     verificarAcceso();
