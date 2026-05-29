@@ -309,6 +309,21 @@
     // El cliente de Supabase (db) y las credenciales vienen de config.js
     const db = window.db;
 
+    // Genera un nombre de archivo aleatorio e imposible de adivinar (anti-husmeo de fotos)
+    function nombreFotoAleatorio(prefijo) {
+      var aleatorio;
+      if (window.crypto && crypto.randomUUID) {
+        aleatorio = crypto.randomUUID();
+      } else if (window.crypto && crypto.getRandomValues) {
+        var bytes = new Uint8Array(16);
+        crypto.getRandomValues(bytes);
+        aleatorio = Array.from(bytes).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join("");
+      } else {
+        aleatorio = Date.now() + "_" + Math.random().toString(36).slice(2);
+      }
+      return prefijo + "_" + aleatorio + ".jpg";
+    }
+
     var datosArea = { id: null, area: "Cargando área...", edificio: "", compania_id: null };
     var pin = "";
     var empleadoNombre = null;
@@ -473,7 +488,7 @@
       var fotoUrl = null;
       if (conFoto && fotoArchivo) {
         try {
-          var nombreArchivo = "foto_" + Date.now() + ".jpg";
+          var nombreArchivo = nombreFotoAleatorio("foto");
           const { data: subida, error: errorSubida } = await db
             .storage.from("fotos")
             .upload(nombreArchivo, fotoArchivo, { contentType: fotoArchivo.type || "image/jpeg" });
@@ -605,7 +620,7 @@
       if (incFotoArchivo) {
         estado.textContent = "Subiendo foto...";
         try {
-          var nombreArchivo = "incidencia_" + Date.now() + "_" + Math.random().toString(36).substring(2,8) + ".jpg";
+          var nombreArchivo = nombreFotoAleatorio("incidencia");
           const { error: errSubida } = await db.storage.from("fotos").upload(nombreArchivo, incFotoArchivo, { contentType: incFotoArchivo.type });
           if (errSubida) {
             estado.className = "estado-guardado estado-error";
