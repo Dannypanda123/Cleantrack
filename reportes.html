@@ -6,6 +6,7 @@
   <title>CleanTrack — Reportes</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
@@ -107,14 +108,8 @@
   </div>
 
   <script>
-    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
-
-    let db = null;
-    try {
-      const { createClient } = supabase;
-      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) { console.error(e); }
+    // El cliente de Supabase (db) y las credenciales vienen de config.js
+    const db = window.db;
 
     var todosRegistros = [];
     var todasIncidencias = [];
@@ -168,12 +163,6 @@
       if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
-
-      try {
-        const { data: planData, error } = await db.rpc("mi_plan");
-        var plan = (!error && planData) ? String(planData).toLowerCase().trim() : "basico";
-        if (plan !== "pro") { window.location.href = "inicio.html"; return; }
-      } catch (e) { window.location.href = "inicio.html"; return; }
 
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
