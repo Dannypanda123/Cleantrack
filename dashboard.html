@@ -5,75 +5,108 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CleanTrack — Panel del supervisor</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600&display=swap" rel="stylesheet" />
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="ui.js"></script>
 
   <style>
     :root {
-      --verde: #798C81;
-      --verde-claro: #EAEEEB;
-      --verde-texto: #5F7268;
-      --azul: #798C81;
-      --azul-claro: #EAEEEB;
+      --azul-osc: #0C447C;
+      --azul: #185FA5;
+      --azul-suave: #BBD2EA;
       --gris-fondo: #ECEBE4;
-      --gris-texto: #6B6A64;
+      --gris-texto: #5A6573;
       --gris-borde: #E2E0D8;
-      --texto: #1F2A37;
+      --texto: #1B2733;
       --blanco: #FFFFFF;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
-    .contenedor { max-width: 720px; margin: 0 auto; display: none; }
-    .verificando { max-width: 720px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--gris-fondo); color: var(--texto); min-height: 100vh;
+    }
+    .verificando { max-width: 720px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; padding: 0 20px; }
+    .contenedor { display: none; }
 
-    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-    .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
-    .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
-    .top-botones { display: flex; gap: 8px; }
-    .btn-refrescar { background: linear-gradient(135deg, #798C81, #5F7268); color: #fff; border: none; padding: 10px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(121,140,129,0.3); }
-    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
-    .btn-refrescar:active, .btn-salir:active { transform: scale(0.97); }
+    /* ===== Cabecera azul ===== */
+    .cabecera { background: var(--azul-osc); }
+    .cab-inner { max-width: 720px; margin: 0 auto; padding: 18px 20px 22px; }
+    .cab-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.16); }
+    .barra-marca { display: flex; align-items: center; gap: 9px; }
+    .logo-simbolo { height: 30px; width: auto; display: block; }
+    .marca-texto { font-family: "Sora", sans-serif; font-size: 18px; font-weight: 600; color: var(--blanco); letter-spacing: -0.01em; }
+    .cab-botones { display: flex; gap: 8px; }
+    .btn-cab {
+      background: transparent; color: var(--blanco);
+      border: 1.5px solid rgba(255,255,255,0.45);
+      padding: 8px 15px; border-radius: 11px; font-size: 13px; font-weight: 600;
+      cursor: pointer; text-decoration: none; display: inline-block; font-family: inherit; white-space: nowrap;
+    }
+    .btn-cab:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.65); }
+    .btn-cab:active { transform: scale(0.97); }
 
-    .selector-cont { margin-bottom: 22px; }
-    .selector-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-texto); margin-bottom: 8px; }
-    .selector { width: 100%; padding: 14px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: var(--blanco); color: var(--texto); outline: none; cursor: pointer; }
-    .selector:focus { border-color: var(--verde); }
-
-    .metricas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-    .metrica { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 18px; }
-    .metrica .label { font-size: 12px; color: var(--gris-texto); margin-bottom: 6px; }
-    .metrica .valor { font-size: 28px; font-weight: 600; }
-
-    .seccion-titulo { font-size: 13px; font-weight: 600; color: var(--gris-texto); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-    .punto-vivo { width: 8px; height: 8px; border-radius: 50%; background: #3C993C; display: inline-block; animation: latir 1.6s ease-in-out infinite; }
+    .cab-titulo { margin-top: 16px; }
+    .cab-titulo h1 { font-size: 23px; font-weight: 600; color: var(--blanco); }
+    .seccion-vivo { font-size: 13px; color: var(--azul-suave); margin-top: 4px; display: flex; align-items: center; gap: 8px; }
+    .punto-vivo { width: 8px; height: 8px; border-radius: 50%; background: #5FD3A8; display: inline-block; animation: latir 1.6s ease-in-out infinite; }
     @keyframes latir { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-    .lista { display: flex; flex-direction: column; gap: 10px; }
-    .separador-fecha { display: flex; align-items: center; gap: 12px; margin: 8px 2px 2px; }
+    /* Métricas dentro de la cabecera */
+    .metricas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+    .metrica { background: var(--blanco); border-radius: 13px; padding: 13px 15px; }
+    .metrica .label { font-size: 11px; color: var(--gris-texto); margin-top: 3px; }
+    .metrica .valor { font-size: 24px; font-weight: 600; }
+    .m-hoy .valor { color: var(--azul-osc); }
+    .m-foto .valor { color: #178A65; }
+    .m-total .valor { color: var(--gris-texto); }
+
+    /* ===== Cuerpo ===== */
+    .main { max-width: 720px; margin: 0 auto; padding: 22px 20px 40px; }
+
+    .selector-cont { margin-bottom: 22px; }
+    .selector-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-texto); margin-bottom: 7px; }
+    .selector { width: 100%; padding: 13px 14px; font-size: 15px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: var(--blanco); color: var(--texto); outline: none; cursor: pointer; font-family: inherit; }
+    .selector:focus { border-color: var(--azul); }
+
+    .lista { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    .separador-fecha { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; margin: 8px 2px 2px; }
     .separador-fecha:first-child { margin-top: 0; }
-    .separador-fecha .texto { font-size: 12px; font-weight: 700; color: var(--gris-texto); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+    .separador-fecha .texto { font-size: 12px; font-weight: 600; color: var(--gris-texto); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
     .separador-fecha .linea { flex: 1; height: 1px; background: var(--gris-borde); }
-    .registro { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 14px; }
+
+    .registro { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 14px; transition: border-color 0.12s, box-shadow 0.12s; }
+    .registro:hover { border-color: #B5D4F4; box-shadow: 0 6px 18px rgba(12,68,124,0.07); }
     .miniatura { width: 54px; height: 54px; border-radius: 12px; object-fit: cover; flex-shrink: 0; cursor: pointer; border: 1px solid var(--gris-borde); }
-    .icono { width: 54px; height: 54px; border-radius: 12px; background: var(--verde-claro); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .icono { width: 54px; height: 54px; border-radius: 12px; background: #EAF3DE; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
     .registro .info { flex: 1; min-width: 0; }
     .registro .area { font-size: 15px; font-weight: 600; word-break: break-word; }
     .registro .detalle { font-size: 13px; color: var(--gris-texto); margin-top: 2px; word-break: break-word; }
-    .registro .hora { font-size: 13px; color: var(--gris-texto); text-align: right; flex-shrink: 0; }
+    .registro .hora { font-size: 13px; color: var(--gris-texto); text-align: right; flex-shrink: 0; align-self: flex-start; }
 
-    .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 8px; margin-top: 4px; }
+    .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 8px; margin-top: 5px; }
     .badge svg { width: 13px; height: 13px; }
-    .badge-foto { background: var(--azul-claro); color: var(--azul); }
-    .badge-sinfoto { background: var(--verde-claro); color: var(--verde-texto); }
+    .badge-foto { background: #E6F1FB; color: var(--azul-osc); }
+    .badge-sinfoto { background: #EAF3DE; color: #27500A; }
 
-    .vacio { background: var(--blanco); border: 1px dashed var(--gris-borde); border-radius: 14px; padding: 40px 20px; text-align: center; color: var(--gris-texto); font-size: 14px; }
-    .cargando { text-align: center; color: var(--gris-texto); padding: 40px; font-size: 14px; }
+    .vacio { grid-column: 1 / -1; background: var(--blanco); border: 1px dashed var(--gris-borde); border-radius: 14px; padding: 40px 20px; text-align: center; color: var(--gris-texto); font-size: 14px; }
+    .cargando { grid-column: 1 / -1; text-align: center; color: var(--gris-texto); padding: 40px; font-size: 14px; }
 
     .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
     .modal.abierto { display: flex; }
     .modal img { max-width: 100%; max-height: 90vh; border-radius: 12px; }
     .modal-cerrar { position: absolute; top: 20px; right: 24px; color: #fff; font-size: 32px; cursor: pointer; font-weight: 300; }
+
+    /* ===================== PC (pantallas anchas) ===================== */
+    @media (min-width: 900px) {
+      .cab-inner { max-width: 1100px; padding: 20px 32px 24px; }
+      .main { max-width: 1100px; padding: 24px 32px 48px; }
+      .cab-titulo h1 { font-size: 25px; }
+      .lista { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    }
   </style>
 </head>
 <body>
@@ -82,35 +115,45 @@
 
   <div class="contenedor" id="contenedor">
 
-    <div class="top">
-      <div>
-        <div class="marca">CleanTrack</div>
-        <h1>Registros de limpieza</h1>
+    <header class="cabecera">
+      <div class="cab-inner">
+        <div class="cab-fila">
+          <div class="barra-marca">
+            <img src="logo-simbolo.png" alt="" class="logo-simbolo" />
+            <span class="marca-texto">CleanTrack</span>
+          </div>
+          <div class="cab-botones">
+            <a class="btn-cab" href="inicio.html">← Inicio</a>
+            <button class="btn-cab" onclick="cargar()">Actualizar</button>
+            <button class="btn-cab" onclick="salir()">Salir</button>
+          </div>
+        </div>
+
+        <div class="cab-titulo">
+          <h1>Registros de limpieza</h1>
+          <div class="seccion-vivo"><span class="punto-vivo"></span> En tiempo real</div>
+        </div>
+
+        <div class="metricas">
+          <div class="metrica m-hoy"><div class="valor" id="m-hoy">—</div><div class="label">Registros hoy</div></div>
+          <div class="metrica m-foto"><div class="valor" id="m-foto">—</div><div class="label">Con foto</div></div>
+          <div class="metrica m-total"><div class="valor" id="m-total">—</div><div class="label">Total histórico</div></div>
+        </div>
       </div>
-      <div class="top-botones">
-        <a class="btn-salir" href="inicio.html">← Inicio</a>
-        <button class="btn-refrescar" onclick="cargar()">Actualizar</button>
-        <button class="btn-salir" onclick="salir()">Salir</button>
+    </header>
+
+    <main class="main">
+      <div class="selector-cont">
+        <div class="selector-label">Edificio</div>
+        <select class="selector" id="selector-edificio" onchange="mostrar()">
+          <option value="">Cargando edificios...</option>
+        </select>
       </div>
-    </div>
 
-    <div class="selector-cont">
-      <div class="selector-label">Edificio</div>
-      <select class="selector" id="selector-edificio" onchange="mostrar()">
-        <option value="">Cargando edificios...</option>
-      </select>
-    </div>
-
-    <div class="metricas">
-      <div class="metrica"><div class="label">Registros hoy</div><div class="valor" id="m-hoy">—</div></div>
-      <div class="metrica"><div class="label">Con foto</div><div class="valor" id="m-foto">—</div></div>
-      <div class="metrica"><div class="label">Total histórico</div><div class="valor" id="m-total">—</div></div>
-    </div>
-
-    <div class="seccion-titulo"><span class="punto-vivo"></span> Registros en tiempo real</div>
-    <div class="lista" id="lista">
-      <div class="cargando">Cargando registros...</div>
-    </div>
+      <div class="lista" id="lista">
+        <div class="cargando">Cargando registros...</div>
+      </div>
+    </main>
 
   </div>
 
@@ -295,7 +338,7 @@
         } else {
           var icoDiv = document.createElement("div");
           icoDiv.className = "icono";
-          icoDiv.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#5F7268" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+          icoDiv.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#27500A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
           visualSlot.replaceWith(icoDiv);
         }
 
