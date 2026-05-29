@@ -45,8 +45,6 @@
     .sub-label { font-size: 14px; color: var(--gris-texto); }
     .sub-valor { font-size: 15px; font-weight: 600; word-break: break-word; text-align: right; }
     .badge { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 10px; }
-    .badge-pro { background: #FAC775; color: #633806; }
-    .badge-basico { background: var(--gris-verde-700); color: #fff; }
     .badge-activa { background: var(--verde-claro); color: var(--verde-texto); }
     .badge-prueba { background: var(--azul-claro); color: var(--azul-texto); }
     .badge-vencida { background: #F5C4B3; color: #712B13; }
@@ -163,7 +161,6 @@
         return;
       }
       var c = data[0];
-      var plan = (c.plan || "basico").toLowerCase();
 
       // Calcular estado segun fechas de prueba
       var estadoTexto = "Activa";
@@ -185,10 +182,10 @@
       cont.innerHTML = "";
 
       cont.appendChild(filaSub("Empresa", c.nombre || "—"));
-      cont.appendChild(filaSubBadge("Plan", plan === "pro" ? "PRO" : "BÁSICO", plan === "pro" ? "badge-pro" : "badge-basico"));
       cont.appendChild(filaSubBadge("Estado", estadoTexto, estadoClase));
       cont.appendChild(filaSub("Inicio de prueba", fmtFecha(c.fecha_inicio_prueba)));
       cont.appendChild(filaSub("Fin de prueba", fmtFecha(c.fecha_fin_prueba)));
+      cont.appendChild(filaSub("Edificios contratados", c.edificios_contratados != null ? c.edificios_contratados : "—"));
       cont.appendChild(filaSub("Precio mensual", c.precio_mensual != null ? ("$" + c.precio_mensual) : "—"));
     }
 
