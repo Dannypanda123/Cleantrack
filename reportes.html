@@ -397,80 +397,25 @@
       return y + cardH + 10;
     }
 
-    // Dibujar iconos pequeños dentro de un círculo (color en RGB)
+    // Dibujar un símbolo nítido dentro de un círculo de color.
+    // En vez de dibujar formas a mano (que se ven mal a tamaño pequeño),
+    // usamos un carácter de texto bien centrado: nítido y profesional.
     function dibujarIcono(doc, tipo, cx, cy, color) {
-      strokeRGB(doc, color);
-      fillRGB(doc, color);
-      doc.setLineWidth(0.6);
+      var simbolo = {
+        check:    "\u2713",  // ✓ palomita
+        camara:   "F",       // Foto
+        persona:  "E",       // Empleados
+        edificio: "A",       // Áreas
+        reloj:    "D",       // Días
+        alerta:   "!",       // Incidencias
+        escoba:   "\u2713"   // (respaldo)
+      }[tipo] || "\u2022";
 
-      if (tipo === 'escoba') {
-        // Escoba: rectángulo (cepillo) + línea (palo) + 2 chispas (estrellas pequeñas)
-        // Cepillo - rectángulo
-        doc.rect(cx - 1.8, cy + 0.3, 2.4, 1.2, "F");
-        // Palo
-        doc.setLineWidth(0.7);
-        doc.line(cx + 0.6, cy + 1.5, cx + 2, cy + 2.8);
-        // 2 chispas (asteriscos pequeños)
-        doc.setLineWidth(0.4);
-        doc.line(cx - 2, cy - 1.5, cx - 2, cy - 0.7);
-        doc.line(cx - 2.4, cy - 1.1, cx - 1.6, cy - 1.1);
-        doc.line(cx + 0.4, cy - 2.2, cx + 0.4, cy - 1.5);
-        doc.line(cx + 0, cy - 1.85, cx + 0.8, cy - 1.85);
-      } else if (tipo === 'camara') {
-        // Cámara: rectángulo con lente circular
-        doc.rect(cx - 2.4, cy - 1.2, 4.8, 3.2, "F");
-        // Pequeña parte de arriba (visor)
-        doc.rect(cx - 0.8, cy - 1.8, 1.6, 0.6, "F");
-        // Lente (círculo blanco dentro)
-        textRGB(doc, color);  // dummy
-        // Cambiar relleno temporalmente: usamos el color de fondo del círculo (verde) para "vaciar"
-        // Truco: dibujar dentro de la cámara un círculo en azul oscuro para simular lente
-        doc.setFillColor(255, 255, 255);
-        doc.circle(cx, cy + 0.4, 1.1, "F");
-        // Restaurar fill al color original
-        fillRGB(doc, color);
-      } else if (tipo === 'persona') {
-        // Persona: círculo (cabeza) + arco (hombros)
-        doc.circle(cx, cy - 1.5, 1.2, "F");
-        // Cuerpo: rectángulo redondeado tipo trapecio
-        doc.roundedRect(cx - 2.2, cy + 0.3, 4.4, 2.2, 1.1, 1.1, "F");
-      } else if (tipo === 'alerta') {
-        // Triángulo de alerta con signo
-        var p1x = cx, p1y = cy - 2.5;
-        var p2x = cx - 2.5, p2y = cy + 1.7;
-        var p3x = cx + 2.5, p3y = cy + 1.7;
-        doc.triangle(p1x, p1y, p2x, p2y, p3x, p3y, "F");
-        // signo de exclamación dentro
-        doc.setFillColor(186, 59, 59); // color del fondo (rojo)
-        // Línea vertical (! pequeño)
-        doc.rect(cx - 0.25, cy - 1.2, 0.5, 1.7, "F");
-        doc.circle(cx, cy + 1, 0.35, "F");
-        fillRGB(doc, color);  // restaurar
-      } else if (tipo === 'check') {
-        // Check: línea diagonal de palomita
-        doc.setLineWidth(0.9);
-        doc.line(cx - 1.8, cy + 0.2, cx - 0.4, cy + 1.4);
-        doc.line(cx - 0.4, cy + 1.4, cx + 2, cy - 1.4);
-      } else if (tipo === 'edificio') {
-        // Edificio: rectángulo con ventanas
-        doc.rect(cx - 2, cy - 2, 4, 4.2, "F");
-        // 4 ventanas (puntos)
-        doc.setFillColor(255, 255, 255);
-        doc.rect(cx - 1.4, cy - 1.4, 0.6, 0.6, "F");
-        doc.rect(cx + 0.4, cy - 1.4, 0.6, 0.6, "F");
-        doc.rect(cx - 1.4, cy - 0.2, 0.6, 0.6, "F");
-        doc.rect(cx + 0.4, cy - 0.2, 0.6, 0.6, "F");
-        // Puerta
-        doc.rect(cx - 0.5, cy + 1.0, 1.0, 1.2, "F");
-        fillRGB(doc, color);
-      } else if (tipo === 'reloj') {
-        // Círculo + manecillas
-        strokeRGB(doc, color);
-        doc.setLineWidth(0.6);
-        doc.circle(cx, cy, 2.4, "S");
-        doc.line(cx, cy, cx, cy - 1.6);  // hora
-        doc.line(cx, cy, cx + 1.2, cy);  // minuto
-      }
+      textRGB(doc, color);
+      var tam = (simbolo === "\u2713") ? 8 : 7;
+      doc.setFontSize(tam);
+      doc.setFont(undefined, "bold");
+      doc.text(simbolo, cx, cy, { align: "center", baseline: "middle" });
     }
 
     // Título de sección (icono cuadrado azul + título)
