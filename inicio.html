@@ -11,6 +11,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="idiomas.js"></script>
 
   <style>
     :root {
@@ -137,8 +138,9 @@
       .barra-marca { grid-column: 2; justify-self: center; display: flex; align-items: center; gap: 10px; }
       .logo-simbolo { height: 34px; width: auto; display: block; }
       .marca-texto { font-family: "Sora", sans-serif; font-size: 19px; font-weight: 600; color: var(--blanco); letter-spacing: -0.01em; }
-      .btn-salir-pc { grid-column: 3; justify-self: end; color: var(--blanco); border-color: rgba(255,255,255,0.45); }
-      .btn-salir-pc:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.65); }
+      .cab-acciones-pc { grid-column: 3; justify-self: end; display: flex; gap: 8px; }
+      .cab-acciones-pc .btn-salir { color: var(--blanco); border-color: rgba(255,255,255,0.45); }
+      .cab-acciones-pc .btn-salir:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.65); }
       .cab-saludo { font-size: 24px; font-weight: 600; color: var(--blanco); }
       .cab-sub { font-size: 13px; color: var(--azul-suave); margin-top: 3px; }
       .cab-saludo-bloque { margin-top: 16px; }
@@ -161,7 +163,7 @@
 </head>
 <body>
 
-  <div class="verificando" id="verificando">Verificando sesión...</div>
+  <div class="verificando" id="verificando" data-i18n="comun.verificando">Verificando sesión...</div>
 
   <div class="app" id="contenedor">
 
@@ -174,30 +176,33 @@
             <img src="logo-simbolo.png" alt="" class="logo-simbolo" />
             <span class="marca-texto">CleanTrack</span>
           </div>
-          <button class="btn-salir btn-salir-pc" onclick="salir()">Salir</button>
+          <span class="cab-acciones-pc">
+            <button class="btn-salir" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+            <button class="btn-salir" onclick="salir()" data-i18n="comun.salir">Salir</button>
+          </span>
         </div>
 
         <div class="cab-saludo-bloque">
           <h1 class="titulo-saludo cab-saludo">Hola</h1>
-          <div class="cab-sub">Centro de control del supervisor</div>
+          <div class="cab-sub" data-i18n="inicio.subtitulo">Centro de control del supervisor</div>
         </div>
 
         <div class="kpis kpis-pc">
           <div class="kpi">
             <div class="kpi-top"><svg class="kpi-svg" style="stroke:#0C447C" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg><span class="kpi-num dato-limpiezas" style="color:#0C447C">—</span></div>
-            <div class="kpi-lab">Limpiezas hoy</div>
+            <div class="kpi-lab" data-i18n="inicio.kpi.limpiezas">Limpiezas hoy</div>
           </div>
           <div class="kpi">
             <div class="kpi-top"><svg class="kpi-svg" style="stroke:#B23B3B" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12" y2="16.01"></line></svg><span class="kpi-num dato-incidencias" style="color:#B23B3B">—</span></div>
-            <div class="kpi-lab">Incidencias abiertas</div>
+            <div class="kpi-lab" data-i18n="inicio.kpi.incidencias">Incidencias abiertas</div>
           </div>
           <div class="kpi">
             <div class="kpi-top"><svg class="kpi-svg" style="stroke:#178A65" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span class="kpi-num dato-empleados" style="color:#178A65">—</span></div>
-            <div class="kpi-lab">Empleados activos</div>
+            <div class="kpi-lab" data-i18n="inicio.kpi.empleados">Empleados activos</div>
           </div>
           <div class="kpi">
             <div class="kpi-top"><svg class="kpi-svg" style="stroke:#854F0B" viewBox="0 0 24 24"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><line x1="9" y1="9" x2="9" y2="9.01"></line><line x1="9" y1="12" x2="9" y2="12.01"></line><line x1="9" y1="15" x2="9" y2="15.01"></line></svg><span class="kpi-num dato-edificios" style="color:#854F0B">—</span></div>
-            <div class="kpi-lab">Edificios</div>
+            <div class="kpi-lab" data-i18n="inicio.kpi.edificios">Edificios</div>
           </div>
         </div>
       </div>
@@ -210,79 +215,82 @@
 
       <div class="bienvenida">
         <h1 class="titulo-saludo">Hola</h1>
-        <button class="btn-salir btn-salir-movil" onclick="salir()">Salir</button>
+        <span style="display:flex; gap:8px;">
+          <button class="btn-salir" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+          <button class="btn-salir btn-salir-movil" onclick="salir()" data-i18n="comun.salir">Salir</button>
+        </span>
       </div>
-      <div class="saludo-sub">Centro de control del supervisor</div>
+      <div class="saludo-sub" data-i18n="inicio.subtitulo">Centro de control del supervisor</div>
 
       <div class="kpis kpis-movil">
         <div class="kpi">
           <div class="kpi-top"><svg class="kpi-svg" style="stroke:#0C447C" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg><span class="kpi-num dato-limpiezas" style="color:#0C447C">—</span></div>
-          <div class="kpi-lab">Limpiezas hoy</div>
+          <div class="kpi-lab" data-i18n="inicio.kpi.limpiezas">Limpiezas hoy</div>
         </div>
         <div class="kpi">
           <div class="kpi-top"><svg class="kpi-svg" style="stroke:#B23B3B" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12" y2="16.01"></line></svg><span class="kpi-num dato-incidencias" style="color:#B23B3B">—</span></div>
-          <div class="kpi-lab">Incidencias abiertas</div>
+          <div class="kpi-lab" data-i18n="inicio.kpi.incidencias">Incidencias abiertas</div>
         </div>
         <div class="kpi">
           <div class="kpi-top"><svg class="kpi-svg" style="stroke:#178A65" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span class="kpi-num dato-empleados" style="color:#178A65">—</span></div>
-          <div class="kpi-lab">Empleados activos</div>
+          <div class="kpi-lab" data-i18n="inicio.kpi.empleados">Empleados activos</div>
         </div>
         <div class="kpi">
           <div class="kpi-top"><svg class="kpi-svg" style="stroke:#854F0B" viewBox="0 0 24 24"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><line x1="9" y1="9" x2="9" y2="9.01"></line><line x1="9" y1="12" x2="9" y2="12.01"></line><line x1="9" y1="15" x2="9" y2="15.01"></line></svg><span class="kpi-num dato-edificios" style="color:#854F0B">—</span></div>
-          <div class="kpi-lab">Edificios</div>
+          <div class="kpi-lab" data-i18n="inicio.kpi.edificios">Edificios</div>
         </div>
       </div>
 
-      <div class="seccion-label">Disponible</div>
+      <div class="seccion-label" data-i18n="inicio.disponible">Disponible</div>
       <div class="grid">
 
         <a class="tarjeta" href="dashboard.html">
           <div class="ico ico-registros"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg></div>
-          <h3>Registros</h3>
-          <p>Ver áreas limpiadas, fotos y horarios en tiempo real</p>
+          <h3 data-i18n="inicio.registros.t">Registros</h3>
+          <p data-i18n="inicio.registros.d">Ver áreas limpiadas, fotos y horarios en tiempo real</p>
         </a>
 
         <a class="tarjeta" href="admin.html">
           <div class="ico ico-empleados"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
-          <h3>Empleados</h3>
-          <p>Agregar, activar o desactivar al personal de limpieza</p>
+          <h3 data-i18n="inicio.empleados.t">Empleados</h3>
+          <p data-i18n="inicio.empleados.d">Agregar, activar o desactivar al personal de limpieza</p>
         </a>
 
         <a class="tarjeta" href="areas.html">
           <div class="ico ico-edificios"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><line x1="9" y1="9" x2="9" y2="9.01"></line><line x1="9" y1="12" x2="9" y2="12.01"></line><line x1="9" y1="15" x2="9" y2="15.01"></line></svg></div>
-          <h3>Edificios y áreas</h3>
-          <p>Gestionar espacios y generar códigos QR por área</p>
+          <h3 data-i18n="inicio.edificios.t">Edificios y áreas</h3>
+          <p data-i18n="inicio.edificios.d">Gestionar espacios y generar códigos QR por área</p>
         </a>
 
         <a class="tarjeta" href="incidencias.html">
           <div class="ico ico-incidencias"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg></div>
-          <h3>Incidencias</h3>
-          <p>Reportes de insumos faltantes y problemas en cada edificio</p>
+          <h3 data-i18n="inicio.incidencias.t">Incidencias</h3>
+          <p data-i18n="inicio.incidencias.d">Reportes de insumos faltantes y problemas en cada edificio</p>
         </a>
 
         <a class="tarjeta" id="card-estadisticas" href="estadisticas.html">
           <div class="ico ico-estadisticas"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
-          <h3>Estadísticas</h3>
-          <p>Cumplimiento, áreas más atendidas y tendencias</p>
+          <h3 data-i18n="inicio.estadisticas.t">Estadísticas</h3>
+          <p data-i18n="inicio.estadisticas.d">Cumplimiento, áreas más atendidas y tendencias</p>
         </a>
 
         <a class="tarjeta" id="card-reportes" href="reportes.html">
           <div class="ico ico-reportes"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
-          <h3>Reportes</h3>
-          <p>Informe mensual en PDF para presentar al cliente</p>
+          <h3 data-i18n="inicio.reportes.t">Reportes</h3>
+          <p data-i18n="inicio.reportes.d">Informe mensual en PDF para presentar al cliente</p>
         </a>
 
         <a class="tarjeta" href="soporte.html">
           <div class="ico ico-soporte"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12" y2="17.01"></line></svg></div>
-          <h3>Soporte técnico</h3>
-          <p>Contacto y ayuda con el uso de la plataforma</p>
+          <h3 data-i18n="inicio.soporte.t">Soporte técnico</h3>
+          <p data-i18n="inicio.soporte.d">Contacto y ayuda con el uso de la plataforma</p>
         </a>
 
         <a class="tarjeta solo-admin" id="card-admin" href="panel.html">
-          <span class="etiqueta-admin">Admin</span>
+          <span class="etiqueta-admin" data-i18n="inicio.admin">Admin</span>
           <div class="ico ico-admin"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6z"></path><path d="M9 12l2 2 4-4"></path></svg></div>
-          <h3>Administración</h3>
-          <p>Suscripción, equipo y resumen de tu empresa</p>
+          <h3 data-i18n="inicio.administracion.t">Administración</h3>
+          <p data-i18n="inicio.administracion.d">Suscripción, equipo y resumen de tu empresa</p>
         </a>
 
       </div>
@@ -294,10 +302,19 @@
   <script>
     // El cliente de Supabase (db) y las credenciales vienen de config.js
     const db = window.db;
+    var nombreUsuario = "";
+
+    function pintarSaludo() {
+      var saludos = document.querySelectorAll(".titulo-saludo");
+      var texto = nombreUsuario ? (I18N.t("inicio.hola") + ", " + nombreUsuario) : I18N.t("inicio.hola");
+      for (var i = 0; i < saludos.length; i++) {
+        saludos[i].textContent = texto;   // textContent = seguro contra XSS
+      }
+    }
 
     async function verificarAcceso() {
       if (!db) {
-        document.getElementById("verificando").textContent = "Sin conexión a la base de datos.";
+        document.getElementById("verificando").textContent = I18N.t("comun.sin_conexion");
         return;
       }
       const { data } = await db.auth.getSession();
@@ -311,14 +328,14 @@
       nombre = nombre.replace(/[0-9]/g, "");
       if (nombre) {
         nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1);
-        // textContent = seguro contra XSS (muestra el texto tal cual, nunca lo ejecuta)
-        var saludos = document.querySelectorAll(".titulo-saludo");
-        for (var i = 0; i < saludos.length; i++) {
-          saludos[i].textContent = "Hola, " + nombre;
-        }
+        nombreUsuario = nombre;
       }
+      pintarSaludo();
 
       await aplicarAdmin();
+
+      I18N.aplicar();                 // traduce todo el HTML marcado
+      I18N.onChange(pintarSaludo);    // al cambiar idioma, rearmar el saludo
 
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
