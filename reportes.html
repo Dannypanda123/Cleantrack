@@ -10,34 +10,51 @@
   <script src="idiomas.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600&display=swap" rel="stylesheet" />
+
   <style>
     :root {
-      --verde: #1D9E75; --verde-claro: #EAF3DE; --verde-texto: #0F6E56;
-      --azul: #185FA5; --azul-claro: #E6F1FB;
-      --gris-fondo: #F5F4EF; --gris-texto: #6B6A64; --gris-borde: #E2E0D8;
-      --texto: #2C2C2A; --blanco: #FFFFFF; --rojo: #A32D2D; --rojo-claro: #FCEBEB;
+      --azul-osc: #0C447C; --azul: #185FA5; --azul-suave: #BBD2EA;
+      --verde: #178A65; --verde-claro: #EAF3DE; --verde-texto: #27500A;
+      --azul-claro: #E6F1FB;
+      --gris-fondo: #F5F4EF; --gris-texto: #5A6573; --gris-borde: #E2E0D8;
+      --texto: #1B2733; --blanco: #FFFFFF; --rojo: #A32D2D; --rojo-claro: #FCEBEB;
       --ambar-claro: #FAEEDA; --ambar-texto: #854F0B;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
-    .contenedor { max-width: 600px; margin: 0 auto; display: none; }
-    .verificando { max-width: 600px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+    body { font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; }
+    .verificando { max-width: 600px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; padding: 0 20px; }
+    .contenedor { display: none; }
 
-    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-    .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
-    .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
-    .top-botones { display: flex; gap: 8px; }
-    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+    /* ===== Cabecera azul ===== */
+    .cabecera { background: var(--azul-osc); }
+    .cab-inner { max-width: 600px; margin: 0 auto; padding: 18px 20px 22px; }
+    .cab-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.16); }
+    .barra-marca { display: flex; align-items: center; gap: 9px; }
+    .logo-simbolo { height: 30px; width: auto; display: block; }
+    .marca-texto { font-family: "Sora", sans-serif; font-size: 18px; font-weight: 600; color: var(--blanco); letter-spacing: -0.01em; }
+    .cab-botones { display: flex; gap: 8px; }
+    .btn-cab { background: transparent; color: var(--blanco); border: 1.5px solid rgba(255,255,255,0.45); padding: 8px 15px; border-radius: 11px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; font-family: inherit; white-space: nowrap; }
+    .btn-cab:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.65); }
+    .btn-cab:active { transform: scale(0.97); }
+    .cab-titulo { margin-top: 16px; }
+    .cab-titulo h1 { font-size: 23px; font-weight: 600; color: var(--blanco); }
+    .cab-sub { font-size: 13px; color: var(--azul-suave); margin-top: 3px; }
+
+    /* ===== Cuerpo ===== */
+    .main { max-width: 600px; margin: 0 auto; padding: 22px 20px 40px; }
 
     .tarjeta { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
     .tarjeta h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
     .tarjeta .sub { font-size: 13px; color: var(--gris-texto); margin-bottom: 18px; }
 
     label { display: block; font-size: 13px; font-weight: 600; color: var(--gris-texto); margin-bottom: 6px; }
-    select, input[type="date"] { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 16px; outline: none; background: var(--blanco); color: var(--texto); cursor: pointer; }
+    select, input[type="date"] { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 16px; outline: none; background: var(--blanco); color: var(--texto); cursor: pointer; font-family: inherit; }
     select:focus, input[type="date"]:focus { border-color: var(--azul); }
 
-    .btn-generar { width: 100%; padding: 16px; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; background: #3C993C; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-generar { width: 100%; padding: 16px; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; background: var(--verde); color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; }
     .btn-generar:active { transform: scale(0.98); }
     .btn-generar:disabled { opacity: 0.6; }
 
@@ -45,7 +62,7 @@
     .preview h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
     .preview-metricas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
     .pm { background: var(--gris-fondo); border-radius: 12px; padding: 14px; text-align: center; }
-    .pm .v { font-size: 22px; font-weight: 600; }
+    .pm .v { font-size: 22px; font-weight: 600; color: var(--azul); }
     .pm .v.inc { color: var(--ambar-texto); }
     .pm .l { font-size: 10px; color: var(--gris-texto); margin-top: 2px; }
 
@@ -53,29 +70,50 @@
     .mensaje.ok { background: var(--verde-claro); color: var(--verde-texto); display: block; }
     .mensaje.error { background: var(--rojo-claro); color: var(--rojo); display: block; }
     .mensaje.cargando { background: var(--azul-claro); color: var(--azul); display: block; }
+
+    /* ===================== PC (pantallas anchas) ===================== */
+    @media (min-width: 900px) {
+      .cab-inner { max-width: 1000px; padding: 20px 32px 24px; }
+      .cab-titulo h1 { font-size: 25px; }
+      .main { max-width: 1000px; padding: 26px 32px 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+      .tarjeta { margin-bottom: 0; }
+      .preview { margin-bottom: 0; }
+      /* La vista previa, cuando está oculta, no debe dejar hueco en el grid */
+      .preview:not([style*="block"]) { display: none; }
+    }
   </style>
+
 </head>
 <body>
 
-  <div class="verificando" id="verificando">Verificando sesión...</div>
+  <div class="verificando" id="verificando" data-i18n="comun.verificando">Verificando sesión...</div>
 
   <div class="contenedor" id="contenedor">
 
-    <div class="top">
-      <div>
-        <div class="marca">CleanTrack</div>
-        <h1 data-i18n="rep.titulo">Reportes</h1>
+    <header class="cabecera">
+      <div class="cab-inner">
+        <div class="cab-fila">
+          <div class="barra-marca">
+            <img src="logo-simbolo.png" alt="" class="logo-simbolo" />
+            <span class="marca-texto">CleanTrack</span>
+          </div>
+          <div class="cab-botones">
+            <a class="btn-cab" href="inicio.html" data-i18n="comun.inicio">← Inicio</a>
+            <button class="btn-cab" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+            <button class="btn-cab" onclick="salir()" data-i18n="comun.salir">Salir</button>
+          </div>
+        </div>
+        <div class="cab-titulo">
+          <h1 data-i18n="rep.titulo">Reportes</h1>
+          <div class="cab-sub" data-i18n="rep.generar_sub">Crea un informe en PDF para presentar a tu cliente</div>
+        </div>
       </div>
-      <div class="top-botones">
-        <a class="btn-salir" href="inicio.html" data-i18n="comun.inicio">← Inicio</a>
-        <button class="btn-salir" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
-        <button class="btn-salir" onclick="salir()" data-i18n="comun.salir">Salir</button>
-      </div>
-    </div>
+    </header>
+
+    <main class="main">
 
     <div class="tarjeta">
       <h2 data-i18n="rep.generar_titulo">Generar informe</h2>
-      <div class="sub" data-i18n="rep.generar_sub">Crea un informe en PDF para presentar a tu cliente</div>
 
       <label for="sel-edificio" data-i18n="rep.edificio">Edificio</label>
       <select id="sel-edificio"><option value="">Cargando...</option></select>
@@ -106,6 +144,8 @@
         <div class="pm"><div class="v inc" id="pv-inc">—</div><div class="l" data-i18n="rep.pv_inc">Incidencias</div></div>
       </div>
     </div>
+
+    </main>
 
   </div>
 
