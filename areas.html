@@ -457,7 +457,7 @@
         var areasEd = areasPorEdificio[nombreEd] || [];
         var activas = areasEd.filter(function(a){ return a.activa; }).length;
 
-        var grupo = construirGrupoEdificio(edi, nombreEd, areasEd, activas, idx === 0);
+        var grupo = construirGrupoEdificio(edi, nombreEd, areasEd, activas, false);
         cont.appendChild(grupo);
       });
     }
