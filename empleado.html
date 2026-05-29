@@ -11,6 +11,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="idiomas.js"></script>
 
   <style>
     :root {
@@ -210,6 +211,7 @@
         <span class="marca-texto">CleanTrack</span>
         <span class="marca-eslogan">Every cleaning, verified</span>
       </div>
+      <button id="btn-idioma" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma" style="margin-left:auto; background:transparent; border:1.5px solid rgba(0,0,0,0.15); color:inherit; padding:6px 12px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer;">EN</button>
     </div>
 
     <div class="cuerpo">
@@ -219,10 +221,10 @@
         <div class="area-info">
           <div class="ico-area"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div>
           <div class="etiqueta">Área a registrar</div>
-          <div class="nombre" id="area-nombre">Cargando área...</div>
+          <div class="nombre" id="area-nombre" data-i18n="epl.cargando_area">Cargando área...</div>
           <div class="edificio" id="area-edificio"></div>
         </div>
-        <div class="label" id="label-pin">Ingresa tu PIN para registrar</div>
+        <div class="label" id="label-pin" data-i18n="epl.label_pin">Ingresa tu PIN para registrar</div>
         <div class="pin-dots" id="pin-dots">
           <div class="dot" id="dot1"></div>
           <div class="dot" id="dot2"></div>
@@ -239,7 +241,7 @@
           <button class="key" onclick="press('7')">7</button>
           <button class="key" onclick="press('8')">8</button>
           <button class="key" onclick="press('9')">9</button>
-          <button class="key accion" onclick="borrar()">Borrar</button>
+          <button class="key accion" onclick="borrar()" data-i18n="epl.borrar">Borrar</button>
           <button class="key" onclick="press('0')">0</button>
           <button class="key accion" style="opacity:0;pointer-events:none">·</button>
         </div>
@@ -262,8 +264,8 @@
         <img class="preview-foto" id="preview-foto" alt="Foto del área" />
         <input type="file" id="input-foto" accept="image/*" capture="environment" onchange="fotoTomada(event)" />
 
-        <button class="btn" id="btn-principal" onclick="accionPrincipal()">Tomar foto del área</button>
-        <button class="btn btn-fantasma" onclick="abrirIncidencia()">Reportar una incidencia</button>
+        <button class="btn" id="btn-principal" onclick="accionPrincipal()" data-i18n="epl.tomar_foto">Tomar foto del área</button>
+        <button class="btn btn-fantasma" onclick="abrirIncidencia()" data-i18n="epl.reportar_inc">Reportar una incidencia</button>
       </div>
 
       <!-- PANTALLA ÉXITO -->
@@ -271,40 +273,40 @@
         <div class="exito-circulo">
           <svg viewBox="0 0 24 24" fill="none" stroke="#5F7268" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
         </div>
-        <div class="exito-titulo">Área registrada</div>
+        <div class="exito-titulo" data-i18n="epl.exito_titulo">Área registrada</div>
         <div class="exito-dato" id="exito-hora">9:41 am</div>
         <div class="exito-dato" id="exito-area">—</div>
         <img class="exito-foto" id="exito-foto" alt="Foto registrada" />
         <div class="estado-guardado" id="estado-guardado"></div>
-        <button class="btn btn-fantasma" style="margin-top:22px" onclick="abrirIncidencia()">Reportar una incidencia</button>
-        <div class="exito-nota">Escanea el código de la siguiente área cuando termines de limpiarla.</div>
+        <button class="btn btn-fantasma" style="margin-top:22px" onclick="abrirIncidencia()" data-i18n="epl.reportar_inc">Reportar una incidencia</button>
+        <div class="exito-nota" data-i18n="epl.exito_nota">Escanea el código de la siguiente área cuando termines de limpiarla.</div>
       </div>
 
       <!-- PANTALLA REPORTAR INCIDENCIA -->
       <div class="pantalla" id="p-incidencia">
-        <div class="inc-titulo">Reportar incidencia</div>
+        <div class="inc-titulo" data-i18n="epl.inc_titulo">Reportar incidencia</div>
         <div class="inc-sub" id="inc-area-info">—</div>
 
         <div class="inc-tipos">
           <button class="inc-tipo" id="tipo-insumo" onclick="elegirTipo('insumo')">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-            <span>Falta un insumo</span>
+            <span data-i18n="epl.inc_insumo">Falta un insumo</span>
           </button>
           <button class="inc-tipo" id="tipo-problema" onclick="elegirTipo('problema')">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>
-            <span>Hay un problema</span>
+            <span data-i18n="epl.inc_problema">Hay un problema</span>
           </button>
         </div>
 
-        <label class="inc-label">Descripción</label>
-        <textarea class="inc-desc" id="inc-desc" placeholder="Ej. Se acabó el jabón en el dispensador / El inodoro está tapado"></textarea>
+        <label class="inc-label" data-i18n="epl.inc_desc_label">Descripción</label>
+        <textarea class="inc-desc" id="inc-desc" data-i18n-ph="epl.inc_desc_ph" placeholder="Ej. Se acabó el jabón en el dispensador / El inodoro está tapado"></textarea>
 
         <img class="preview-foto" id="inc-preview" alt="Foto de la incidencia" />
         <input type="file" id="inc-input-foto" accept="image/*" capture="environment" onchange="incFotoTomada(event)" />
-        <button class="btn btn-fantasma" id="inc-btn-foto" onclick="document.getElementById('inc-input-foto').click()">Agregar foto (opcional)</button>
+        <button class="btn btn-fantasma" id="inc-btn-foto" onclick="document.getElementById('inc-input-foto').click()" data-i18n="epl.inc_agregar_foto">Agregar foto (opcional)</button>
 
-        <button class="btn" id="inc-btn-enviar" onclick="enviarIncidencia()">Enviar reporte</button>
-        <button class="btn btn-fantasma" onclick="reiniciar()">Cancelar</button>
+        <button class="btn" id="inc-btn-enviar" onclick="enviarIncidencia()" data-i18n="epl.inc_enviar">Enviar reporte</button>
+        <button class="btn btn-fantasma" onclick="reiniciar()" data-i18n="epl.cancelar">Cancelar</button>
         <div class="estado-guardado" id="inc-estado"></div>
       </div>
 
@@ -339,20 +341,29 @@
     var fotoArchivo = null;
     var verificando = false;
 
+    // Pinta el saludo del empleado en el idioma actual (textContent = anti-XSS)
+    function pintarSaludoEmpleado() {
+      var el = document.getElementById("saludo-nombre");
+      if (!el) return;
+      el.textContent = empleadoNombre ? (I18N.t("epl.hola") + ", " + empleadoNombre) : I18N.t("epl.hola");
+    }
+
     // Leer el ?area= del QR y buscar el área real
     async function cargarArea() {
+      I18N.aplicar();
+      I18N.onChange(function(){ I18N.aplicar(); pintarSaludoEmpleado(); });
       var params = new URLSearchParams(window.location.search);
       var areaId = params.get("area");
       if (!areaId) {
-        document.getElementById("area-nombre").textContent = "Área no especificada";
-        document.getElementById("area-edificio").textContent = "Escanea un código QR válido";
+        document.getElementById("area-nombre").textContent = I18N.t("epl.area_no_esp");
+        document.getElementById("area-edificio").textContent = I18N.t("epl.escanea_valido");
         return;
       }
       if (!db) return;
       const { data, error } = await db.rpc("obtener_area", { p_area_id: Number(areaId) });
       if (error || !data || data.length === 0) {
-        document.getElementById("area-nombre").textContent = "Área no encontrada";
-        document.getElementById("area-edificio").textContent = "Verifica el código QR";
+        document.getElementById("area-nombre").textContent = I18N.t("epl.area_no_enc");
+        document.getElementById("area-edificio").textContent = I18N.t("epl.verifica_qr");
         return;
       }
       var a = data[0];
@@ -400,17 +411,17 @@
     }
 
     async function verificarPin() {
-      if (!db) { mostrarErrorPin("Sin conexión"); return; }
+      if (!db) { mostrarErrorPin(I18N.t("epl.sin_conexion_corta")); return; }
       verificando = true;
-      document.getElementById("label-pin").textContent = "Verificando...";
+      document.getElementById("label-pin").textContent = I18N.t("epl.verificando");
       document.getElementById("label-pin").className = "label";
       try {
         const { data, error } = await db.rpc("verificar_pin_area", { p_area_id: datosArea.id, p_pin: pin });
         if (error) {
           if (error.message && error.message.indexOf("demasiados_intentos") !== -1) {
-            mostrarErrorPin("Demasiados intentos. Espera un momento.");
+            mostrarErrorPin(I18N.t("epl.demasiados"));
           } else {
-            mostrarErrorPin("Error al verificar. Intenta de nuevo.");
+            mostrarErrorPin(I18N.t("epl.error_verificar"));
           }
           return;
         }
@@ -419,9 +430,9 @@
           verificando = false;
           entrar();
         } else {
-          mostrarErrorPin("PIN no válido");
+          mostrarErrorPin(I18N.t("epl.pin_no_valido"));
         }
-      } catch (e) { mostrarErrorPin("Error al verificar. Intenta de nuevo."); }
+      } catch (e) { mostrarErrorPin(I18N.t("epl.error_verificar")); }
     }
 
     function mostrarErrorPin(mensaje) {
@@ -431,7 +442,7 @@
       label.className = "label error";
       setTimeout(function() {
         pin = ""; pintarDots(); verificando = false;
-        label.textContent = "Ingresa tu PIN para registrar";
+        label.textContent = I18N.t("epl.label_pin");
         label.className = "label";
       }, 1200);
     }
@@ -441,14 +452,14 @@
       var btn = document.getElementById("btn-principal");
       fotoLista = false; fotoArchivo = null;
       document.getElementById("preview-foto").style.display = "none";
-      document.getElementById("saludo-nombre").textContent = "Hola, " + empleadoNombre;
+      pintarSaludoEmpleado();
       document.getElementById("saludo-area").textContent = datosArea.area;
       if (pideFoto) {
         aviso.style.display = "flex";
-        btn.textContent = "Tomar foto del área";
+        btn.textContent = I18N.t("epl.tomar_foto");
       } else {
         aviso.style.display = "none";
-        btn.textContent = "Confirmar área limpiada";
+        btn.textContent = I18N.t("epl.confirmar");
       }
       ir("p-confirmar");
     }
@@ -470,7 +481,7 @@
         preview.src = fotoDataURL;
         preview.style.display = "block";
         fotoLista = true;
-        document.getElementById("btn-principal").textContent = "Registrar área con esta foto";
+        document.getElementById("btn-principal").textContent = I18N.t("epl.registrar_con_foto");
         document.getElementById("btn-reintentar-foto").style.display = "block";
         
       };
@@ -486,7 +497,7 @@
 
       if (!db) {
         estado.className = "estado-guardado estado-error";
-        estado.textContent = "Sin conexión a la base de datos.";
+        estado.textContent = I18N.t("epl.sin_conexion");
         document.getElementById("btn-principal").disabled = false;
         return;
       }
@@ -500,7 +511,7 @@
             .upload(nombreArchivo, fotoArchivo, { contentType: fotoArchivo.type || "image/jpeg" });
           if (errorSubida) {
             estado.className = "estado-guardado estado-error";
-            estado.textContent = "Error al subir foto: " + errorSubida.message;
+            estado.textContent = I18N.t("epl.error_subir") + errorSubida.message;
             document.getElementById("btn-principal").disabled = false;
             return;
           }
@@ -508,13 +519,13 @@
           fotoUrl = urlData.publicUrl;
         } catch (e) {
           estado.className = "estado-guardado estado-error";
-          estado.textContent = "Error al subir foto: " + e.message;
+          estado.textContent = I18N.t("epl.error_subir") + e.message;
           document.getElementById("btn-principal").disabled = false;
           return;
         }
       }
 
-      estado.textContent = "Guardando registro...";
+      estado.textContent = I18N.t("epl.guardando");
       try {
         const { data, error } = await db.rpc("registrar_limpieza", {
           p_area_id: datosArea.id,
@@ -524,7 +535,7 @@
         });
         if (error) {
           estado.className = "estado-guardado estado-error";
-          estado.textContent = "No se pudo guardar: " + error.message;
+          estado.textContent = I18N.t("epl.no_guardar") + error.message;
         } else if (data && data.ok) {
           estado.className = "estado-guardado estado-ok";
           estado.textContent = conFoto ? "Guardado con foto" : "Guardado correctamente";
@@ -535,7 +546,7 @@
         }
       } catch (e) {
         estado.className = "estado-guardado estado-error";
-        estado.textContent = "Error: " + e.message;
+        estado.textContent = I18N.t("epl.error") + e.message;
       }
       document.getElementById("btn-principal").disabled = false;
     }
@@ -560,7 +571,7 @@
     function reiniciar() {
       pin = ""; empleadoNombre = null; verificando = false;
       pintarDots();
-      document.getElementById("label-pin").textContent = "Ingresa tu PIN para registrar";
+      document.getElementById("label-pin").textContent = I18N.t("epl.label_pin");
       document.getElementById("label-pin").className = "label";
       fotoLista = false; fotoDataURL = null; fotoArchivo = null;
       document.getElementById("input-foto").value = "";
@@ -581,7 +592,7 @@
       document.getElementById("inc-desc").value = "";
       document.getElementById("inc-preview").style.display = "none";
       document.getElementById("inc-input-foto").value = "";
-      document.getElementById("inc-btn-foto").textContent = "Agregar foto (opcional)";
+      document.getElementById("inc-btn-foto").textContent = I18N.t("epl.inc_agregar_foto");
       document.getElementById("tipo-insumo").classList.remove("activo");
       document.getElementById("tipo-problema").classList.remove("activo");
       document.getElementById("inc-estado").textContent = "";
@@ -607,7 +618,7 @@
         var prev = document.getElementById("inc-preview");
         prev.src = incFotoDataURL;
         prev.style.display = "block";
-        document.getElementById("inc-btn-foto").textContent = "Cambiar foto";
+        document.getElementById("inc-btn-foto").textContent = I18N.t("epl.inc_cambiar_foto");
       };
       reader.readAsDataURL(archivo);
     }
@@ -616,21 +627,21 @@
       var desc = document.getElementById("inc-desc").value.trim();
       var estado = document.getElementById("inc-estado");
 
-      if (!incTipo) { estado.className = "estado-guardado estado-error"; estado.textContent = "Elige el tipo: falta de insumo o problema."; return; }
-      if (!desc) { estado.className = "estado-guardado estado-error"; estado.textContent = "Describe la incidencia."; return; }
+      if (!incTipo) { estado.className = "estado-guardado estado-error"; estado.textContent = I18N.t("epl.inc_elige_tipo"); return; }
+      if (!desc) { estado.className = "estado-guardado estado-error"; estado.textContent = I18N.t("epl.inc_describe"); return; }
 
       document.getElementById("inc-btn-enviar").disabled = true;
       estado.className = "estado-guardado estado-cargando";
 
       var fotoUrl = null;
       if (incFotoArchivo) {
-        estado.textContent = "Subiendo foto...";
+        estado.textContent = I18N.t("epl.inc_subiendo");
         try {
           var nombreArchivo = nombreFotoAleatorio("incidencia");
           const { error: errSubida } = await db.storage.from("fotos").upload(nombreArchivo, incFotoArchivo, { contentType: incFotoArchivo.type });
           if (errSubida) {
             estado.className = "estado-guardado estado-error";
-            estado.textContent = "Error al subir foto: " + errSubida.message;
+            estado.textContent = I18N.t("epl.error_subir") + errSubida.message;
             document.getElementById("inc-btn-enviar").disabled = false;
             return;
           }
@@ -638,13 +649,13 @@
           fotoUrl = urlData.publicUrl;
         } catch (e) {
           estado.className = "estado-guardado estado-error";
-          estado.textContent = "Error al subir foto: " + e.message;
+          estado.textContent = I18N.t("epl.error_subir") + e.message;
           document.getElementById("inc-btn-enviar").disabled = false;
           return;
         }
       }
 
-      estado.textContent = "Enviando reporte...";
+      estado.textContent = I18N.t("epl.inc_enviando");
       try {
         const { data, error } = await db.rpc("registrar_incidencia", {
           p_area_id: datosArea.id,
@@ -655,11 +666,11 @@
         });
         if (error) {
           estado.className = "estado-guardado estado-error";
-          estado.textContent = "No se pudo enviar: " + error.message;
+          estado.textContent = I18N.t("epl.inc_no_enviar") + error.message;
           document.getElementById("inc-btn-enviar").disabled = false;
         } else if (data && data.ok) {
           estado.className = "estado-guardado estado-ok";
-          estado.textContent = "✓ Reporte enviado. ¡Gracias!";
+          estado.textContent = I18N.t("epl.inc_ok");
           setTimeout(function(){ reiniciar(); }, 1400);
         } else {
           estado.className = "estado-guardado estado-error";
@@ -669,7 +680,7 @@
         }
       } catch (e) {
         estado.className = "estado-guardado estado-error";
-        estado.textContent = "Error: " + e.message;
+        estado.textContent = I18N.t("epl.error") + e.message;
         document.getElementById("inc-btn-enviar").disabled = false;
       }
     }
