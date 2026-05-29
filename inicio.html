@@ -5,27 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CleanTrack — Inicio</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&display=swap" rel="stylesheet" />
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
 
   <style>
     :root {
-      --verde: #798C81;
-      --verde-claro: #EAEEEB;
-      --verde-texto: #5F7268;
-      --azul: #798C81;
-      --azul-claro: #EAEEEB;
+      --azul-osc: #0C447C;
+      --azul: #185FA5;
+      --azul-suave: #BBD2EA;
       --gris-fondo: #ECEBE4;
-      --gris-texto: #6B6A64;
+      --gris-texto: #5A6573;
       --gris-borde: #E2E0D8;
-      --texto: #2C2C2A;
+      --texto: #1B2733;
       --blanco: #FFFFFF;
-      --ambar-claro: #FAEEDA;
-      --ambar-texto: #854F0B;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--gris-fondo);
       color: var(--texto);
       min-height: 100vh;
@@ -34,38 +34,60 @@
     .contenedor { max-width: 680px; margin: 0 auto; display: none; }
     .verificando { max-width: 680px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
 
-    .top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 12px; }
-    .top .marca { font-size: 50px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
-    .logo-img { height: 240px; width: auto; display: block; margin: 0 0 0px; border-radius: 10px; }
-    .top h1 { font-size: 26px; font-weight: 600; margin-top: 0; }
-    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 9px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    /* Cabecera azul de marca */
+    .cabecera {
+      background: var(--azul-osc);
+      border-radius: 20px;
+      padding: 22px 22px 24px;
+      margin-bottom: 26px;
+    }
+    .cab-top {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin-bottom: 18px;
+    }
+    .logo-chip {
+      background: var(--blanco);
+      border-radius: 12px;
+      padding: 7px 13px;
+      display: inline-flex; align-items: center;
+    }
+    .logo-img { height: 38px; width: auto; display: block; }
+    .btn-salir {
+      background: transparent; color: var(--blanco);
+      border: 1.5px solid rgba(255,255,255,0.45);
+      padding: 9px 18px; border-radius: 12px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      font-family: inherit; white-space: nowrap;
+    }
+    .btn-salir:hover { background: rgba(255,255,255,0.12); }
     .btn-salir:active { transform: scale(0.97); }
+    .cabecera h1 { font-size: 24px; font-weight: 600; color: var(--blanco); }
+    .saludo-sub { font-size: 14px; color: var(--azul-suave); margin-top: 4px; }
 
-    .saludo-sub { font-size: 15px; color: var(--gris-texto); margin-bottom: 28px; }
+    .seccion-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gris-texto); margin: 0 0 14px; }
 
     .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-    @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 360px) { .grid { grid-template-columns: 1fr; } }
 
     .tarjeta {
       background: var(--blanco); border: 1px solid var(--gris-borde);
-      border-radius: 18px; padding: 22px; cursor: pointer;
+      border-radius: 18px; padding: 18px; cursor: pointer;
       text-decoration: none; color: inherit; display: block;
       transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
       position: relative;
     }
-    .tarjeta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); border-color: var(--azul-claro); }
+    .tarjeta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(12,68,124,0.10); border-color: #B5D4F4; }
     .tarjeta:active { transform: translateY(0); }
 
     .tarjeta.proximamente { cursor: default; opacity: 0.7; }
     .tarjeta.proximamente:hover { transform: none; box-shadow: none; border-color: var(--gris-borde); }
 
     .ico {
-      width: 52px; height: 52px; border-radius: 14px;
+      width: 48px; height: 48px; border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
-      margin-bottom: 16px;
-      background: var(--verde-claro);
+      margin-bottom: 14px;
     }
-    .ico svg { width: 26px; height: 26px; }
+    .ico svg { width: 24px; height: 24px; }
     .ico-registros { background: #B5D4F4; }
     .ico-registros svg { stroke: #0C447C; }
     .ico-empleados { background: #C0DD97; }
@@ -83,17 +105,15 @@
     .ico-admin { background: #D9C9F0; }
     .ico-admin svg { stroke: #4B2E83; }
 
-    .tarjeta h3 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+    .tarjeta h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
     .tarjeta p { font-size: 13px; color: var(--gris-texto); line-height: 1.4; }
-
-    .seccion-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gris-texto); margin: 28px 0 12px; }
 
     /* Tarjeta de admin oculta por defecto; solo para administradores */
     .solo-admin { display: none; }
     .etiqueta-admin {
       position: absolute; top: 16px; right: 16px;
       background: #D9C9F0; color: #4B2E83;
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
       letter-spacing: 0.05em; padding: 4px 9px; border-radius: 8px;
     }
     /* Microinteracción: entrada en cascada de las tarjetas */
@@ -116,14 +136,14 @@
 
   <div class="contenedor" id="contenedor">
 
-    <img src="logo.png" alt="CleanTrack" class="logo-img" style="display:block; margin:0 auto 24px; width:180px; height:auto;" />
-    <div class="top">
-      <div>
-        <h1 id="titulo-saludo">Hola</h1>
+    <div class="cabecera">
+      <div class="cab-top">
+        <span class="logo-chip"><img src="logo.png" alt="CleanTrack" class="logo-img" /></span>
+        <button class="btn-salir" onclick="salir()">Salir</button>
       </div>
-      <button class="btn-salir" onclick="salir()">Salir</button>
+      <h1 id="titulo-saludo">Hola</h1>
+      <div class="saludo-sub">Centro de control del supervisor</div>
     </div>
-    <div class="saludo-sub">Centro de control del supervisor</div>
 
     <div class="seccion-label">Disponible</div>
     <div class="grid">
