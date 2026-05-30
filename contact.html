@@ -7,6 +7,7 @@
   <meta name="description" content="Request a free quote for CleanTrack. Your first 30 days are free — no cost, no commitment." />
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,7 +38,6 @@
     }
     .frase { font-family: "Fraunces", Georgia, serif; font-style: italic; }
 
-    /* NAV (igual que la landing) */
     nav {
       position: sticky; top: 0; z-index: 50;
       background: rgba(12,68,124,0.96); backdrop-filter: blur(10px);
@@ -71,7 +71,6 @@
       .nav-links a { text-align: center; }
     }
 
-    /* HERO chico */
     .head {
       background: linear-gradient(160deg, var(--azul-osc) 0%, var(--azul) 100%);
       color: #fff; text-align: center; padding: 64px 24px 56px;
@@ -82,7 +81,6 @@
     .head .linea { width: 60px; height: 4px; background: var(--verde); border-radius: 3px; margin: 20px auto; }
     .head .sub { font-size: 18px; color: rgba(255,255,255,0.84); max-width: 540px; margin: 0 auto; }
 
-    /* CONTENIDO */
     .contenido { flex: 1; max-width: 1000px; margin: -32px auto 0; padding: 0 24px 70px; width: 100%; }
     .grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 26px; align-items: start; }
     @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
@@ -116,7 +114,6 @@
     .aviso.cargando { background: #DCE9F5; color: var(--azul-osc); display: block; }
     .aviso.ok { background: #D6F0E4; color: var(--verde-osc); display: block; }
 
-    /* tarjeta de info lateral */
     .info { background: linear-gradient(160deg, var(--azul-osc), var(--azul)); color: #fff; }
     .info h3 { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #7FE0BC; text-align: center; margin-bottom: 22px; }
     .info-item { display: flex; gap: 14px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.12); }
@@ -163,7 +160,6 @@
   <main class="contenido">
     <div class="grid">
 
-      <!-- FORMULARIO -->
       <div class="tarjeta">
         <h2>Request a quote</h2>
         <p class="desc">Fill out the form and we'll get back to you shortly. No commitment.</p>
@@ -200,7 +196,6 @@
         <div class="aviso" id="aviso"></div>
       </div>
 
-      <!-- INFO LATERAL -->
       <div class="tarjeta info">
         <h3>Contact</h3>
 
@@ -236,17 +231,6 @@
   </footer>
 
   <script>
-    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
-
-    let db = null;
-    try {
-      const { createClient } = supabase;
-      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) {
-      console.error("No se pudo conectar a Supabase:", e);
-    }
-
     document.getElementById("year").textContent = new Date().getFullYear();
 
     function toggleMenu() {
@@ -268,7 +252,7 @@
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
     }
 
-    // Access key pública de Web3Forms (segura para estar en el cliente: solo sirve para enviarte formularios a ti)
+    // Access key pública de Web3Forms (segura: solo sirve para enviarte formularios)
     const WEB3FORMS_KEY = "acf41ed8-e843-4758-a3e4-508733a00911";
 
     async function enviar() {
@@ -290,14 +274,8 @@
       document.getElementById("btnEnviar").disabled = true;
       aviso("Sending...", "cargando");
 
-      // Texto unificado de la cotización (se usa en ambos canales)
-      var resumen =
-        "Name: " + nombre + "\n" +
-        "Company: " + empresa + "\n" +
-        "Buildings: " + (edificios || "not specified") + "\n" +
-        "Message: " + (mensaje || "(none)");
-
       // ---- CANAL 1 (principal): correo vía Web3Forms ----
+      // Si funciona, tú recibes el correo en tu bandeja igual que antes.
       var correoOk = false;
       try {
         const resp = await fetch("https://api.web3forms.com/submit", {
@@ -321,21 +299,23 @@
         correoOk = false;
       }
 
-      // ---- CANAL 2 (respaldo): guardar en Supabase ----
-      // Si el RLS bloquea el insert anónimo, no afecta al cliente: el correo ya avisó.
+      // ---- CANAL 2 (respaldo): guardar en la tabla "solicitudes" de Supabase ----
+      // Ahora va a la tabla nueva creada solo para cotizaciones. La política RLS
+      // permite inserts anónimos, así que esto funciona incluso sin login.
       if (db) {
         try {
-          await db.from("soporte").insert([{
-            email_usuario: email,
-            pregunta: "QUOTE REQUEST\n" + resumen,
-            resuelto: false
+          await db.from("solicitudes").insert([{
+            nombre: nombre,
+            empresa: empresa,
+            email: email,
+            edificios: edificios || null,
+            mensaje: mensaje || null
           }]);
         } catch (e) {
           console.error("Supabase insert error (respaldo):", e);
         }
       }
 
-      // ---- Resultado para el cliente ----
       // Mostramos éxito si AL MENOS el correo llegó (que es lo que nos avisa a nosotros).
       if (correoOk) {
         aviso("✓ Thank you! We've received your request and will be in touch soon.", "ok");

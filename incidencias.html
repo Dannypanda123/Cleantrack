@@ -5,21 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CleanTrack — Incidencias</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600&display=swap" rel="stylesheet" />
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="idiomas.js"></script>
   <script src="ui.js"></script>
 
   <style>
     :root {
-      --verde-accion: #377D37;
+      --azul-osc: #0C447C;
+      --azul: #185FA5;
+      --azul-suave: #BBD2EA;
+      --verde-accion: #178A65;
       --verde-claro: #E7F1E7;
-      --verde-texto: #2A5F2A;
-      --gris-verde-700: #798C81;
-      --gris-verde-900: #5F7268;
-      --gris-verde-claro: #EAEEEB;
+      --verde-texto: #27500A;
       --gris-fondo: #ECEBE4;
-      --gris-texto: #6B6A64;
+      --gris-texto: #5A6573;
       --gris-borde: #E2E0D8;
-      --texto: #1F2A37;
+      --texto: #1B2733;
       --blanco: #FFFFFF;
       --ambar-claro: #FAEEDA;
       --ambar-texto: #854F0B;
@@ -27,33 +33,60 @@
       --azul-texto: #185FA5;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
-    .contenedor { max-width: 680px; margin: 0 auto; display: none; }
-    .verificando { max-width: 680px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--gris-fondo); color: var(--texto); min-height: 100vh;
+    }
+    .verificando { max-width: 680px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; padding: 0 20px; }
+    .contenedor { display: none; }
 
-    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-    .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
-    .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
-    .top-botones { display: flex; gap: 8px; }
-    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+    /* ===== Cabecera azul ===== */
+    .cabecera { background: var(--azul-osc); }
+    .cab-inner { max-width: 680px; margin: 0 auto; padding: 18px 20px 22px; }
+    .cab-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.16); }
+    .barra-marca { display: flex; align-items: center; gap: 9px; }
+    .logo-simbolo { height: 30px; width: auto; display: block; }
+    .marca-texto { font-family: "Sora", sans-serif; font-size: 18px; font-weight: 600; color: var(--blanco); letter-spacing: -0.01em; }
+    .cab-botones { display: flex; gap: 8px; }
+    .btn-cab {
+      background: transparent; color: var(--blanco);
+      border: 1.5px solid rgba(255,255,255,0.45);
+      padding: 8px 15px; border-radius: 11px; font-size: 13px; font-weight: 600;
+      cursor: pointer; text-decoration: none; display: inline-block; font-family: inherit; white-space: nowrap;
+    }
+    .btn-cab:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.65); }
+    .btn-cab:active { transform: scale(0.97); }
 
-    .selector-cont { margin-bottom: 22px; }
-    .selector-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-texto); margin-bottom: 8px; }
-    .selector { width: 100%; padding: 14px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: var(--blanco); color: var(--texto); outline: none; cursor: pointer; }
-    .selector:focus { border-color: var(--gris-verde-700); }
+    .cab-titulo { margin-top: 16px; }
+    .cab-titulo h1 { font-size: 23px; font-weight: 600; color: var(--blanco); }
+    .cab-sub { font-size: 13px; color: var(--azul-suave); margin-top: 3px; }
 
-    .resumen { display: flex; gap: 12px; margin-bottom: 22px; }
-    .resumen .caja { flex: 1; background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 16px; text-align: center; }
-    .resumen .num { font-size: 26px; font-weight: 600; }
+    /* Resumen dentro de la cabecera */
+    .resumen { display: flex; gap: 12px; margin-top: 16px; }
+    .resumen .caja { flex: 1; background: var(--blanco); border-radius: 13px; padding: 13px 15px; text-align: center; }
+    .resumen .num { font-size: 24px; font-weight: 600; }
     .resumen .num.pendientes { color: var(--ambar-texto); }
     .resumen .num.resueltas { color: var(--verde-accion); }
-    .resumen .lbl { font-size: 12px; color: var(--gris-texto); margin-top: 2px; }
+    .resumen .num.total { color: var(--gris-texto); }
+    .resumen .lbl { font-size: 11px; color: var(--gris-texto); margin-top: 2px; }
 
-    .filtros { display: flex; gap: 8px; margin-bottom: 18px; }
-    .filtro { flex: 1; padding: 10px; border: 1.5px solid var(--gris-borde); background: var(--blanco); border-radius: 11px; font-size: 14px; font-weight: 600; color: var(--gris-texto); cursor: pointer; }
-    .filtro.activo { background: var(--verde-accion); color: #fff; border-color: var(--verde-accion); }
+    /* Filtros dentro de la cabecera (sobre azul) */
+    .filtros { display: flex; gap: 8px; margin-top: 14px; }
+    .filtro { flex: 1; padding: 9px; border: 1.5px solid rgba(255,255,255,0.4); background: transparent; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--azul-suave); cursor: pointer; font-family: inherit; }
+    .filtro:hover { background: rgba(255,255,255,0.1); }
+    .filtro.activo { background: var(--blanco); color: var(--azul-osc); border-color: var(--blanco); }
 
-    .inc-card { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: flex; gap: 14px; }
+    /* ===== Cuerpo ===== */
+    .main { max-width: 680px; margin: 0 auto; padding: 22px 20px 40px; }
+
+    .selector-cont { margin-bottom: 20px; }
+    .selector-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-texto); margin-bottom: 7px; }
+    .selector { width: 100%; padding: 13px 14px; font-size: 15px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: var(--blanco); color: var(--texto); outline: none; cursor: pointer; font-family: inherit; }
+    .selector:focus { border-color: var(--azul); }
+
+    .lista-inc { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    .inc-card { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 16px; display: flex; gap: 14px; transition: border-color 0.12s, box-shadow 0.12s; }
+    .inc-card:hover { border-color: #B5D4F4; box-shadow: 0 6px 18px rgba(12,68,124,0.07); }
     .inc-card.resuelta { opacity: 0.65; }
     .inc-foto { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; flex-shrink: 0; cursor: pointer; border: 1px solid var(--gris-borde); }
     .inc-ico { width: 60px; height: 60px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
@@ -64,26 +97,35 @@
     .inc-ico svg { width: 28px; height: 28px; }
     .inc-cuerpo { flex: 1; min-width: 0; }
     .inc-badges { display: flex; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
-    .badge-tipo { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 8px; }
+    .badge-tipo { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 8px; }
     .badge-tipo.insumo { background: var(--azul-claro); color: var(--azul-texto); }
     .badge-tipo.problema { background: var(--ambar-claro); color: var(--ambar-texto); }
-    .badge-estado { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 8px; }
+    .badge-estado { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 8px; }
     .badge-pendiente { background: var(--ambar-claro); color: var(--ambar-texto); }
     .badge-resuelto { background: var(--verde-claro); color: var(--verde-texto); }
-    .inc-desc { font-size: 15px; line-height: 1.45; margin-bottom: 8px; }
-    .inc-meta { font-size: 12px; color: var(--gris-texto); margin-bottom: 12px; }
+    .inc-desc { font-size: 15px; line-height: 1.45; margin-bottom: 8px; word-break: break-word; }
+    .inc-meta { font-size: 12px; color: var(--gris-texto); margin-bottom: 12px; word-break: break-word; }
     .inc-acciones { display: flex; }
-    .btn-resolver { padding: 9px 16px; border: none; border-radius: 10px; background: var(--verde-accion); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-resolver { padding: 9px 16px; border: none; border-radius: 10px; background: var(--verde-accion); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
     .btn-resolver:active { transform: scale(0.97); }
-    .btn-reabrir { padding: 9px 16px; border: 1.5px solid var(--gris-borde); border-radius: 10px; background: transparent; color: var(--gris-texto); font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-reabrir { padding: 9px 16px; border: 1.5px solid var(--gris-borde); border-radius: 10px; background: transparent; color: var(--gris-texto); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
 
-    .vacio { background: var(--blanco); border: 1px dashed var(--gris-borde); border-radius: 14px; padding: 40px 20px; text-align: center; color: var(--gris-texto); font-size: 14px; }
-    .cargando { text-align: center; color: var(--gris-texto); padding: 40px; font-size: 14px; }
+    .vacio { grid-column: 1 / -1; background: var(--blanco); border: 1px dashed var(--gris-borde); border-radius: 14px; padding: 40px 20px; text-align: center; color: var(--gris-texto); font-size: 14px; }
+    .cargando { grid-column: 1 / -1; text-align: center; color: var(--gris-texto); padding: 40px; font-size: 14px; }
 
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
     .modal.abierto { display: flex; }
     .modal img { max-width: 100%; max-height: 90vh; border-radius: 12px; }
     .modal-cerrar { position: absolute; top: 20px; right: 24px; color: #fff; font-size: 32px; cursor: pointer; font-weight: 300; }
+
+    /* ===================== PC (pantallas anchas) ===================== */
+    @media (min-width: 900px) {
+      .cab-inner { max-width: 1100px; padding: 20px 32px 24px; }
+      .main { max-width: 1100px; padding: 24px 32px 48px; }
+      .cab-titulo h1 { font-size: 25px; }
+      .selector { max-width: 360px; }
+      .lista-inc { grid-template-columns: repeat(2, 1fr); }
+    }
   </style>
 </head>
 <body>
@@ -92,37 +134,49 @@
 
   <div class="contenedor" id="contenedor">
 
-    <div class="top">
-      <div>
-        <div class="marca">CleanTrack</div>
-        <h1>Incidencias</h1>
+    <header class="cabecera">
+      <div class="cab-inner">
+        <div class="cab-fila">
+          <div class="barra-marca">
+            <img src="logo-simbolo.png" alt="" class="logo-simbolo" />
+            <span class="marca-texto">CleanTrack</span>
+          </div>
+          <div class="cab-botones">
+            <a class="btn-cab" href="inicio.html" data-i18n="comun.inicio">← Inicio</a>
+            <button class="btn-cab" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+            <button class="btn-cab" onclick="salir()" data-i18n="comun.salir">Salir</button>
+          </div>
+        </div>
+
+        <div class="cab-titulo">
+          <h1 data-i18n="inc.titulo">Incidencias</h1>
+          <div class="cab-sub" data-i18n="inc.subtitulo">Insumos faltantes y problemas reportados</div>
+        </div>
+
+        <div class="resumen">
+          <div class="caja"><div class="num pendientes" id="n-pendientes">—</div><div class="lbl" data-i18n="inc.pendientes">Pendientes</div></div>
+          <div class="caja"><div class="num resueltas" id="n-resueltas">—</div><div class="lbl" data-i18n="inc.resueltas">Resueltas</div></div>
+          <div class="caja"><div class="num total" id="n-total">—</div><div class="lbl" data-i18n="inc.total">Total</div></div>
+        </div>
+
+        <div class="filtros">
+          <button class="filtro activo" id="f-pendientes" onclick="filtrar('pendientes')" data-i18n="inc.f_pendientes">Pendientes</button>
+          <button class="filtro" id="f-resueltas" onclick="filtrar('resueltas')" data-i18n="inc.f_resueltas">Resueltas</button>
+          <button class="filtro" id="f-todas" onclick="filtrar('todas')" data-i18n="inc.f_todas">Todas</button>
+        </div>
       </div>
-      <div class="top-botones">
-        <a class="btn-salir" href="inicio.html">← Inicio</a>
-        <button class="btn-salir" onclick="salir()">Salir</button>
+    </header>
+
+    <main class="main">
+      <div class="selector-cont">
+        <div class="selector-label" data-i18n="reg.edificio">Edificio</div>
+        <select class="selector" id="selector-edificio" onchange="mostrar()">
+          <option value="">Cargando edificios...</option>
+        </select>
       </div>
-    </div>
 
-    <div class="selector-cont">
-      <div class="selector-label">Edificio</div>
-      <select class="selector" id="selector-edificio" onchange="mostrar()">
-        <option value="">Cargando edificios...</option>
-      </select>
-    </div>
-
-    <div class="resumen">
-      <div class="caja"><div class="num pendientes" id="n-pendientes">—</div><div class="lbl">Pendientes</div></div>
-      <div class="caja"><div class="num resueltas" id="n-resueltas">—</div><div class="lbl">Resueltas</div></div>
-      <div class="caja"><div class="num" id="n-total">—</div><div class="lbl">Total</div></div>
-    </div>
-
-    <div class="filtros">
-      <button class="filtro activo" id="f-pendientes" onclick="filtrar('pendientes')">Pendientes</button>
-      <button class="filtro" id="f-resueltas" onclick="filtrar('resueltas')">Resueltas</button>
-      <button class="filtro" id="f-todas" onclick="filtrar('todas')">Todas</button>
-    </div>
-
-    <div id="lista"><div class="cargando">Cargando incidencias...</div></div>
+      <div class="lista-inc" id="lista"><div class="cargando" data-i18n="inc.cargando">Cargando incidencias...</div></div>
+    </main>
 
   </div>
 
@@ -132,24 +186,18 @@
   </div>
 
   <script>
-    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
-
-    let db = null;
-    try {
-      const { createClient } = supabase;
-      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) { console.error(e); }
 
     var todas = [];
     var filtroActual = "pendientes";
 
     async function verificarAcceso() {
-      if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
+      if (!db) { document.getElementById("verificando").textContent = I18N.t("comun.sin_conexion"); return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+      I18N.aplicar();
+      I18N.onChange(function(){ I18N.aplicar(); mostrar(); });
       cargar();
     }
 
@@ -175,7 +223,8 @@
     async function cargar() {
       const { data, error } = await db.from("incidencias").select("*").order("created_at", { ascending: false });
       if (error) {
-        document.getElementById("lista").innerHTML = '<div class="vacio">Error al cargar: ' + error.message + '</div>';
+        // Mensaje de error escapado (por si Supabase devuelve algo extraño)
+        document.getElementById("lista").innerHTML = '<div class="vacio">Error al cargar: ' + uiEscapar(error.message) + '</div>';
         return;
       }
       todas = data || [];
@@ -187,9 +236,17 @@
       todas.forEach(function(i){ edificios[i.edificio || "Sin edificio"] = true; });
       var listaEd = Object.keys(edificios).sort();
 
-      sel.innerHTML = '<option value="">Todos los edificios</option>';
+      // Limpiamos y rellenamos el select usando createElement (más seguro que innerHTML)
+      sel.innerHTML = "";
+      var optTodos = document.createElement("option");
+      optTodos.value = "";
+      optTodos.textContent = I18N.t("reg.todos_edificios");
+      sel.appendChild(optTodos);
       listaEd.forEach(function(e){
-        var o = document.createElement("option"); o.value = e; o.textContent = e; sel.appendChild(o);
+        var o = document.createElement("option");
+        o.value = e;
+        o.textContent = e;
+        sel.appendChild(o);
       });
       if (seleccionActual) sel.value = seleccionActual;
 
@@ -220,49 +277,92 @@
 
       var lista = document.getElementById("lista");
       if (items.length === 0) {
-        var msg = filtroActual === "pendientes" ? "No hay incidencias pendientes. ¡Todo en orden!" : (filtroActual === "resueltas" ? "Aún no hay incidencias resueltas." : "No hay incidencias.");
-        lista.innerHTML = '<div class="vacio">' + msg + '</div>';
+        var msg = filtroActual === "pendientes" ? I18N.t("inc.vacio_pend") : (filtroActual === "resueltas" ? I18N.t("inc.vacio_resueltas") : I18N.t("inc.vacio_todas"));
+        // msg es texto literal nuestro (no de la BD), pero por consistencia usamos textContent
+        lista.innerHTML = "";
+        var vacio = document.createElement("div");
+        vacio.className = "vacio";
+        vacio.textContent = msg;
+        lista.appendChild(vacio);
         return;
       }
 
       lista.innerHTML = "";
       items.forEach(function(i) {
         var esInsumo = i.tipo === "insumo";
+
+        // SVGs estáticos (no contienen datos del usuario, seguros)
         var icoSVG = esInsumo
           ? '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>'
           : '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>';
 
-        var visual = i.foto_url
-          ? '<img class="inc-foto" src="' + i.foto_url + '" alt="Foto" onclick="abrirModal(\'' + i.foto_url + '\')" />'
-          : '<div class="inc-ico ' + (esInsumo ? 'insumo' : 'problema') + '">' + icoSVG + '</div>';
-
-        var badgeTipo = esInsumo
-          ? '<span class="badge-tipo insumo">Falta insumo</span>'
-          : '<span class="badge-tipo problema">Problema</span>';
-        var badgeEstado = i.resuelto
-          ? '<span class="badge-estado badge-resuelto">Resuelta</span>'
-          : '<span class="badge-estado badge-pendiente">Pendiente</span>';
-        var boton = i.resuelto
-          ? '<button class="btn-reabrir" onclick="cambiarEstado(' + i.id + ', false)">Reabrir</button>'
-          : '<button class="btn-resolver" onclick="cambiarEstado(' + i.id + ', true)">Marcar como resuelta</button>';
+        var badgeTipoHTML = esInsumo
+          ? '<span class="badge-tipo insumo">' + I18N.t("inc.tipo_insumo") + '</span>'
+          : '<span class="badge-tipo problema">' + I18N.t("inc.tipo_problema") + '</span>';
+        var badgeEstadoHTML = i.resuelto
+          ? '<span class="badge-estado badge-resuelto">' + I18N.t("inc.estado_resuelta") + '</span>'
+          : '<span class="badge-estado badge-pendiente">' + I18N.t("inc.estado_pendiente") + '</span>';
 
         var card = document.createElement("div");
         card.className = "inc-card" + (i.resuelto ? " resuelta" : "");
+
+        // Estructura base SIN datos del usuario (solo HTML estático)
         card.innerHTML =
-          visual +
+          '<div class="visual-slot"></div>' +
           '<div class="inc-cuerpo">' +
-            '<div class="inc-badges">' + badgeTipo + badgeEstado + '</div>' +
-            '<div class="inc-desc">' + (i.descripcion || "") + '</div>' +
-            '<div class="inc-meta">' + (i.area || "") + ' · ' + (i.edificio || "") + ' · ' + (i.nombre_empleado || "Empleado") + ' · ' + fmtFecha(i.created_at) + '</div>' +
-            '<div class="inc-acciones">' + boton + '</div>' +
+            '<div class="inc-badges">' + badgeTipoHTML + badgeEstadoHTML + '</div>' +
+            '<div class="inc-desc"></div>' +
+            '<div class="inc-meta"></div>' +
+            '<div class="inc-acciones"></div>' +
           '</div>';
+
+        // Visual (foto o icono). La foto la creamos con createElement para evitar
+        // inyectar la URL dentro de un atributo onclick.
+        var visualSlot = card.querySelector(".visual-slot");
+        if (i.foto_url) {
+          var img = document.createElement("img");
+          img.className = "inc-foto";
+          img.src = i.foto_url;
+          img.alt = "Foto";
+          var urlFoto = i.foto_url; // capturar en closure para el listener
+          img.addEventListener("click", function() { abrirModal(urlFoto); });
+          visualSlot.replaceWith(img);
+        } else {
+          var icoDiv = document.createElement("div");
+          icoDiv.className = "inc-ico " + (esInsumo ? "insumo" : "problema");
+          icoDiv.innerHTML = icoSVG; // SVG estático, seguro
+          visualSlot.replaceWith(icoDiv);
+        }
+
+        // Datos del usuario con textContent (ANTI-XSS).
+        // Esto es lo más importante del archivo: la descripción la escribe
+        // el empleado en su móvil, así que NUNCA debe interpretarse como HTML.
+        card.querySelector(".inc-desc").textContent = i.descripcion || "";
+        card.querySelector(".inc-meta").textContent =
+          (i.area || "") + " · " + (i.edificio || "") + " · " +
+          (i.nombre_empleado || "Empleado") + " · " + fmtFecha(i.created_at);
+
+        // Botón con addEventListener (no onclick inline). Esto evita que datos
+        // del usuario se cuelen dentro de un atributo HTML.
+        var boton = document.createElement("button");
+        if (i.resuelto) {
+          boton.className = "btn-reabrir";
+          boton.textContent = I18N.t("inc.btn_reabrir");
+          boton.addEventListener("click", function() { cambiarEstado(i.id, false); });
+        } else {
+          boton.className = "btn-resolver";
+          boton.textContent = I18N.t("inc.btn_resolver");
+          boton.addEventListener("click", function() { cambiarEstado(i.id, true); });
+        }
+        card.querySelector(".inc-acciones").appendChild(boton);
+
         lista.appendChild(card);
       });
     }
 
     async function cambiarEstado(id, resuelto) {
       const { error } = await db.from("incidencias").update({ resuelto: resuelto }).eq("id", id);
-      if (error) { uiToast("No se pudo actualizar: " + error.message, "error"); return; }
+      if (error) { uiToast(I18N.t("inc.error_actualizar") + error.message, "error"); return; }
       cargar();
     }
 

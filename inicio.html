@@ -5,66 +5,89 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CleanTrack — Inicio</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600&display=swap" rel="stylesheet" />
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="idiomas.js"></script>
 
   <style>
     :root {
-      --verde: #798C81;
-      --verde-claro: #EAEEEB;
-      --verde-texto: #5F7268;
-      --azul: #798C81;
-      --azul-claro: #EAEEEB;
+      --azul-osc: #0C447C;
+      --azul: #185FA5;
+      --azul-suave: #BBD2EA;
       --gris-fondo: #ECEBE4;
-      --gris-texto: #6B6A64;
+      --gris-texto: #5A6573;
       --gris-borde: #E2E0D8;
-      --texto: #2C2C2A;
+      --texto: #1B2733;
       --blanco: #FFFFFF;
-      --ambar-claro: #FAEEDA;
-      --ambar-texto: #854F0B;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--gris-fondo);
       color: var(--texto);
       min-height: 100vh;
-      padding: 24px 20px 40px;
     }
-    .contenedor { max-width: 680px; margin: 0 auto; display: none; }
-    .verificando { max-width: 680px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+    .verificando { max-width: 680px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; padding: 0 20px; }
 
-    .top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 12px; }
-    .top .marca { font-size: 50px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
-    .logo-img { height: 240px; width: auto; display: block; margin: 0 0 0px; border-radius: 10px; }
-    .top h1 { font-size: 26px; font-weight: 600; margin-top: 0; }
-    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 9px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    /* El contenedor de la app aparece tras verificar la sesión */
+    .app { display: none; }
+
+    /* Cabecera azul (solo PC) */
+    .barra-pc { display: none; }
+
+    /* Contenido principal */
+    .main { max-width: 680px; margin: 0 auto; padding: 24px 20px 40px; }
+
+    /* Logo centrado (móvil) */
+    .logo-movil { display: block; margin: 0 auto 16px; width: 180px; height: auto; }
+
+    .bienvenida { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; border-top: 1px solid var(--gris-borde); padding-top: 16px; }
+    .bienvenida h1 { font-size: 26px; font-weight: 600; color: var(--texto); }
+    .btn-salir {
+      background: transparent; color: var(--gris-texto);
+      border: 1.5px solid var(--gris-borde);
+      padding: 9px 16px; border-radius: 12px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      font-family: inherit; white-space: nowrap;
+    }
+    .btn-salir:hover { background: var(--blanco); border-color: #B5D4F4; }
     .btn-salir:active { transform: scale(0.97); }
+    .saludo-sub { font-size: 15px; color: var(--gris-texto); margin-bottom: 22px; }
 
-    .saludo-sub { font-size: 15px; color: var(--gris-texto); margin-bottom: 28px; }
+    /* Indicadores (tarjetas de cifra) */
+    .kpi { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 13px; padding: 12px 14px; }
+    .kpi-top { display: flex; align-items: center; gap: 7px; }
+    .kpi-svg { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .kpi-num { font-size: 22px; font-weight: 600; }
+    .kpi-lab { font-size: 11px; color: var(--gris-texto); margin-top: 3px; }
+    .kpis-movil { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 26px; }
+    .kpis-pc { display: none; }
+
+    .seccion-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gris-texto); margin: 0 0 14px; }
 
     .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-    @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 360px) { .grid { grid-template-columns: 1fr; } }
 
     .tarjeta {
       background: var(--blanco); border: 1px solid var(--gris-borde);
-      border-radius: 18px; padding: 22px; cursor: pointer;
+      border-radius: 18px; padding: 18px; cursor: pointer;
       text-decoration: none; color: inherit; display: block;
       transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
       position: relative;
     }
-    .tarjeta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); border-color: var(--azul-claro); }
+    .tarjeta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(12,68,124,0.10); border-color: #B5D4F4; }
     .tarjeta:active { transform: translateY(0); }
 
-    .tarjeta.proximamente { cursor: default; opacity: 0.7; }
-    .tarjeta.proximamente:hover { transform: none; box-shadow: none; border-color: var(--gris-borde); }
-
     .ico {
-      width: 52px; height: 52px; border-radius: 14px;
+      width: 48px; height: 48px; border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
-      margin-bottom: 16px;
-      background: var(--verde-claro);
+      margin-bottom: 14px;
     }
-    .ico svg { width: 26px; height: 26px; }
+    .ico svg { width: 24px; height: 24px; }
     .ico-registros { background: #B5D4F4; }
     .ico-registros svg { stroke: #0C447C; }
     .ico-empleados { background: #C0DD97; }
@@ -82,31 +105,21 @@
     .ico-admin { background: #D9C9F0; }
     .ico-admin svg { stroke: #4B2E83; }
 
-    .tarjeta h3 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+    .tarjeta h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
     .tarjeta p { font-size: 13px; color: var(--gris-texto); line-height: 1.4; }
 
-    /* Etiqueta para funciones del plan Pro */
-    .etiqueta-pro {
-      position: absolute; top: 16px; right: 16px;
-      background: #FAC775; color: #633806;
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.05em; padding: 4px 9px; border-radius: 8px;
-    }
-    .seccion-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gris-texto); margin: 28px 0 12px; }
-
-    /* Tarjetas Pro se ocultan por defecto; se muestran si el plan lo permite */
-    .solo-pro { display: none; }
     /* Tarjeta de admin oculta por defecto; solo para administradores */
     .solo-admin { display: none; }
     .etiqueta-admin {
       position: absolute; top: 16px; right: 16px;
       background: #D9C9F0; color: #4B2E83;
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
       letter-spacing: 0.05em; padding: 4px 9px; border-radius: 8px;
     }
+
     /* Microinteracción: entrada en cascada de las tarjetas */
     @keyframes ctFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    .grid .tarjeta:not(.solo-pro):not(.solo-admin) { opacity: 0; animation: ctFadeIn 0.5s ease forwards; }
+    .grid .tarjeta:not(.solo-admin) { opacity: 0; animation: ctFadeIn 0.5s ease forwards; }
     .grid .tarjeta:nth-child(1) { animation-delay: 0.05s; }
     .grid .tarjeta:nth-child(2) { animation-delay: 0.12s; }
     .grid .tarjeta:nth-child(3) { animation-delay: 0.19s; }
@@ -115,97 +128,193 @@
     .grid .tarjeta:nth-child(6) { animation-delay: 0.40s; }
     .grid .tarjeta:nth-child(7) { animation-delay: 0.47s; }
     .grid .tarjeta:nth-child(8) { animation-delay: 0.54s; }
-    @media (prefers-reduced-motion: reduce) { .grid .tarjeta:not(.solo-pro):not(.solo-admin) { animation: none; opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .grid .tarjeta:not(.solo-admin) { animation: none; opacity: 1; } }
+
+    /* ===================== PC (pantallas anchas) ===================== */
+    @media (min-width: 900px) {
+      .barra-pc { display: block; background: var(--azul-osc); }
+      .barra-inner { max-width: 1100px; margin: 0 auto; padding: 20px 32px 22px; }
+      .cab-fila { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.16); }
+      .barra-marca { grid-column: 2; justify-self: center; display: flex; align-items: center; gap: 10px; }
+      .logo-simbolo { height: 34px; width: auto; display: block; }
+      .marca-texto { font-family: "Sora", sans-serif; font-size: 19px; font-weight: 600; color: var(--blanco); letter-spacing: -0.01em; }
+      .cab-acciones-pc { grid-column: 3; justify-self: end; display: flex; gap: 8px; }
+      .cab-acciones-pc .btn-salir { color: var(--blanco); border-color: rgba(255,255,255,0.45); }
+      .cab-acciones-pc .btn-salir:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.65); }
+      .cab-saludo { font-size: 24px; font-weight: 600; color: var(--blanco); }
+      .cab-sub { font-size: 13px; color: var(--azul-suave); margin-top: 3px; }
+      .cab-saludo-bloque { margin-top: 16px; }
+
+      /* En PC el saludo y el logo grande del móvil no se muestran */
+      .logo-movil { display: none; }
+      .bienvenida { display: none; }
+      .saludo-sub { display: none; }
+      .kpis-movil { display: none; }
+
+      /* Indicadores en la cabecera */
+      .kpis-pc { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+
+      .main { max-width: 1100px; padding: 26px 32px 48px; }
+      .seccion-label { margin: 0 0 14px; }
+      .grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .tarjeta { padding: 20px; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="verificando" id="verificando">Verificando sesión...</div>
+  <div class="verificando" id="verificando" data-i18n="comun.verificando">Verificando sesión...</div>
 
-  <div class="contenedor" id="contenedor">
+  <div class="app" id="contenedor">
 
-    <img src="logo.png" alt="CleanTrack" class="logo-img" style="display:block; margin:0 auto 24px; width:180px; height:auto;" />
-    <div class="top">
-      <div>
-        <h1 id="titulo-saludo">Hola</h1>
+    <!-- Cabecera azul: solo se ve en PC -->
+    <header class="barra-pc">
+      <div class="barra-inner">
+        <div class="cab-fila">
+          <span></span>
+          <div class="barra-marca">
+            <img src="logo-simbolo.png" alt="" class="logo-simbolo" />
+            <span class="marca-texto">CleanTrack</span>
+          </div>
+          <span class="cab-acciones-pc">
+            <button class="btn-salir" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+            <button class="btn-salir" onclick="salir()" data-i18n="comun.salir">Salir</button>
+          </span>
+        </div>
+
+        <div class="cab-saludo-bloque">
+          <h1 class="titulo-saludo cab-saludo">Hola</h1>
+          <div class="cab-sub" data-i18n="inicio.subtitulo">Centro de control del supervisor</div>
+        </div>
+
+        <div class="kpis kpis-pc">
+          <div class="kpi">
+            <div class="kpi-top"><svg class="kpi-svg" style="stroke:#0C447C" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg><span class="kpi-num dato-limpiezas" style="color:#0C447C">—</span></div>
+            <div class="kpi-lab" data-i18n="inicio.kpi.limpiezas">Limpiezas hoy</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-top"><svg class="kpi-svg" style="stroke:#B23B3B" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12" y2="16.01"></line></svg><span class="kpi-num dato-incidencias" style="color:#B23B3B">—</span></div>
+            <div class="kpi-lab" data-i18n="inicio.kpi.incidencias">Incidencias abiertas</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-top"><svg class="kpi-svg" style="stroke:#178A65" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span class="kpi-num dato-empleados" style="color:#178A65">—</span></div>
+            <div class="kpi-lab" data-i18n="inicio.kpi.empleados">Empleados activos</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-top"><svg class="kpi-svg" style="stroke:#854F0B" viewBox="0 0 24 24"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><line x1="9" y1="9" x2="9" y2="9.01"></line><line x1="9" y1="12" x2="9" y2="12.01"></line><line x1="9" y1="15" x2="9" y2="15.01"></line></svg><span class="kpi-num dato-edificios" style="color:#854F0B">—</span></div>
+            <div class="kpi-lab" data-i18n="inicio.kpi.edificios">Edificios</div>
+          </div>
+        </div>
       </div>
-      <button class="btn-salir" onclick="salir()">Salir</button>
-    </div>
-    <div class="saludo-sub">Centro de control del supervisor</div>
+    </header>
 
-    <div class="seccion-label">Disponible</div>
-    <div class="grid">
+    <main class="main">
 
-      <a class="tarjeta" href="dashboard.html">
-        <div class="ico ico-registros"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg></div>
-        <h3>Registros</h3>
-        <p>Ver áreas limpiadas, fotos y horarios en tiempo real</p>
-      </a>
+      <!-- Logo centrado + saludo: solo se ven en móvil -->
+      <img src="logo.png" alt="CleanTrack" class="logo-movil" />
 
-      <a class="tarjeta" href="admin.html">
-        <div class="ico ico-empleados"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
-        <h3>Empleados</h3>
-        <p>Agregar, activar o desactivar al personal de limpieza</p>
-      </a>
+      <div class="bienvenida">
+        <h1 class="titulo-saludo">Hola</h1>
+        <span style="display:flex; gap:8px;">
+          <button class="btn-salir" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+          <button class="btn-salir btn-salir-movil" onclick="salir()" data-i18n="comun.salir">Salir</button>
+        </span>
+      </div>
+      <div class="saludo-sub" data-i18n="inicio.subtitulo">Centro de control del supervisor</div>
 
-      <a class="tarjeta" href="areas.html">
-        <div class="ico ico-edificios"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><line x1="9" y1="9" x2="9" y2="9.01"></line><line x1="9" y1="12" x2="9" y2="12.01"></line><line x1="9" y1="15" x2="9" y2="15.01"></line></svg></div>
-        <h3>Edificios y áreas</h3>
-        <p>Gestionar espacios y generar códigos QR por área</p>
-      </a>
+      <div class="kpis kpis-movil">
+        <div class="kpi">
+          <div class="kpi-top"><svg class="kpi-svg" style="stroke:#0C447C" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg><span class="kpi-num dato-limpiezas" style="color:#0C447C">—</span></div>
+          <div class="kpi-lab" data-i18n="inicio.kpi.limpiezas">Limpiezas hoy</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-top"><svg class="kpi-svg" style="stroke:#B23B3B" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12" y2="16.01"></line></svg><span class="kpi-num dato-incidencias" style="color:#B23B3B">—</span></div>
+          <div class="kpi-lab" data-i18n="inicio.kpi.incidencias">Incidencias abiertas</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-top"><svg class="kpi-svg" style="stroke:#178A65" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span class="kpi-num dato-empleados" style="color:#178A65">—</span></div>
+          <div class="kpi-lab" data-i18n="inicio.kpi.empleados">Empleados activos</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-top"><svg class="kpi-svg" style="stroke:#854F0B" viewBox="0 0 24 24"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><line x1="9" y1="9" x2="9" y2="9.01"></line><line x1="9" y1="12" x2="9" y2="12.01"></line><line x1="9" y1="15" x2="9" y2="15.01"></line></svg><span class="kpi-num dato-edificios" style="color:#854F0B">—</span></div>
+          <div class="kpi-lab" data-i18n="inicio.kpi.edificios">Edificios</div>
+        </div>
+      </div>
 
-      <a class="tarjeta" href="incidencias.html">
-        <div class="ico ico-incidencias"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg></div>
-        <h3>Incidencias</h3>
-        <p>Reportes de insumos faltantes y problemas en cada edificio</p>
-      </a>
+      <div class="seccion-label" data-i18n="inicio.disponible">Disponible</div>
+      <div class="grid">
 
-      <a class="tarjeta solo-pro" id="card-estadisticas" href="estadisticas.html">
-        <span class="etiqueta-pro">Pro</span>
-        <div class="ico ico-estadisticas"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
-        <h3>Estadísticas</h3>
-        <p>Cumplimiento, áreas más atendidas y tendencias</p>
-      </a>
+        <a class="tarjeta" href="dashboard.html">
+          <div class="ico ico-registros"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg></div>
+          <h3 data-i18n="inicio.registros.t">Registros</h3>
+          <p data-i18n="inicio.registros.d">Ver áreas limpiadas, fotos y horarios en tiempo real</p>
+        </a>
 
-      <a class="tarjeta solo-pro" id="card-reportes" href="reportes.html">
-        <span class="etiqueta-pro">Pro</span>
-        <div class="ico ico-reportes"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
-        <h3>Reportes</h3>
-        <p>Informe mensual en PDF para presentar al cliente</p>
-      </a>
+        <a class="tarjeta" href="admin.html">
+          <div class="ico ico-empleados"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+          <h3 data-i18n="inicio.empleados.t">Empleados</h3>
+          <p data-i18n="inicio.empleados.d">Agregar, activar o desactivar al personal de limpieza</p>
+        </a>
 
-      <a class="tarjeta" href="soporte.html">
-        <div class="ico ico-soporte"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12" y2="17.01"></line></svg></div>
-        <h3>Soporte técnico</h3>
-        <p>Contacto y ayuda con el uso de la plataforma</p>
-      </a>
+        <a class="tarjeta" href="areas.html">
+          <div class="ico ico-edificios"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><line x1="9" y1="9" x2="9" y2="9.01"></line><line x1="9" y1="12" x2="9" y2="12.01"></line><line x1="9" y1="15" x2="9" y2="15.01"></line></svg></div>
+          <h3 data-i18n="inicio.edificios.t">Edificios y áreas</h3>
+          <p data-i18n="inicio.edificios.d">Gestionar espacios y generar códigos QR por área</p>
+        </a>
 
-      <a class="tarjeta solo-admin" id="card-admin" href="panel.html">
-        <span class="etiqueta-admin">Admin</span>
-        <div class="ico ico-admin"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6z"></path><path d="M9 12l2 2 4-4"></path></svg></div>
-        <h3>Administración</h3>
-        <p>Suscripción, equipo y resumen de tu empresa</p>
-      </a>
+        <a class="tarjeta" href="incidencias.html">
+          <div class="ico ico-incidencias"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg></div>
+          <h3 data-i18n="inicio.incidencias.t">Incidencias</h3>
+          <p data-i18n="inicio.incidencias.d">Reportes de insumos faltantes y problemas en cada edificio</p>
+        </a>
 
-    </div>
+        <a class="tarjeta" id="card-estadisticas" href="estadisticas.html">
+          <div class="ico ico-estadisticas"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
+          <h3 data-i18n="inicio.estadisticas.t">Estadísticas</h3>
+          <p data-i18n="inicio.estadisticas.d">Cumplimiento, áreas más atendidas y tendencias</p>
+        </a>
+
+        <a class="tarjeta" id="card-reportes" href="reportes.html">
+          <div class="ico ico-reportes"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+          <h3 data-i18n="inicio.reportes.t">Reportes</h3>
+          <p data-i18n="inicio.reportes.d">Informe mensual en PDF para presentar al cliente</p>
+        </a>
+
+        <a class="tarjeta" href="soporte.html">
+          <div class="ico ico-soporte"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12" y2="17.01"></line></svg></div>
+          <h3 data-i18n="inicio.soporte.t">Soporte técnico</h3>
+          <p data-i18n="inicio.soporte.d">Contacto y ayuda con el uso de la plataforma</p>
+        </a>
+
+        <a class="tarjeta solo-admin" id="card-admin" href="panel.html">
+          <span class="etiqueta-admin" data-i18n="inicio.admin">Admin</span>
+          <div class="ico ico-admin"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6z"></path><path d="M9 12l2 2 4-4"></path></svg></div>
+          <h3 data-i18n="inicio.administracion.t">Administración</h3>
+          <p data-i18n="inicio.administracion.d">Suscripción, equipo y resumen de tu empresa</p>
+        </a>
+
+      </div>
+
+    </main>
 
   </div>
 
   <script>
-    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
+    // El cliente de Supabase (db) y las credenciales vienen de config.js
+    const db = window.db;
+    var nombreUsuario = "";
 
-    let db = null;
-    try {
-      const { createClient } = supabase;
-      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) {
-      console.error("No se pudo conectar a Supabase:", e);
+    function pintarSaludo() {
+      var saludos = document.querySelectorAll(".titulo-saludo");
+      var texto = nombreUsuario ? (I18N.t("inicio.hola") + ", " + nombreUsuario) : I18N.t("inicio.hola");
+      for (var i = 0; i < saludos.length; i++) {
+        saludos[i].textContent = texto;   // textContent = seguro contra XSS
+      }
     }
 
     async function verificarAcceso() {
       if (!db) {
-        document.getElementById("verificando").textContent = "Sin conexión a la base de datos.";
+        document.getElementById("verificando").textContent = I18N.t("comun.sin_conexion");
         return;
       }
       const { data } = await db.auth.getSession();
@@ -219,14 +328,21 @@
       nombre = nombre.replace(/[0-9]/g, "");
       if (nombre) {
         nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1);
-        document.getElementById("titulo-saludo").textContent = "Hola, " + nombre;
+        nombreUsuario = nombre;
       }
+      pintarSaludo();
 
-      await aplicarPlan();
       await aplicarAdmin();
+
+      I18N.aplicar();                 // traduce todo el HTML marcado
+      I18N.onChange(pintarSaludo);    // al cambiar idioma, rearmar el saludo
 
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+
+      cargarIndicadores();
+      setInterval(cargarIndicadores, 10000);   // refresco frecuente (respaldo)
+      suscribirCambios();                       // actualización instantánea si hay realtime
     }
 
     async function aplicarAdmin() {
@@ -243,18 +359,75 @@
       }
     }
 
-    async function aplicarPlan() {
+    function animarContador(els, destino) {
+      if (!els.length) return;
+      var txt = (els[0].textContent || "").replace(/[^0-9]/g, "");
+      var inicio = txt === "" ? 0 : parseInt(txt, 10);
+      if (isNaN(inicio)) inicio = 0;
+      var sinMovimiento = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (sinMovimiento || inicio === destino) {
+        els.forEach(function(el) { el.textContent = destino; });
+        return;
+      }
+      var duracion = 700, t0 = null;
+      function paso(ts) {
+        if (t0 === null) t0 = ts;
+        var p = Math.min((ts - t0) / duracion, 1);
+        var e = 1 - Math.pow(1 - p, 3); // suaviza el final (easeOutCubic)
+        var val = Math.round(inicio + (destino - inicio) * e);
+        els.forEach(function(el) { el.textContent = val; });
+        if (p < 1) { requestAnimationFrame(paso); }
+        else { els.forEach(function(el) { el.textContent = destino; }); }
+      }
+      requestAnimationFrame(paso);
+    }
+
+    function ponerDato(clase, res) {
+      var els = document.querySelectorAll("." + clase);
+      if (res && !res.error && typeof res.count === "number") {
+        animarContador(els, res.count);
+      } else {
+        els.forEach(function(el) { el.textContent = "—"; });
+      }
+    }
+
+    async function cargarIndicadores() {
       try {
-        const { data, error } = await db.rpc("mi_plan");
-        var plan = (!error && data) ? String(data).toLowerCase().trim() : "basico";
-        if (plan === "pro") {
-          document.querySelectorAll(".solo-pro").forEach(function(el) {
-            el.style.display = "block";
-            el.style.animation = "ctFadeIn 0.5s ease forwards";
-          });
-        }
+        var d = new Date();
+        d.setHours(0, 0, 0, 0);            // medianoche de hoy (hora local)
+        var inicioDia = d.toISOString();
+
+        // Las reglas de seguridad (RLS) filtran cada conteo a tu empresa automáticamente
+        var resultados = await Promise.all([
+          db.from("registros").select("*", { count: "exact", head: true }).gte("created_at", inicioDia),
+          db.from("incidencias").select("*", { count: "exact", head: true }).or("resuelto.is.null,resuelto.eq.false"),
+          db.from("empleados").select("*", { count: "exact", head: true }).eq("activo", true),
+          db.from("edificios").select("*", { count: "exact", head: true }).eq("activo", true)
+        ]);
+
+        ponerDato("dato-limpiezas", resultados[0]);
+        ponerDato("dato-incidencias", resultados[1]);
+        ponerDato("dato-empleados", resultados[2]);
+        ponerDato("dato-edificios", resultados[3]);
       } catch (e) {
-        console.error("No se pudo leer el plan:", e);
+        console.error("No se pudieron cargar los indicadores:", e);
+      }
+    }
+
+    function suscribirCambios() {
+      // Si el proyecto tiene Realtime activado, refresca al instante cuando cambian los datos.
+      // Si no, el refresco periódico (cada 10 s) mantiene los números al día igualmente.
+      try {
+        var t;
+        function refrescar() { clearTimeout(t); t = setTimeout(cargarIndicadores, 400); }
+        db.channel("inicio-indicadores")
+          .on("postgres_changes", { event: "*", schema: "public", table: "registros" }, refrescar)
+          .on("postgres_changes", { event: "*", schema: "public", table: "incidencias" }, refrescar)
+          .on("postgres_changes", { event: "*", schema: "public", table: "empleados" }, refrescar)
+          .on("postgres_changes", { event: "*", schema: "public", table: "edificios" }, refrescar)
+          .subscribe();
+      } catch (e) {
+        console.error("Realtime no disponible:", e);
       }
     }
 

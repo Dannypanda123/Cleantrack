@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CleanTrack — Buzón de soporte</title>
+  <title>CleanTrack — Buzón</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
   <script src="ui.js"></script>
 
   <style>
@@ -21,17 +22,27 @@
       --blanco: #FFFFFF;
       --ambar-claro: #FAEEDA;
       --ambar-texto: #854F0B;
+      --azul: #185FA5;
+      --azul-claro: #E6F1FB;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
-    .contenedor { max-width: 640px; margin: 0 auto; display: none; }
+    .contenedor { max-width: 720px; margin: 0 auto; display: none; }
     .verificando { max-width: 640px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+    .sin-acceso { max-width: 640px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; display: none; }
 
     .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
     .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
     .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
     .top-botones { display: flex; gap: 8px; }
     .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+
+    /* Tabs principales */
+    .tabs { display: flex; gap: 6px; background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 6px; margin-bottom: 22px; }
+    .tab { flex: 1; padding: 12px; border: none; background: transparent; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--gris-texto); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .tab.activa { background: var(--azul); color: #fff; }
+    .tab .badge-count { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 20px; padding: 0 7px; border-radius: 10px; background: var(--ambar-claro); color: var(--ambar-texto); font-size: 11px; font-weight: 700; }
+    .tab.activa .badge-count { background: rgba(255,255,255,0.25); color: #fff; }
 
     .resumen { display: flex; gap: 12px; margin-bottom: 22px; }
     .resumen .caja { flex: 1; background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 16px; text-align: center; }
@@ -44,12 +55,15 @@
     .filtro { flex: 1; padding: 10px; border: 1.5px solid var(--gris-borde); background: var(--blanco); border-radius: 11px; font-size: 14px; font-weight: 600; color: var(--gris-texto); cursor: pointer; }
     .filtro.activo { background: var(--verde); color: #fff; border-color: var(--verde); }
 
-    .pregunta-card { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 18px; margin-bottom: 12px; }
-    .pregunta-card.resuelta { opacity: 0.7; }
-    .pregunta-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-    .pregunta-email { font-size: 13px; font-weight: 600; color: var(--gris-verde-700); word-break: break-all; }
-    .pregunta-fecha { font-size: 12px; color: var(--gris-texto); white-space: nowrap; flex-shrink: 0; }
-    .pregunta-texto { font-size: 15px; line-height: 1.5; margin-bottom: 14px; }
+    .card { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 14px; padding: 18px; margin-bottom: 12px; }
+    .card.resuelta { opacity: 0.7; }
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+    .card-email { font-size: 13px; font-weight: 600; color: var(--gris-verde-700); word-break: break-all; }
+    .card-fecha { font-size: 12px; color: var(--gris-texto); white-space: nowrap; flex-shrink: 0; }
+    .card-texto { font-size: 15px; line-height: 1.5; margin-bottom: 14px; word-break: break-word; white-space: pre-wrap; }
+    .card-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; margin-bottom: 12px; font-size: 13px; }
+    .card-datos .et { color: var(--gris-texto); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .card-datos .vl { color: var(--texto); word-break: break-word; }
 
     .badge-estado { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 8px; }
     .badge-pendiente { background: var(--ambar-claro); color: var(--ambar-texto); }
@@ -59,21 +73,34 @@
     .btn-resolver { padding: 9px 16px; border: none; border-radius: 10px; background: var(--verde); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
     .btn-resolver:active { transform: scale(0.97); }
     .btn-reabrir { padding: 9px 16px; border: 1.5px solid var(--gris-borde); border-radius: 10px; background: transparent; color: var(--gris-texto); font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-mail { padding: 9px 14px; border: 1.5px solid var(--azul); border-radius: 10px; background: var(--azul-claro); color: var(--azul); font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
 
     .vacio { text-align: center; color: var(--gris-texto); padding: 40px 20px; font-size: 14px; }
     .cargando { text-align: center; color: var(--gris-texto); padding: 40px; font-size: 14px; }
+
+    .vista { display: none; }
+    .vista.activa { display: block; }
+
+    @media (max-width: 480px) {
+      .card-datos { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="verificando" id="verificando">Verificando sesión...</div>
+  <div class="verificando" id="verificando">Verificando acceso...</div>
+
+  <div class="sin-acceso" id="sin-acceso">
+    Esta sección es solo para el staff de CleanTrack.<br><br>
+    <a class="btn-salir" href="inicio.html">← Volver al inicio</a>
+  </div>
 
   <div class="contenedor" id="contenedor">
 
     <div class="top">
       <div>
-        <div class="marca">CleanTrack</div>
-        <h1>Buzón de soporte</h1>
+        <div class="marca">CleanTrack · Staff</div>
+        <h1>Buzón</h1>
       </div>
       <div class="top-botones">
         <a class="btn-salir" href="inicio.html">← Inicio</a>
@@ -81,42 +108,82 @@
       </div>
     </div>
 
-    <div class="resumen">
-      <div class="caja"><div class="num pendientes" id="n-pendientes">—</div><div class="lbl">Pendientes</div></div>
-      <div class="caja"><div class="num resueltas" id="n-resueltas">—</div><div class="lbl">Resueltas</div></div>
-      <div class="caja"><div class="num" id="n-total">—</div><div class="lbl">Total</div></div>
+    <!-- Pestañas: Soporte vs Solicitudes -->
+    <div class="tabs">
+      <button class="tab activa" id="tab-soporte" onclick="cambiarTab('soporte')">
+        Preguntas de soporte
+        <span class="badge-count" id="badge-soporte">0</span>
+      </button>
+      <button class="tab" id="tab-solicitudes" onclick="cambiarTab('solicitudes')">
+        Cotizaciones (landing)
+        <span class="badge-count" id="badge-solicitudes">0</span>
+      </button>
     </div>
 
-    <div class="filtros">
-      <button class="filtro activo" id="f-pendientes" onclick="filtrar('pendientes')">Pendientes</button>
-      <button class="filtro" id="f-resueltas" onclick="filtrar('resueltas')">Resueltas</button>
-      <button class="filtro" id="f-todas" onclick="filtrar('todas')">Todas</button>
+    <!-- VISTA: SOPORTE -->
+    <div class="vista activa" id="vista-soporte">
+      <div class="resumen">
+        <div class="caja"><div class="num pendientes" id="n-sop-pendientes">—</div><div class="lbl">Pendientes</div></div>
+        <div class="caja"><div class="num resueltas" id="n-sop-resueltas">—</div><div class="lbl">Resueltas</div></div>
+        <div class="caja"><div class="num" id="n-sop-total">—</div><div class="lbl">Total</div></div>
+      </div>
+
+      <div class="filtros">
+        <button class="filtro activo" id="f-sop-pendientes" onclick="filtrarSoporte('pendientes')">Pendientes</button>
+        <button class="filtro" id="f-sop-resueltas" onclick="filtrarSoporte('resueltas')">Resueltas</button>
+        <button class="filtro" id="f-sop-todas" onclick="filtrarSoporte('todas')">Todas</button>
+      </div>
+
+      <div id="lista-soporte"><div class="cargando">Cargando preguntas...</div></div>
     </div>
 
-    <div id="lista"><div class="cargando">Cargando preguntas...</div></div>
+    <!-- VISTA: SOLICITUDES -->
+    <div class="vista" id="vista-solicitudes">
+      <div class="resumen">
+        <div class="caja"><div class="num pendientes" id="n-sol-pendientes">—</div><div class="lbl">Sin atender</div></div>
+        <div class="caja"><div class="num resueltas" id="n-sol-atendidas">—</div><div class="lbl">Atendidas</div></div>
+        <div class="caja"><div class="num" id="n-sol-total">—</div><div class="lbl">Total</div></div>
+      </div>
+
+      <div class="filtros">
+        <button class="filtro activo" id="f-sol-pendientes" onclick="filtrarSolicitudes('pendientes')">Sin atender</button>
+        <button class="filtro" id="f-sol-atendidas" onclick="filtrarSolicitudes('atendidas')">Atendidas</button>
+        <button class="filtro" id="f-sol-todas" onclick="filtrarSolicitudes('todas')">Todas</button>
+      </div>
+
+      <div id="lista-solicitudes"><div class="cargando">Cargando cotizaciones...</div></div>
+    </div>
 
   </div>
 
   <script>
-    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
-
-    let db = null;
-    try {
-      const { createClient } = supabase;
-      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) { console.error(e); }
-
-    var todas = [];
-    var filtroActual = "pendientes";
+    var todasSoporte = [];
+    var todasSolicitudes = [];
+    var filtroSoporte = "pendientes";
+    var filtroSolicitudes = "pendientes";
 
     async function verificarAcceso() {
       if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
+
+      // Solo el staff de CleanTrack (superadmin) puede ver el buzón
+      try {
+        const { data: esStaff, error } = await db.rpc("soy_superadmin");
+        if (error || esStaff !== true) {
+          document.getElementById("verificando").style.display = "none";
+          document.getElementById("sin-acceso").style.display = "block";
+          return;
+        }
+      } catch (e) {
+        document.getElementById("verificando").style.display = "none";
+        document.getElementById("sin-acceso").style.display = "block";
+        return;
+      }
+
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
-      cargar();
+      cargarTodo();
     }
 
     async function salir() {
@@ -124,29 +191,11 @@
       window.location.href = "login.html";
     }
 
-    async function cargar() {
-      const { data, error } = await db.from("soporte").select("*").order("created_at", { ascending: false });
-      if (error) {
-        document.getElementById("lista").innerHTML = '<div class="vacio">Error al cargar: ' + error.message + '</div>';
-        return;
-      }
-      todas = data || [];
-
-      var pend = todas.filter(function(p){ return !p.resuelto; }).length;
-      var resu = todas.filter(function(p){ return p.resuelto; }).length;
-      document.getElementById("n-pendientes").textContent = pend;
-      document.getElementById("n-resueltas").textContent = resu;
-      document.getElementById("n-total").textContent = todas.length;
-
-      pintar();
-    }
-
-    function filtrar(f) {
-      filtroActual = f;
-      document.getElementById("f-pendientes").classList.toggle("activo", f === "pendientes");
-      document.getElementById("f-resueltas").classList.toggle("activo", f === "resueltas");
-      document.getElementById("f-todas").classList.toggle("activo", f === "todas");
-      pintar();
+    function cambiarTab(tab) {
+      document.getElementById("tab-soporte").classList.toggle("activa", tab === "soporte");
+      document.getElementById("tab-solicitudes").classList.toggle("activa", tab === "solicitudes");
+      document.getElementById("vista-soporte").classList.toggle("activa", tab === "soporte");
+      document.getElementById("vista-solicitudes").classList.toggle("activa", tab === "solicitudes");
     }
 
     function fmtFecha(iso) {
@@ -157,43 +206,213 @@
       return dd + "/" + mm + "/" + yy + " " + hh + ":" + (mi < 10 ? "0" : "") + mi + ampm;
     }
 
-    function pintar() {
-      var lista = document.getElementById("lista");
-      var items = todas;
-      if (filtroActual === "pendientes") items = todas.filter(function(p){ return !p.resuelto; });
-      else if (filtroActual === "resueltas") items = todas.filter(function(p){ return p.resuelto; });
+    async function cargarTodo() {
+      await cargarSoporte();
+      await cargarSolicitudes();
+    }
+
+    // ============ SOPORTE ============
+    async function cargarSoporte() {
+      const { data, error } = await db.from("soporte").select("*").order("created_at", { ascending: false });
+      if (error) {
+        document.getElementById("lista-soporte").innerHTML = "";
+        var err = document.createElement("div");
+        err.className = "vacio";
+        err.textContent = "Error al cargar: " + error.message;
+        document.getElementById("lista-soporte").appendChild(err);
+        return;
+      }
+      todasSoporte = data || [];
+
+      var pend = todasSoporte.filter(function(p){ return !p.resuelto; }).length;
+      var resu = todasSoporte.filter(function(p){ return p.resuelto; }).length;
+      document.getElementById("n-sop-pendientes").textContent = pend;
+      document.getElementById("n-sop-resueltas").textContent = resu;
+      document.getElementById("n-sop-total").textContent = todasSoporte.length;
+      document.getElementById("badge-soporte").textContent = pend;
+
+      pintarSoporte();
+    }
+
+    function filtrarSoporte(f) {
+      filtroSoporte = f;
+      document.getElementById("f-sop-pendientes").classList.toggle("activo", f === "pendientes");
+      document.getElementById("f-sop-resueltas").classList.toggle("activo", f === "resueltas");
+      document.getElementById("f-sop-todas").classList.toggle("activo", f === "todas");
+      pintarSoporte();
+    }
+
+    function pintarSoporte() {
+      var lista = document.getElementById("lista-soporte");
+      var items = todasSoporte;
+      if (filtroSoporte === "pendientes") items = todasSoporte.filter(function(p){ return !p.resuelto; });
+      else if (filtroSoporte === "resueltas") items = todasSoporte.filter(function(p){ return p.resuelto; });
 
       if (items.length === 0) {
-        var msg = filtroActual === "pendientes" ? "No hay preguntas pendientes. ¡Todo al día!" : (filtroActual === "resueltas" ? "Aún no hay preguntas resueltas." : "Aún no hay preguntas.");
-        lista.innerHTML = '<div class="vacio">' + msg + '</div>';
+        var msg = filtroSoporte === "pendientes" ? "No hay preguntas pendientes. ¡Todo al día!" : (filtroSoporte === "resueltas" ? "Aún no hay preguntas resueltas." : "Aún no hay preguntas.");
+        lista.innerHTML = "";
+        var vacio = document.createElement("div");
+        vacio.className = "vacio";
+        vacio.textContent = msg;
+        lista.appendChild(vacio);
         return;
       }
 
       lista.innerHTML = "";
       items.forEach(function(p) {
         var card = document.createElement("div");
-        card.className = "pregunta-card" + (p.resuelto ? " resuelta" : "");
+        card.className = "card" + (p.resuelto ? " resuelta" : "");
+
         var badge = p.resuelto
           ? '<span class="badge-estado badge-resuelto">Resuelta</span>'
           : '<span class="badge-estado badge-pendiente">Pendiente</span>';
-        var boton = p.resuelto
-          ? '<button class="btn-reabrir" onclick="cambiarEstado(' + p.id + ', false)">Reabrir</button>'
-          : '<button class="btn-resolver" onclick="cambiarEstado(' + p.id + ', true)">Marcar como resuelta</button>';
+
         card.innerHTML =
-          '<div class="pregunta-top">' +
-            '<div class="pregunta-email">' + (p.email_usuario || "Sin correo") + '</div>' +
-            '<div class="pregunta-fecha">' + fmtFecha(p.created_at) + '</div>' +
+          '<div class="card-top">' +
+            '<div class="card-email"></div>' +
+            '<div class="card-fecha"></div>' +
           '</div>' +
-          '<div class="pregunta-texto">' + p.pregunta + '</div>' +
-          '<div class="acciones-card">' + badge + boton + '</div>';
+          '<div class="card-texto"></div>' +
+          '<div class="acciones-card">' + badge + '</div>';
+
+        // Datos del usuario con textContent (anti-XSS)
+        card.querySelector(".card-email").textContent = p.email_usuario || "Sin correo";
+        card.querySelector(".card-fecha").textContent = fmtFecha(p.created_at);
+        card.querySelector(".card-texto").textContent = p.pregunta || "";
+
+        // Botón de cambio de estado
+        var btn = document.createElement("button");
+        if (p.resuelto) {
+          btn.className = "btn-reabrir";
+          btn.textContent = "Reabrir";
+          btn.addEventListener("click", function() { cambiarEstadoSoporte(p.id, false); });
+        } else {
+          btn.className = "btn-resolver";
+          btn.textContent = "Marcar como resuelta";
+          btn.addEventListener("click", function() { cambiarEstadoSoporte(p.id, true); });
+        }
+        card.querySelector(".acciones-card").appendChild(btn);
+
         lista.appendChild(card);
       });
     }
 
-    async function cambiarEstado(id, resuelto) {
+    async function cambiarEstadoSoporte(id, resuelto) {
       const { error } = await db.from("soporte").update({ resuelto: resuelto }).eq("id", id);
       if (error) { uiToast("No se pudo actualizar: " + error.message, "error"); return; }
-      cargar();
+      cargarSoporte();
+    }
+
+    // ============ SOLICITUDES (cotizaciones de la landing) ============
+    async function cargarSolicitudes() {
+      const { data, error } = await db.from("solicitudes").select("*").order("created_at", { ascending: false });
+      if (error) {
+        document.getElementById("lista-solicitudes").innerHTML = "";
+        var err = document.createElement("div");
+        err.className = "vacio";
+        err.textContent = "Error al cargar: " + error.message;
+        document.getElementById("lista-solicitudes").appendChild(err);
+        return;
+      }
+      todasSolicitudes = data || [];
+
+      var pend = todasSolicitudes.filter(function(s){ return !s.atendido; }).length;
+      var aten = todasSolicitudes.filter(function(s){ return s.atendido; }).length;
+      document.getElementById("n-sol-pendientes").textContent = pend;
+      document.getElementById("n-sol-atendidas").textContent = aten;
+      document.getElementById("n-sol-total").textContent = todasSolicitudes.length;
+      document.getElementById("badge-solicitudes").textContent = pend;
+
+      pintarSolicitudes();
+    }
+
+    function filtrarSolicitudes(f) {
+      filtroSolicitudes = f;
+      document.getElementById("f-sol-pendientes").classList.toggle("activo", f === "pendientes");
+      document.getElementById("f-sol-atendidas").classList.toggle("activo", f === "atendidas");
+      document.getElementById("f-sol-todas").classList.toggle("activo", f === "todas");
+      pintarSolicitudes();
+    }
+
+    function pintarSolicitudes() {
+      var lista = document.getElementById("lista-solicitudes");
+      var items = todasSolicitudes;
+      if (filtroSolicitudes === "pendientes") items = todasSolicitudes.filter(function(s){ return !s.atendido; });
+      else if (filtroSolicitudes === "atendidas") items = todasSolicitudes.filter(function(s){ return s.atendido; });
+
+      if (items.length === 0) {
+        var msg = filtroSolicitudes === "pendientes" ? "No hay cotizaciones sin atender." : (filtroSolicitudes === "atendidas" ? "Aún no hay cotizaciones atendidas." : "Aún no hay cotizaciones.");
+        lista.innerHTML = "";
+        var vacio = document.createElement("div");
+        vacio.className = "vacio";
+        vacio.textContent = msg;
+        lista.appendChild(vacio);
+        return;
+      }
+
+      lista.innerHTML = "";
+      items.forEach(function(s) {
+        var card = document.createElement("div");
+        card.className = "card" + (s.atendido ? " resuelta" : "");
+
+        var badge = s.atendido
+          ? '<span class="badge-estado badge-resuelto">Atendida</span>'
+          : '<span class="badge-estado badge-pendiente">Sin atender</span>';
+
+        card.innerHTML =
+          '<div class="card-top">' +
+            '<div class="card-email"></div>' +
+            '<div class="card-fecha"></div>' +
+          '</div>' +
+          '<div class="card-datos">' +
+            '<div><div class="et">Nombre</div><div class="vl" data-campo="nombre"></div></div>' +
+            '<div><div class="et">Empresa</div><div class="vl" data-campo="empresa"></div></div>' +
+            '<div><div class="et">Email</div><div class="vl" data-campo="email"></div></div>' +
+            '<div><div class="et">Edificios</div><div class="vl" data-campo="edificios"></div></div>' +
+          '</div>' +
+          '<div class="card-texto"></div>' +
+          '<div class="acciones-card">' + badge + '</div>';
+
+        // Datos con textContent (anti-XSS)
+        card.querySelector(".card-email").textContent = s.email || "Sin email";
+        card.querySelector(".card-fecha").textContent = fmtFecha(s.created_at);
+        card.querySelector('[data-campo="nombre"]').textContent = s.nombre || "—";
+        card.querySelector('[data-campo="empresa"]').textContent = s.empresa || "—";
+        card.querySelector('[data-campo="email"]').textContent = s.email || "—";
+        card.querySelector('[data-campo="edificios"]').textContent = s.edificios || "—";
+        card.querySelector(".card-texto").textContent = s.mensaje || "(sin mensaje)";
+
+        // Acciones: enlace a responder por email + botón de estado
+        var acciones = card.querySelector(".acciones-card");
+
+        if (s.email) {
+          var btnMail = document.createElement("a");
+          btnMail.className = "btn-mail";
+          btnMail.href = "mailto:" + s.email + "?subject=CleanTrack quote — " + (s.empresa || "");
+          btnMail.textContent = "Responder por email";
+          acciones.appendChild(btnMail);
+        }
+
+        var btnEstado = document.createElement("button");
+        if (s.atendido) {
+          btnEstado.className = "btn-reabrir";
+          btnEstado.textContent = "Marcar sin atender";
+          btnEstado.addEventListener("click", function() { cambiarEstadoSolicitud(s.id, false); });
+        } else {
+          btnEstado.className = "btn-resolver";
+          btnEstado.textContent = "Marcar como atendida";
+          btnEstado.addEventListener("click", function() { cambiarEstadoSolicitud(s.id, true); });
+        }
+        acciones.appendChild(btnEstado);
+
+        lista.appendChild(card);
+      });
+    }
+
+    async function cambiarEstadoSolicitud(id, atendido) {
+      const { error } = await db.from("solicitudes").update({ atendido: atendido }).eq("id", id);
+      if (error) { uiToast("No se pudo actualizar: " + error.message, "error"); return; }
+      cargarSolicitudes();
     }
 
     verificarAcceso();

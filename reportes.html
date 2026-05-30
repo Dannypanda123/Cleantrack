@@ -6,36 +6,55 @@
   <title>CleanTrack — Reportes</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="idiomas.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600&display=swap" rel="stylesheet" />
 
   <style>
     :root {
-      --verde: #1D9E75; --verde-claro: #EAF3DE; --verde-texto: #0F6E56;
-      --azul: #185FA5; --azul-claro: #E6F1FB;
-      --gris-fondo: #F5F4EF; --gris-texto: #6B6A64; --gris-borde: #E2E0D8;
-      --texto: #2C2C2A; --blanco: #FFFFFF; --rojo: #A32D2D; --rojo-claro: #FCEBEB;
+      --azul-osc: #0C447C; --azul: #185FA5; --azul-suave: #BBD2EA;
+      --verde: #178A65; --verde-claro: #EAF3DE; --verde-texto: #27500A;
+      --azul-claro: #E6F1FB;
+      --gris-fondo: #F5F4EF; --gris-texto: #5A6573; --gris-borde: #E2E0D8;
+      --texto: #1B2733; --blanco: #FFFFFF; --rojo: #A32D2D; --rojo-claro: #FCEBEB;
       --ambar-claro: #FAEEDA; --ambar-texto: #854F0B;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
-    .contenedor { max-width: 600px; margin: 0 auto; display: none; }
-    .verificando { max-width: 600px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+    body { font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; }
+    .verificando { max-width: 600px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; padding: 0 20px; }
+    .contenedor { display: none; }
 
-    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-    .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
-    .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
-    .top-botones { display: flex; gap: 8px; }
-    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+    /* ===== Cabecera azul ===== */
+    .cabecera { background: var(--azul-osc); }
+    .cab-inner { max-width: 600px; margin: 0 auto; padding: 18px 20px 22px; }
+    .cab-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.16); }
+    .barra-marca { display: flex; align-items: center; gap: 9px; }
+    .logo-simbolo { height: 30px; width: auto; display: block; }
+    .marca-texto { font-family: "Sora", sans-serif; font-size: 18px; font-weight: 600; color: var(--blanco); letter-spacing: -0.01em; }
+    .cab-botones { display: flex; gap: 8px; }
+    .btn-cab { background: transparent; color: var(--blanco); border: 1.5px solid rgba(255,255,255,0.45); padding: 8px 15px; border-radius: 11px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; font-family: inherit; white-space: nowrap; }
+    .btn-cab:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.65); }
+    .btn-cab:active { transform: scale(0.97); }
+    .cab-titulo { margin-top: 16px; }
+    .cab-titulo h1 { font-size: 23px; font-weight: 600; color: var(--blanco); }
+    .cab-sub { font-size: 13px; color: var(--azul-suave); margin-top: 3px; }
+
+    /* ===== Cuerpo ===== */
+    .main { max-width: 600px; margin: 0 auto; padding: 22px 20px 40px; }
 
     .tarjeta { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
     .tarjeta h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
     .tarjeta .sub { font-size: 13px; color: var(--gris-texto); margin-bottom: 18px; }
 
     label { display: block; font-size: 13px; font-weight: 600; color: var(--gris-texto); margin-bottom: 6px; }
-    select, input[type="date"] { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 16px; outline: none; background: var(--blanco); color: var(--texto); cursor: pointer; }
+    select, input[type="date"] { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 16px; outline: none; background: var(--blanco); color: var(--texto); cursor: pointer; font-family: inherit; }
     select:focus, input[type="date"]:focus { border-color: var(--azul); }
 
-    .btn-generar { width: 100%; padding: 16px; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; background: #3C993C; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-generar { width: 100%; padding: 16px; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; background: var(--verde); color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; }
     .btn-generar:active { transform: scale(0.98); }
     .btn-generar:disabled { opacity: 0.6; }
 
@@ -43,7 +62,7 @@
     .preview h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
     .preview-metricas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
     .pm { background: var(--gris-fondo); border-radius: 12px; padding: 14px; text-align: center; }
-    .pm .v { font-size: 22px; font-weight: 600; }
+    .pm .v { font-size: 22px; font-weight: 600; color: var(--azul); }
     .pm .v.inc { color: var(--ambar-texto); }
     .pm .l { font-size: 10px; color: var(--gris-texto); margin-top: 2px; }
 
@@ -51,75 +70,95 @@
     .mensaje.ok { background: var(--verde-claro); color: var(--verde-texto); display: block; }
     .mensaje.error { background: var(--rojo-claro); color: var(--rojo); display: block; }
     .mensaje.cargando { background: var(--azul-claro); color: var(--azul); display: block; }
+
+    /* ===================== PC (pantallas anchas) ===================== */
+    @media (min-width: 900px) {
+      .cab-inner { max-width: 1000px; padding: 20px 32px 24px; }
+      .cab-titulo h1 { font-size: 25px; }
+      .main { max-width: 1000px; padding: 26px 32px 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+      .tarjeta { margin-bottom: 0; }
+      .preview { margin-bottom: 0; }
+      /* La vista previa, cuando está oculta, no debe dejar hueco en el grid */
+      .preview:not([style*="block"]) { display: none; }
+    }
   </style>
+
 </head>
 <body>
 
-  <div class="verificando" id="verificando">Verificando sesión...</div>
+  <div class="verificando" id="verificando" data-i18n="comun.verificando">Verificando sesión...</div>
 
   <div class="contenedor" id="contenedor">
 
-    <div class="top">
-      <div>
-        <div class="marca">CleanTrack</div>
-        <h1>Reportes</h1>
+    <header class="cabecera">
+      <div class="cab-inner">
+        <div class="cab-fila">
+          <div class="barra-marca">
+            <img src="logo-simbolo.png" alt="" class="logo-simbolo" />
+            <span class="marca-texto">CleanTrack</span>
+          </div>
+          <div class="cab-botones">
+            <a class="btn-cab" href="inicio.html" data-i18n="comun.inicio">← Inicio</a>
+            <button class="btn-cab" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+            <button class="btn-cab" onclick="salir()" data-i18n="comun.salir">Salir</button>
+          </div>
+        </div>
+        <div class="cab-titulo">
+          <h1 data-i18n="rep.titulo">Reportes</h1>
+          <div class="cab-sub" data-i18n="rep.generar_sub">Crea un informe en PDF para presentar a tu cliente</div>
+        </div>
       </div>
-      <div class="top-botones">
-        <a class="btn-salir" href="inicio.html">← Inicio</a>
-        <button class="btn-salir" onclick="salir()">Salir</button>
-      </div>
-    </div>
+    </header>
+
+    <main class="main">
 
     <div class="tarjeta">
-      <h2>Generar informe</h2>
-      <div class="sub">Crea un informe en PDF para presentar al property manager</div>
+      <h2 data-i18n="rep.generar_titulo">Generar informe</h2>
 
-      <label for="sel-edificio">Edificio</label>
+      <label for="sel-edificio" data-i18n="rep.edificio">Edificio</label>
       <select id="sel-edificio"><option value="">Cargando...</option></select>
 
-      <label for="sel-periodo">Tipo de informe</label>
+      <label for="sel-periodo" data-i18n="rep.tipo">Tipo de informe</label>
       <select id="sel-periodo" onchange="cambioPeriodo()">
-        <option value="diario">Diario (un día)</option>
-        <option value="7-dias">Semanal (últimos 7 días)</option>
-        <option value="mes-actual">Mensual (este mes)</option>
-        <option value="mes-pasado">Mensual (mes pasado)</option>
+        <option value="diario" data-i18n="rep.tipo_diario">Diario (un día)</option>
+        <option value="7-dias" data-i18n="rep.tipo_semanal">Semanal (últimos 7 días)</option>
+        <option value="mes-actual" data-i18n="rep.tipo_mes_actual">Mensual (este mes)</option>
+        <option value="mes-pasado" data-i18n="rep.tipo_mes_pasado">Mensual (mes pasado)</option>
       </select>
 
       <div id="cont-fecha" style="display:none;">
-        <label for="sel-fecha">Día del informe</label>
+        <label for="sel-fecha" data-i18n="rep.dia_informe">Día del informe</label>
         <input type="date" id="sel-fecha" min="2020-01-01" max="2040-12-31" />
       </div>
 
-      <button class="btn-generar" id="btn-generar" onclick="generar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> Generar PDF</button>
+      <button class="btn-generar" id="btn-generar" onclick="generar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> <span data-i18n="rep.btn_generar">Generar PDF</span></button>
       <div class="mensaje" id="mensaje"></div>
     </div>
 
     <div class="preview" id="preview">
-      <h2>Vista previa del informe</h2>
+      <h2 data-i18n="rep.preview_titulo">Vista previa del informe</h2>
       <div class="preview-metricas">
-        <div class="pm"><div class="v" id="pv-total">—</div><div class="l">Áreas limpiadas</div></div>
-        <div class="pm"><div class="v" id="pv-foto">—</div><div class="l">Con foto</div></div>
-        <div class="pm"><div class="v" id="pv-dias">—</div><div class="l" id="lbl-dias">Días activos</div></div>
-        <div class="pm"><div class="v inc" id="pv-inc">—</div><div class="l">Incidencias</div></div>
+        <div class="pm"><div class="v" id="pv-total">—</div><div class="l" data-i18n="rep.pv_areas">Áreas limpiadas</div></div>
+        <div class="pm"><div class="v" id="pv-foto">—</div><div class="l" data-i18n="rep.pv_foto">Con foto</div></div>
+        <div class="pm"><div class="v" id="pv-dias">—</div><div class="l" id="lbl-dias" data-i18n="rep.pv_dias">Días activos</div></div>
+        <div class="pm"><div class="v inc" id="pv-inc">—</div><div class="l" data-i18n="rep.pv_inc">Incidencias</div></div>
       </div>
     </div>
+
+    </main>
 
   </div>
 
   <script>
-    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
-
-    let db = null;
-    try {
-      const { createClient } = supabase;
-      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) { console.error(e); }
+    // El cliente de Supabase (db) y las credenciales vienen de config.js
+    const db = window.db;
 
     var todosRegistros = [];
     var todasIncidencias = [];
     var todasAreas = [];
     var logoDataUrl = null;  // se carga al inicio
+    var empresaNombre = "CleanTrack";   // se reemplaza con el nombre real de la compañía
+    var empresaIniciales = "CT";        // iniciales para el cuadro de la cabecera
 
     // ============================================================
     // PALETA DE COLORES PARA LOS PDFs (RGB)
@@ -165,18 +204,14 @@
     }
 
     async function verificarAcceso() {
-      if (!db) { document.getElementById("verificando").textContent = "Sin conexión."; return; }
+      if (!db) { document.getElementById("verificando").textContent = I18N.t("comun.sin_conexion"); return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
 
-      try {
-        const { data: planData, error } = await db.rpc("mi_plan");
-        var plan = (!error && planData) ? String(planData).toLowerCase().trim() : "basico";
-        if (plan !== "pro") { window.location.href = "inicio.html"; return; }
-      } catch (e) { window.location.href = "inicio.html"; return; }
-
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+      I18N.aplicar();
+      I18N.onChange(function(){ I18N.aplicar(); cargarTodo(); });
       var hoy = new Date();
       var hoyStr = hoy.getFullYear() + "-" + String(hoy.getMonth()+1).padStart(2,"0") + "-" + String(hoy.getDate()).padStart(2,"0");
       var campoFecha = document.getElementById("sel-fecha");
@@ -185,7 +220,33 @@
       cambioPeriodo();
       // Cargar el logo en paralelo a los datos
       logoDataUrl = await cargarLogoBase64();
+      await cargarEmpresa();
       cargarTodo();
+    }
+
+    // Carga el nombre de la compañía (RLS ya filtra a la empresa del usuario)
+    async function cargarEmpresa() {
+      try {
+        const { data, error } = await db.from("companias").select("nombre").limit(1);
+        if (!error && data && data.length > 0 && data[0].nombre) {
+          empresaNombre = data[0].nombre;
+          empresaIniciales = calcularIniciales(empresaNombre);
+        }
+      } catch (e) {
+        console.warn("No se pudo cargar la compañía para el informe:", e);
+      }
+    }
+
+    // Iniciales = primera letra de las 2 primeras palabras (con respaldos)
+    function calcularIniciales(nombre) {
+      var limpio = (nombre || "").trim();
+      if (!limpio) return "CT";
+      var palabras = limpio.split(/\s+/).filter(function(p){ return p.length > 0; });
+      if (palabras.length >= 2) {
+        return (palabras[0].charAt(0) + palabras[1].charAt(0)).toUpperCase();
+      }
+      // Una sola palabra: usar sus 2 primeras letras (o 1 si es muy corta)
+      return limpio.substring(0, 2).toUpperCase();
     }
 
     async function salir() {
@@ -241,16 +302,23 @@
     }
 
     function nombrePeriodo(periodo) {
-      var meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+      var meses = I18N.t("pdf.meses").split(",");
       var ahora = new Date();
+      var texto;
       if (periodo === "diario") {
         var val = document.getElementById("sel-fecha").value;
         var partes = val.split("-");
-        return partes[2] + " de " + meses[partes[1]-1] + " " + partes[0];
+        texto = partes[2] + I18N.t("pdf.de") + meses[partes[1]-1] + " " + partes[0];
+      } else if (periodo === "mes-actual") {
+        texto = meses[ahora.getMonth()] + " " + ahora.getFullYear();
+      } else if (periodo === "mes-pasado") {
+        var m = ahora.getMonth() - 1; var y = ahora.getFullYear(); if (m < 0) { m = 11; y--; }
+        texto = meses[m] + " " + y;
+      } else {
+        texto = I18N.t("pdf.ultimos7");
       }
-      if (periodo === "mes-actual") return meses[ahora.getMonth()] + " " + ahora.getFullYear();
-      if (periodo === "mes-pasado") { var m = ahora.getMonth() - 1; var y = ahora.getFullYear(); if (m < 0) { m = 11; y--; } return meses[m] + " " + y; }
-      return "últimos 7 días";
+      // Mayúscula inicial
+      return texto.charAt(0).toUpperCase() + texto.slice(1);
     }
 
     function fmtFecha(iso) {
@@ -279,30 +347,23 @@
       var pageW = doc.internal.pageSize.getWidth();
       var y = 18;
 
-      // Logo del pin (si está disponible)
-      if (logoDataUrl) {
-        try {
-          doc.addImage(logoDataUrl, 'PNG', 14, y, 12, 16);
-        } catch (e) {
-          // si falla, dibujamos un círculo verde como placeholder
-          fillRGB(doc, PDF_COLORS.verde);
-          doc.circle(20, y + 8, 6, "F");
-        }
-      } else {
-        // Sin logo cargado: dibujar pin geométrico simple
-        fillRGB(doc, PDF_COLORS.verde);
-        doc.circle(20, y + 8, 6, "F");
-      }
+      // Cuadro con las iniciales de la empresa (en vez del logo de CleanTrack)
+      fillRGB(doc, PDF_COLORS.azul);
+      doc.roundedRect(14, y, 13, 13, 2.5, 2.5, "F");
+      textRGB(doc, PDF_COLORS.blanco);
+      doc.setFontSize(11); doc.setFont(undefined, "bold");
+      // Centrado horizontal (centro del cuadro = 14 + 6.5 = 20.5) y vertical con baseline middle
+      doc.text(empresaIniciales, 20.5, y + 6.5, { align: "center", baseline: "middle" });
 
-      // "CleanTrack" en azul oscuro
+      // Nombre de la empresa en azul oscuro
       textRGB(doc, PDF_COLORS.azulOsc);
-      doc.setFontSize(22); doc.setFont(undefined, "bold");
-      doc.text("CleanTrack", 30, y + 8);
+      doc.setFontSize(20); doc.setFont(undefined, "bold");
+      doc.text(empresaNombre, 31, y + 7);
 
       // Subtítulo en cursiva azul
       textRGB(doc, PDF_COLORS.azul);
       doc.setFontSize(11); doc.setFont(undefined, "italic");
-      doc.text(subtitulo, 30, y + 16);
+      doc.text(subtitulo, 31, y + 14);
 
       // Bloque de info a la derecha
       var infoX = pageW - 14;
@@ -358,116 +419,36 @@
         fillRGB(doc, PDF_COLORS.cabeceraBg);
         doc.roundedRect(x, y, cardW, cardH, 3, 3, "F");
 
-        // Círculo de color con icono
-        var cx = x + cardW / 2;
-        var cy = y + 9;
+        // Línea de color de acento en la parte superior
         fillRGB(doc, c.color);
-        doc.circle(cx, cy, 4.5, "F");
-        // Dibujar el icono dentro del círculo (color blanco)
-        dibujarIcono(doc, c.icono, cx, cy, PDF_COLORS.blanco);
+        doc.roundedRect(x, y, cardW, 2.2, 1, 1, "F");
 
-        // Número grande
-        textRGB(doc, PDF_COLORS.azulOsc);
-        doc.setFontSize(18); doc.setFont(undefined, "bold");
-        doc.text(String(c.valor), cx, y + 22, { align: "center" });
+        var cx = x + cardW / 2;
+
+        // Número grande en el color de la tarjeta
+        textRGB(doc, c.color);
+        doc.setFontSize(20); doc.setFont(undefined, "bold");
+        doc.text(String(c.valor), cx, y + 18, { align: "center" });
 
         // Etiqueta
         textRGB(doc, PDF_COLORS.textoSoft);
         doc.setFontSize(8); doc.setFont(undefined, "normal");
-        doc.text(c.etiqueta, cx, y + 30, { align: "center" });
+        doc.text(c.etiqueta, cx, y + 28, { align: "center" });
       });
 
       return y + cardH + 10;
     }
 
-    // Dibujar iconos pequeños dentro de un círculo (color en RGB)
-    function dibujarIcono(doc, tipo, cx, cy, color) {
-      strokeRGB(doc, color);
-      fillRGB(doc, color);
-      doc.setLineWidth(0.6);
-
-      if (tipo === 'escoba') {
-        // Escoba: rectángulo (cepillo) + línea (palo) + 2 chispas (estrellas pequeñas)
-        // Cepillo - rectángulo
-        doc.rect(cx - 1.8, cy + 0.3, 2.4, 1.2, "F");
-        // Palo
-        doc.setLineWidth(0.7);
-        doc.line(cx + 0.6, cy + 1.5, cx + 2, cy + 2.8);
-        // 2 chispas (asteriscos pequeños)
-        doc.setLineWidth(0.4);
-        doc.line(cx - 2, cy - 1.5, cx - 2, cy - 0.7);
-        doc.line(cx - 2.4, cy - 1.1, cx - 1.6, cy - 1.1);
-        doc.line(cx + 0.4, cy - 2.2, cx + 0.4, cy - 1.5);
-        doc.line(cx + 0, cy - 1.85, cx + 0.8, cy - 1.85);
-      } else if (tipo === 'camara') {
-        // Cámara: rectángulo con lente circular
-        doc.rect(cx - 2.4, cy - 1.2, 4.8, 3.2, "F");
-        // Pequeña parte de arriba (visor)
-        doc.rect(cx - 0.8, cy - 1.8, 1.6, 0.6, "F");
-        // Lente (círculo blanco dentro)
-        textRGB(doc, color);  // dummy
-        // Cambiar relleno temporalmente: usamos el color de fondo del círculo (verde) para "vaciar"
-        // Truco: dibujar dentro de la cámara un círculo en azul oscuro para simular lente
-        doc.setFillColor(255, 255, 255);
-        doc.circle(cx, cy + 0.4, 1.1, "F");
-        // Restaurar fill al color original
-        fillRGB(doc, color);
-      } else if (tipo === 'persona') {
-        // Persona: círculo (cabeza) + arco (hombros)
-        doc.circle(cx, cy - 1.5, 1.2, "F");
-        // Cuerpo: rectángulo redondeado tipo trapecio
-        doc.roundedRect(cx - 2.2, cy + 0.3, 4.4, 2.2, 1.1, 1.1, "F");
-      } else if (tipo === 'alerta') {
-        // Triángulo de alerta con signo
-        var p1x = cx, p1y = cy - 2.5;
-        var p2x = cx - 2.5, p2y = cy + 1.7;
-        var p3x = cx + 2.5, p3y = cy + 1.7;
-        doc.triangle(p1x, p1y, p2x, p2y, p3x, p3y, "F");
-        // signo de exclamación dentro
-        doc.setFillColor(186, 59, 59); // color del fondo (rojo)
-        // Línea vertical (! pequeño)
-        doc.rect(cx - 0.25, cy - 1.2, 0.5, 1.7, "F");
-        doc.circle(cx, cy + 1, 0.35, "F");
-        fillRGB(doc, color);  // restaurar
-      } else if (tipo === 'check') {
-        // Check: línea diagonal de palomita
-        doc.setLineWidth(0.9);
-        doc.line(cx - 1.8, cy + 0.2, cx - 0.4, cy + 1.4);
-        doc.line(cx - 0.4, cy + 1.4, cx + 2, cy - 1.4);
-      } else if (tipo === 'edificio') {
-        // Edificio: rectángulo con ventanas
-        doc.rect(cx - 2, cy - 2, 4, 4.2, "F");
-        // 4 ventanas (puntos)
-        doc.setFillColor(255, 255, 255);
-        doc.rect(cx - 1.4, cy - 1.4, 0.6, 0.6, "F");
-        doc.rect(cx + 0.4, cy - 1.4, 0.6, 0.6, "F");
-        doc.rect(cx - 1.4, cy - 0.2, 0.6, 0.6, "F");
-        doc.rect(cx + 0.4, cy - 0.2, 0.6, 0.6, "F");
-        // Puerta
-        doc.rect(cx - 0.5, cy + 1.0, 1.0, 1.2, "F");
-        fillRGB(doc, color);
-      } else if (tipo === 'reloj') {
-        // Círculo + manecillas
-        strokeRGB(doc, color);
-        doc.setLineWidth(0.6);
-        doc.circle(cx, cy, 2.4, "S");
-        doc.line(cx, cy, cx, cy - 1.6);  // hora
-        doc.line(cx, cy, cx + 1.2, cy);  // minuto
-      }
-    }
-
-    // Título de sección (icono cuadrado azul + título)
+    // Título de sección (cuadrito de color de acento + título)
     function dibujarTituloSeccion(doc, y, icono, titulo) {
-      // Cuadrado azul con icono blanco
+      // Pequeño cuadrado azul como acento (sin icono dentro: limpio y fiable)
       fillRGB(doc, PDF_COLORS.azulOsc);
-      doc.roundedRect(14, y - 5, 7, 7, 1.5, 1.5, "F");
-      // Dibujar icono dentro
-      dibujarIcono(doc, icono, 17.5, y - 1.5, PDF_COLORS.blanco);
+      doc.roundedRect(14, y - 4.5, 4, 4.5, 1, 1, "F");
 
       // Título
       textRGB(doc, PDF_COLORS.azulOsc);
       doc.setFontSize(13); doc.setFont(undefined, "bold");
-      doc.text(titulo, 24, y);
+      doc.text(titulo, 21, y);
 
       return y + 8;
     }
@@ -521,23 +502,27 @@
         else if (align === "center") tx = cx + c.width / 2;
 
         if (c.tipo === "boton-ver") {
-          // Dibujar botón "Ver" azul
+          // Dibujar botón "Ver" azul, centrado en la columna (tx = centro)
           if (reg.con_foto && reg.foto_url) {
+            var btnW = 17, btnH = 6.2;
+            var btnX = tx - btnW / 2;          // centrado respecto a tx
+            var btnY = y + 1;
             // Botón con borde azul, fondo blanco
             strokeRGB(doc, PDF_COLORS.azul);
             doc.setLineWidth(0.6);
             doc.setFillColor(255, 255, 255);
-            doc.roundedRect(tx - 9, y + 1, 18, 6, 1.5, 1.5, "FD");
-            textRGB(doc, PDF_COLORS.azul);
-            doc.setFontSize(8); doc.setFont(undefined, "bold");
-            doc.textWithLink("Ver", tx + 1.5, y + 5, { url: reg.foto_url, align: "center" });
-            // Icono de imagen pequeño antes del texto
-            // (cuadradito con esquina diagonal)
+            doc.roundedRect(btnX, btnY, btnW, btnH, 1.5, 1.5, "FD");
+            // Icono de imagen pequeño (cuadradito con "montaña")
             strokeRGB(doc, PDF_COLORS.azul);
             doc.setLineWidth(0.5);
-            doc.rect(tx - 6, y + 2.3, 3.5, 2.7, "S");
-            doc.line(tx - 6, y + 4.5, tx - 4.5, y + 3.5);
-            doc.line(tx - 4.5, y + 3.5, tx - 2.5, y + 4.8);
+            var icoX = btnX + 3, icoY = btnY + 1.9;
+            doc.rect(icoX, icoY, 3.4, 2.6, "S");
+            doc.line(icoX, icoY + 2.1, icoX + 1.4, icoY + 1.1);
+            doc.line(icoX + 1.4, icoY + 1.1, icoX + 3.4, icoY + 2.4);
+            // Texto "Ver" como enlace, centrado en el espacio restante del botón
+            textRGB(doc, PDF_COLORS.azul);
+            doc.setFontSize(8); doc.setFont(undefined, "bold");
+            doc.textWithLink("Ver", btnX + btnW / 2 + 2.5, btnY + 4.3, { url: reg.foto_url, align: "center" });
             doc.setFontSize(9.5);
           } else {
             textRGB(doc, PDF_COLORS.gris);
@@ -639,7 +624,7 @@
       // Texto del pie
       textRGB(doc, PDF_COLORS.textoSoft);
       doc.setFontSize(8); doc.setFont(undefined, "normal");
-      var txt = "Informe generado por CleanTrack" + (extraTexto ? " — " + extraTexto : "");
+      var txt = I18N.t("pdf.pie") + (extraTexto ? " — " + extraTexto : "");
       doc.text(txt, 23, pieY + 3);
     }
 
@@ -652,7 +637,7 @@
       var periodo = document.getElementById("sel-periodo").value;
       var msg = document.getElementById("mensaje");
 
-      if (!edificio) { msg.textContent = "Selecciona un edificio."; msg.className = "mensaje error"; return; }
+      if (!edificio) { msg.textContent = I18N.t("rep.sel_edificio"); msg.className = "mensaje error"; return; }
 
       var r = rangoFechas(periodo);
       var regs = todosRegistros.filter(function(reg){
@@ -699,7 +684,7 @@
         msg.textContent = "No hay datos para ese edificio en ese período."; msg.className = "mensaje error"; return;
       }
 
-      msg.textContent = "Generando PDF..."; msg.className = "mensaje cargando";
+      msg.textContent = I18N.t("rep.generando"); msg.className = "mensaje cargando";
       try {
         var datos = { total: total, conFoto: conFoto, nDias: nDias, nEmps: nEmps, esDiario: esDiario,
                       nAreasCubiertas: nAreasCubiertas, nAreasTotal: nAreasTotal, incResueltas: incResueltas };
@@ -713,7 +698,7 @@
         msg.textContent = "✓ PDF generado y descargado"; msg.className = "mensaje ok";
       } catch (e) {
         console.error(e);
-        msg.textContent = "Error al generar el PDF: " + e.message; msg.className = "mensaje error";
+        msg.textContent = I18N.t("rep.error") + e.message; msg.className = "mensaje error";
       }
     }
 
@@ -726,36 +711,36 @@
       var pageW = doc.internal.pageSize.getWidth();
 
       // CABECERA
-      var y = dibujarCabecera(doc, "Informe diario de limpieza", [
+      var y = dibujarCabecera(doc, I18N.t("pdf.sub_diario"), [
         { icono: 'pin',   texto: edificio },
-        { icono: 'cal',   texto: "Período: " + nombrePeriodo(periodo) },
-        { icono: 'reloj', texto: "Generado: " + fmtFechaCorta() }
+        { icono: 'cal',   texto: I18N.t("pdf.periodo") + nombrePeriodo(periodo) },
+        { icono: 'reloj', texto: I18N.t("pdf.generado") + fmtFechaCorta() }
       ]);
 
       // 4 TARJETAS DE MÉTRICAS (como en el mockup)
       var cards = [
-        { icono: 'escoba',  color: PDF_COLORS.azul,  valor: resumen.total,    etiqueta: "Áreas limpiadas" },
-        { icono: 'camara',  color: PDF_COLORS.verde, valor: resumen.conFoto,  etiqueta: "Con foto" },
-        { icono: 'persona', color: PDF_COLORS.ambar, valor: resumen.nEmps,    etiqueta: "Empleados" },
-        { icono: 'alerta',  color: PDF_COLORS.rojo,  valor: incs.length,      etiqueta: "Incidencias" }
+        { icono: 'check',   color: PDF_COLORS.azul,  valor: resumen.total,    etiqueta: I18N.t("pdf.t_areas_limpiadas") },
+        { icono: 'camara',  color: PDF_COLORS.verde, valor: resumen.conFoto,  etiqueta: I18N.t("pdf.t_con_foto") },
+        { icono: 'persona', color: PDF_COLORS.ambar, valor: resumen.nEmps,    etiqueta: I18N.t("pdf.t_empleados") },
+        { icono: 'alerta',  color: PDF_COLORS.rojo,  valor: incs.length,      etiqueta: I18N.t("pdf.t_incidencias") }
       ];
       y = dibujarTarjetasMetricas(doc, y, cards);
 
       // DETALLE DE LIMPIEZAS
-      y = dibujarTituloSeccion(doc, y + 4, "edificio", "Detalle de limpiezas");
+      y = dibujarTituloSeccion(doc, y + 4, "edificio", I18N.t("pdf.s_detalle"));
 
       var cols = [
         { label: "Fecha/Hora", width: 40, get: function(r){ return fmtFecha(r.created_at); } },
         { label: "Área",       width: 55, get: function(r){ return r.area || ""; } },
         { label: "Empleado",   width: 55, get: function(r){ return r.nombre_empleado || ""; } },
-        { label: "Foto",       width: 32, align: "right", tipo: "boton-ver" }
+        { label: "Foto",       width: 32, align: "center", tipo: "boton-ver" }
       ];
       y = dibujarTablaCabecera(doc, y, cols);
 
       if (regs.length === 0) {
         textRGB(doc, PDF_COLORS.textoSoft);
         doc.setFontSize(9.5); doc.setFont(undefined, "italic");
-        doc.text("No se registraron limpiezas en este período.", 20, y + 4);
+        doc.text(I18N.t("pdf.vacio_limpiezas"), 20, y + 4);
         y += 12;
       } else {
         regs.forEach(function(reg) {
@@ -767,10 +752,10 @@
       // INCIDENCIAS REPORTADAS
       y += 8;
       if (y > 230) { doc.addPage(); y = 22; }
-      y = dibujarTituloSeccion(doc, y, "alerta", "Incidencias reportadas");
+      y = dibujarTituloSeccion(doc, y, "alerta", I18N.t("pdf.s_inc_reportadas"));
 
       if (incs.length === 0) {
-        y = dibujarEstadoVacioVerde(doc, y, "No se reportaron incidencias en este período.");
+        y = dibujarEstadoVacioVerde(doc, y, I18N.t("pdf.vacio_inc_periodo"));
       } else {
         incs.forEach(function(inc) {
           if (y > 240) { doc.addPage(); y = 22; }
@@ -793,10 +778,10 @@
       var doc = new jsPDF();
       var pageW = doc.internal.pageSize.getWidth();
 
-      var y = dibujarCabecera(doc, "Informe semanal de limpieza", [
+      var y = dibujarCabecera(doc, I18N.t("pdf.sub_semanal"), [
         { icono: 'pin',   texto: edificio },
-        { icono: 'cal',   texto: "Período: " + nombrePeriodo(periodo) },
-        { icono: 'reloj', texto: "Generado: " + fmtFechaCorta() }
+        { icono: 'cal',   texto: I18N.t("pdf.periodo") + nombrePeriodo(periodo) },
+        { icono: 'reloj', texto: I18N.t("pdf.generado") + fmtFechaCorta() }
       ]);
 
       // 4 tarjetas
@@ -804,15 +789,15 @@
         ? (datos.nAreasCubiertas + "/" + datos.nAreasTotal)
         : String(datos.nAreasCubiertas);
       var cards = [
-        { icono: 'escoba',   color: PDF_COLORS.azul,  valor: datos.total,        etiqueta: "Limpiezas" },
-        { icono: 'reloj',    color: PDF_COLORS.verde, valor: datos.nDias,        etiqueta: "Días trabajados" },
-        { icono: 'edificio', color: PDF_COLORS.ambar, valor: areasCobertura,     etiqueta: "Áreas cubiertas" },
-        { icono: 'alerta',   color: PDF_COLORS.rojo,  valor: incs.length,        etiqueta: "Incidencias" }
+        { icono: 'check',    color: PDF_COLORS.azul,  valor: datos.total,        etiqueta: I18N.t("pdf.t_limpiezas") },
+        { icono: 'reloj',    color: PDF_COLORS.verde, valor: datos.nDias,        etiqueta: I18N.t("pdf.t_dias_trab") },
+        { icono: 'edificio', color: PDF_COLORS.ambar, valor: areasCobertura,     etiqueta: I18N.t("pdf.t_areas_cub") },
+        { icono: 'alerta',   color: PDF_COLORS.rojo,  valor: incs.length,        etiqueta: I18N.t("pdf.t_incidencias") }
       ];
       y = dibujarTarjetasMetricas(doc, y, cards);
 
       // ACTIVIDAD POR DÍA (barras horizontales)
-      y = dibujarTituloSeccion(doc, y + 4, "reloj", "Actividad por día");
+      y = dibujarTituloSeccion(doc, y + 4, "reloj", I18N.t("pdf.s_act_dia"));
 
       var r = rangoFechas(periodo);
       var diasArr = [];
@@ -863,10 +848,10 @@
       // INCIDENCIAS
       y += 6;
       if (y > 230) { doc.addPage(); y = 22; }
-      y = dibujarTituloSeccion(doc, y, "alerta", "Incidencias de la semana");
+      y = dibujarTituloSeccion(doc, y, "alerta", I18N.t("pdf.s_inc_semana"));
 
       if (incs.length === 0) {
-        y = dibujarEstadoVacioVerde(doc, y, "No se reportaron incidencias esta semana.");
+        y = dibujarEstadoVacioVerde(doc, y, I18N.t("pdf.vacio_inc_semana"));
       } else {
         // Resumen breve
         textRGB(doc, PDF_COLORS.textoSoft);
@@ -891,10 +876,10 @@
       var doc = new jsPDF();
       var pageW = doc.internal.pageSize.getWidth();
 
-      var y = dibujarCabecera(doc, "Informe mensual de limpieza", [
+      var y = dibujarCabecera(doc, I18N.t("pdf.sub_mensual"), [
         { icono: 'pin',   texto: edificio },
-        { icono: 'cal',   texto: "Período: " + nombrePeriodo(periodo) },
-        { icono: 'reloj', texto: "Generado: " + fmtFechaCorta() }
+        { icono: 'cal',   texto: I18N.t("pdf.periodo") + nombrePeriodo(periodo) },
+        { icono: 'reloj', texto: I18N.t("pdf.generado") + fmtFechaCorta() }
       ]);
 
       // Mensaje de resumen positivo en banner verde
@@ -912,15 +897,15 @@
         ? (datos.nAreasCubiertas + "/" + datos.nAreasTotal)
         : String(datos.nAreasCubiertas);
       var cards = [
-        { icono: 'escoba',   color: PDF_COLORS.azul,  valor: datos.total,            etiqueta: "Limpiezas realizadas" },
-        { icono: 'reloj',    color: PDF_COLORS.verde, valor: datos.nDias,            etiqueta: "Días trabajados" },
-        { icono: 'edificio', color: PDF_COLORS.ambar, valor: areasCobertura,         etiqueta: "Áreas cubiertas" },
-        { icono: 'check',    color: PDF_COLORS.verde, valor: datos.incResueltas + "/" + incs.length, etiqueta: "Incid. resueltas" }
+        { icono: 'check',    color: PDF_COLORS.azul,  valor: datos.total,            etiqueta: I18N.t("pdf.t_limpiezas_real") },
+        { icono: 'reloj',    color: PDF_COLORS.verde, valor: datos.nDias,            etiqueta: I18N.t("pdf.t_dias_trab") },
+        { icono: 'edificio', color: PDF_COLORS.ambar, valor: areasCobertura,         etiqueta: I18N.t("pdf.t_areas_cub") },
+        { icono: 'check',    color: PDF_COLORS.verde, valor: datos.incResueltas + "/" + incs.length, etiqueta: I18N.t("pdf.t_inc_resueltas") }
       ];
       y = dibujarTarjetasMetricas(doc, y, cards);
 
       // ACTIVIDAD POR SEMANA (barras)
-      y = dibujarTituloSeccion(doc, y + 4, "reloj", "Actividad por semana");
+      y = dibujarTituloSeccion(doc, y + 4, "reloj", I18N.t("pdf.s_act_semana"));
 
       var r = rangoFechas(periodo);
       var semanas = [];
@@ -970,7 +955,7 @@
       // ÁREAS MÁS ATENDIDAS
       y += 6;
       if (y > 220) { doc.addPage(); y = 22; }
-      y = dibujarTituloSeccion(doc, y, "edificio", "Áreas más atendidas");
+      y = dibujarTituloSeccion(doc, y, "edificio", I18N.t("pdf.s_areas_atendidas"));
 
       var conteoAreas = {};
       regs.forEach(function(reg){ var a = reg.area || "Sin área"; conteoAreas[a] = (conteoAreas[a] || 0) + 1; });
@@ -1004,10 +989,10 @@
       // INCIDENCIAS
       y += 6;
       if (y > 220) { doc.addPage(); y = 22; }
-      y = dibujarTituloSeccion(doc, y, "alerta", "Incidencias del mes");
+      y = dibujarTituloSeccion(doc, y, "alerta", I18N.t("pdf.s_inc_mes"));
 
       if (incs.length === 0) {
-        y = dibujarEstadoVacioVerde(doc, y, "No se reportaron incidencias este mes.");
+        y = dibujarEstadoVacioVerde(doc, y, I18N.t("pdf.vacio_inc_mes"));
       } else {
         textRGB(doc, PDF_COLORS.textoSoft);
         doc.setFontSize(9.5); doc.setFont(undefined, "italic");
@@ -1018,22 +1003,6 @@
           y = dibujarFilaIncidencia(doc, y, inc);
         });
       }
-
-      // Espacio para comentarios del property manager
-      y += 8;
-      if (y > 230) { doc.addPage(); y = 22; }
-      strokeRGB(doc, PDF_COLORS.borde);
-      doc.setLineWidth(0.4);
-      fillRGB(doc, PDF_COLORS.cabeceraBg);
-      doc.roundedRect(14, y, pageW - 28, 32, 3, 3, "FD");
-      textRGB(doc, PDF_COLORS.azulOsc);
-      doc.setFontSize(10); doc.setFont(undefined, "bold");
-      doc.text("Comentarios del property manager:", 20, y + 7);
-      strokeRGB(doc, PDF_COLORS.borde);
-      doc.setLineWidth(0.3);
-      doc.line(20, y + 17, pageW - 20, y + 17);
-      doc.line(20, y + 25, pageW - 20, y + 25);
-      y += 36;
 
       dibujarPie(doc, y, null);
       doc.save("Informe_mensual_" + edificio.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf");

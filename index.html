@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CleanTrack — Prove every cleaning your team delivers</title>
+  <title data-i18n="land.titulo_pagina">CleanTrack — Prove every cleaning your team delivers</title>
   <meta name="description" content="CleanTrack turns every cleaning into proof your clients can see. Real-time logs, photo evidence, and professional reports for cleaning companies." />
 
   <!-- Canonical -->
@@ -97,6 +97,12 @@
       background: var(--verde); color: #fff; font-weight: 600;
     }
     .nav-links a.contacto:hover { background: var(--verde-osc); }
+    .lang-btn {
+      background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.30);
+      padding: 8px 14px; border-radius: 10px; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit; line-height: 1;
+    }
+    .lang-btn:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.5); }
     .menu-btn { display: none; background: none; border: none; cursor: pointer; padding: 6px; }
     .menu-btn span { display: block; width: 24px; height: 2px; background: #fff; margin: 5px 0; border-radius: 2px; transition: 0.2s; }
 
@@ -247,6 +253,7 @@
     .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
     .reveal.visible { opacity: 1; transform: translateY(0); }
   </style>
+  <script src="idiomas.js"></script>
 </head>
 <body>
 
@@ -261,10 +268,11 @@
         <span></span><span></span><span></span>
       </button>
       <div class="nav-links" id="navLinks">
-        <a href="#how">How it works</a>
-        <a href="#why">Why CleanTrack</a>
-        <a href="contact.html" class="contacto">Get a quote</a>
-        <a href="login.html" class="login">Supervisor login</a>
+        <a href="#how" data-i18n="land.nav_how">How it works</a>
+        <a href="#why" data-i18n="land.nav_why">Why CleanTrack</a>
+        <a href="contact.html" class="contacto" data-i18n="land.nav_quote">Get a quote</a>
+        <a href="login.html" class="login" data-i18n="land.nav_login">Supervisor login</a>
+        <button class="lang-btn" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
       </div>
     </div>
   </nav>
@@ -277,12 +285,12 @@
       <div style="height:44%"></div>
     </div>
     <img src="logo-simbolo.png" alt="CleanTrack" class="hero-logo" />
-    <h1>Prove the great cleaning<br>your team <span class="acento">delivers</span></h1>
+    <h1 data-i18n-html="land.hero_h1">Prove the great cleaning<br>your team <span class="acento">delivers</span></h1>
     <div class="linea"></div>
-    <p class="sub frase">The platform that turns every cleaning into evidence your clients can see.</p>
+    <p class="sub frase" data-i18n="land.hero_sub">The platform that turns every cleaning into evidence your clients can see.</p>
     <div class="botones">
-      <a href="contact.html" class="btn btn-verde">Contact us for a quote</a>
-      <a href="#how" class="btn btn-claro">See how it works</a>
+      <a href="contact.html" class="btn btn-verde" data-i18n="land.hero_cta1">Contact us for a quote</a>
+      <a href="#how" class="btn btn-claro" data-i18n="land.hero_cta2">See how it works</a>
     </div>
   </header>
 
@@ -290,37 +298,37 @@
   <section class="problema">
     <div class="wrap">
       <div class="reveal">
-        <span class="eyebrow rojo">⚠ The problem</span>
-        <h2>Doing great work isn't enough.<br>You have to <span class="rojo">prove it</span>.</h2>
-        <p class="intro frase">Cleaning companies don't lose contracts for working badly — they lose them for having no way to prove the work was done.</p>
+        <span class="eyebrow rojo" data-i18n="land.prob_eyebrow">⚠ The problem</span>
+        <h2 data-i18n-html="land.prob_h2">Doing great work isn't enough.<br>You have to <span class="rojo">prove it</span>.</h2>
+        <p class="intro frase" data-i18n="land.prob_intro">Cleaning companies don't lose contracts for working badly — they lose them for having no way to prove the work was done.</p>
       </div>
 
       <div class="cards-problema">
         <div class="card-p reveal">
           <div class="num">01</div>
           <div>
-            <h3>"Are you sure it was cleaned today?"</h3>
-            <p>The property manager has doubts, and without proof, your word isn't always enough to reassure them.</p>
+            <h3 data-i18n="land.prob1_h">"Are you sure it was cleaned today?"</h3>
+            <p data-i18n="land.prob1_p">The property manager has doubts, and without proof, your word isn't always enough to reassure them.</p>
           </div>
         </div>
         <div class="card-p reveal">
           <div class="num">02</div>
           <div>
-            <h3>Complaints with no backup</h3>
-            <p>When a claim comes in, you have no record of what was done, when, or who did it.</p>
+            <h3 data-i18n="land.prob2_h">Complaints with no backup</h3>
+            <p data-i18n="land.prob2_p">When a claim comes in, you have no record of what was done, when, or who did it.</p>
           </div>
         </div>
         <div class="card-p reveal">
           <div class="num">03</div>
           <div>
-            <h3>Contracts that don't renew</h3>
-            <p>Without evidence of the value you deliver, it's hard to justify continuing the service.</p>
+            <h3 data-i18n="land.prob3_h">Contracts that don't renew</h3>
+            <p data-i18n="land.prob3_p">Without evidence of the value you deliver, it's hard to justify continuing the service.</p>
           </div>
         </div>
       </div>
 
       <div class="banner-pregunta reveal frase">
-        What if every cleaning was logged <span class="hl">automatically, with the exact time</span> — and you could require a photo in the areas you choose, like the <span class="hl">lobby</span> or the <span class="hl">lounge</span>?
+<span data-i18n-html="land.prob_banner">What if every cleaning was logged <span class="hl">automatically, with the exact time</span> — and you could require a photo in the areas you choose, like the <span class="hl">lobby</span> or the <span class="hl">lounge</span>?</span>
       </div>
     </div>
   </section>
@@ -329,31 +337,31 @@
   <section class="solucion" id="solution">
     <div class="wrap">
       <div class="reveal">
-        <span class="eyebrow verde">✓ The solution</span>
-        <h2>Everything gets logged.<br>You see it <span class="verde">in real time</span>.</h2>
-        <p class="intro frase">Every cleaned area and every incident appears instantly on your dashboard and your supervisors', with all the detail you need.</p>
+        <span class="eyebrow verde" data-i18n="land.sol_eyebrow">✓ The solution</span>
+        <h2 data-i18n-html="land.sol_h2">Everything gets logged.<br>You see it <span class="verde">in real time</span>.</h2>
+        <p class="intro frase" data-i18n="land.sol_intro">Every cleaned area and every incident appears instantly on your dashboard and your supervisors', with all the detail you need.</p>
       </div>
 
       <div class="sol-grid">
         <div class="feature reveal">
           <div class="ico ico-azul">🕐</div>
-          <h3>Activity at a glance</h3>
-          <p>The moment an employee logs an area, it appears on your dashboard with who cleaned it, what time, and where — with photo evidence wherever you decide.</p>
+          <h3 data-i18n="land.sol1_h">Activity at a glance</h3>
+          <p data-i18n="land.sol1_p">The moment an employee logs an area, it appears on your dashboard with who cleaned it, what time, and where — with photo evidence wherever you decide.</p>
         </div>
         <div class="feature reveal">
           <div class="ico ico-ambar">⚠️</div>
-          <h3>Incidents with full detail</h3>
-          <p>If a supply runs out or something breaks, your team reports it on the spot. You get the alert with the area, the description and a photo, so you can fix it fast.</p>
+          <h3 data-i18n="land.sol2_h">Incidents with full detail</h3>
+          <p data-i18n="land.sol2_p">If a supply runs out or something breaks, your team reports it on the spot. You get the alert with the area, the description and a photo, so you can fix it fast.</p>
         </div>
         <div class="feature reveal">
           <div class="ico ico-verde">📄</div>
-          <h3>Reports for your client</h3>
-          <p>Generate a report for any day, week or month and send it to the property manager. Professional, backed by evidence, ready in seconds.</p>
+          <h3 data-i18n="land.sol3_h">Reports for your client</h3>
+          <p data-i18n="land.sol3_p">Generate a report for any day, week or month and send it to the property manager. Professional, backed by evidence, ready in seconds.</p>
         </div>
         <div class="feature reveal">
           <div class="ico ico-morado">📸</div>
-          <h3>Photo where you decide</h3>
-          <p>Require photo evidence only in the critical areas — without slowing your team down everywhere else.</p>
+          <h3 data-i18n="land.sol4_h">Photo where you decide</h3>
+          <p data-i18n="land.sol4_p">Require photo evidence only in the critical areas — without slowing your team down everywhere else.</p>
         </div>
       </div>
     </div>
@@ -363,42 +371,42 @@
   <section class="como" id="how">
     <div class="wrap">
       <div class="reveal">
-        <span class="eyebrow azul">⚡ How it works</span>
-        <h2>Four steps. <span class="verde">Zero hassle</span>.</h2>
-        <p class="intro frase">So simple your team uses it from day one — no training needed.</p>
+        <span class="eyebrow azul" data-i18n="land.how_eyebrow">⚡ How it works</span>
+        <h2 data-i18n-html="land.how_h2">Four steps. <span class="verde">Zero hassle</span>.</h2>
+        <p class="intro frase" data-i18n="land.how_intro">So simple your team uses it from day one — no training needed.</p>
       </div>
 
       <div class="pasos">
         <div class="paso reveal">
           <div class="pnum">01</div>
-          <h3>Scan the area QR</h3>
-          <p>Each area has its own QR code. The employee arrives and scans it with their phone. No app to install.</p>
+          <h3 data-i18n="land.how1_h">Scan the area QR</h3>
+          <p data-i18n="land.how1_p">Each area has its own QR code. The employee arrives and scans it with their phone. No app to install.</p>
         </div>
         <div class="paso reveal">
           <div class="pnum">02</div>
-          <h3>Enter their PIN</h3>
-          <p>Each employee has a personal 4-digit PIN. They enter it and the system knows who did the cleaning — no complicated logins.</p>
+          <h3 data-i18n="land.how2_h">Enter their PIN</h3>
+          <p data-i18n="land.how2_p">Each employee has a personal 4-digit PIN. They enter it and the system knows who did the cleaning — no complicated logins.</p>
         </div>
         <div class="paso reveal">
           <div class="pnum">03</div>
-          <h3>Log the cleaning</h3>
-          <p>The record is saved with the exact time and the employee's name. You can require a photo in the areas you choose.</p>
+          <h3 data-i18n="land.how3_h">Log the cleaning</h3>
+          <p data-i18n="land.how3_p">The record is saved with the exact time and the employee's name. You can require a photo in the areas you choose.</p>
         </div>
         <div class="paso reveal">
           <div class="pnum">04</div>
-          <h3>Supervise in real time</h3>
-          <p>You and your supervisors see all activity from the dashboard, instantly. No calls, no waiting for reports.</p>
+          <h3 data-i18n="land.how4_h">Supervise in real time</h3>
+          <p data-i18n="land.how4_p">You and your supervisors see all activity from the dashboard, instantly. No calls, no waiting for reports.</p>
         </div>
       </div>
 
       <div class="video-bloque reveal">
-        <h3>See it in action</h3>
-        <p class="vsub frase">A quick look at how CleanTrack works, from scanning the QR to your live dashboard.</p>
+        <h3 data-i18n="land.video_h">See it in action</h3>
+        <p class="vsub frase" data-i18n="land.video_sub">A quick look at how CleanTrack works, from scanning the QR to your live dashboard.</p>
         <div class="video-marco">
           <!-- Sube tu video como video.mp4 a la raíz del repo y aparecerá aquí automáticamente -->
           <video controls preload="metadata" poster="logo-simbolo.png">
             <source src="video.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
+            <span data-i18n="land.video_fallback">Your browser does not support the video tag.</span>
           </video>
         </div>
       </div>
@@ -409,44 +417,44 @@
   <section class="porque" id="why">
     <div class="wrap">
       <div class="reveal">
-        <span class="eyebrow verde">✓ Why CleanTrack</span>
-        <h2>The difference is in the <span class="verde">simplicity</span>.</h2>
-        <p class="intro frase">Other platforms are complex, expensive and English-only. CleanTrack does what matters, well and easily.</p>
+        <span class="eyebrow verde" data-i18n="land.why_eyebrow">✓ Why CleanTrack</span>
+        <h2 data-i18n-html="land.why_h2">The difference is in the <span class="verde">simplicity</span>.</h2>
+        <p class="intro frase" data-i18n="land.why_intro">Other platforms are complex, expensive and English-only. CleanTrack does what matters, well and easily.</p>
       </div>
 
       <table class="tabla-comp reveal">
         <thead>
           <tr>
             <th></th>
-            <th class="ct">CleanTrack</th>
-            <th>Others</th>
+            <th class="ct" data-i18n="land.tab_th_ct">CleanTrack</th>
+            <th data-i18n="land.tab_th_otros">Others</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>Ease of use</td>
-            <td class="ct">No training</td>
-            <td class="otros">Learning curve</td>
+            <td data-i18n="land.tab_r1">Ease of use</td>
+            <td class="ct" data-i18n="land.tab_r1_ct">No training</td>
+            <td class="otros" data-i18n="land.tab_r1_o">Learning curve</td>
           </tr>
           <tr>
-            <td>Language</td>
-            <td class="ct">Spanish &amp; English</td>
-            <td class="otros">English only</td>
+            <td data-i18n="land.tab_r2">Language</td>
+            <td class="ct" data-i18n="land.tab_r2_ct">Spanish &amp; English</td>
+            <td class="otros" data-i18n="land.tab_r2_o">English only</td>
           </tr>
           <tr>
-            <td>Photo evidence</td>
-            <td class="ct">Configurable per area</td>
-            <td class="otros">Limited or extra</td>
+            <td data-i18n="land.tab_r3">Photo evidence</td>
+            <td class="ct" data-i18n="land.tab_r3_ct">Configurable per area</td>
+            <td class="otros" data-i18n="land.tab_r3_o">Limited or extra</td>
           </tr>
           <tr>
-            <td>Client reports</td>
-            <td class="ct">Professional</td>
-            <td class="otros">Basic</td>
+            <td data-i18n="land.tab_r4">Client reports</td>
+            <td class="ct" data-i18n="land.tab_r4_ct">Professional</td>
+            <td class="otros" data-i18n="land.tab_r4_o">Basic</td>
           </tr>
           <tr>
-            <td>Monthly price</td>
-            <td class="ct">Accessible</td>
-            <td class="otros">High</td>
+            <td data-i18n="land.tab_r5">Monthly price</td>
+            <td class="ct" data-i18n="land.tab_r5_ct">Accessible</td>
+            <td class="otros" data-i18n="land.tab_r5_o">High</td>
           </tr>
         </tbody>
       </table>
@@ -456,20 +464,26 @@
   <!-- ============ CTA FINAL ============ -->
   <section class="cta-final">
     <img src="logo-simbolo.png" alt="CleanTrack" />
-    <h2>Start proving<br>your value <span class="acento">today</span></h2>
+    <h2 data-i18n-html="land.cta_h2">Start proving<br>your value <span class="acento">today</span></h2>
     <div class="linea"></div>
-    <p class="sub frase">Your first 30 days are free. We help you set everything up — no cost, no commitment.</p>
-    <a href="contact.html" class="btn btn-verde">Contact us for a quote</a>
+    <p class="sub frase" data-i18n="land.cta_sub">Your first 30 days are free. We help you set everything up — no cost, no commitment.</p>
+    <a href="contact.html" class="btn btn-verde" data-i18n="land.cta_btn">Contact us for a quote</a>
   </section>
 
   <!-- ============ FOOTER ============ -->
   <footer>
     <div class="marca">CleanTrack</div>
-    <div class="frase">Every cleaning, verified.</div>
-    <div style="margin-top:14px; font-size:13px;">© <span id="year"></span> CleanTrack · <a href="login.html" style="color:rgba(255,255,255,0.7);">Supervisor login</a></div>
+    <div class="frase" data-i18n="land.foot_frase">Every cleaning, verified.</div>
+    <div style="margin-top:14px; font-size:13px;">© <span id="year"></span> CleanTrack · <a href="login.html" style="color:rgba(255,255,255,0.7);" data-i18n="land.foot_login">Supervisor login</a></div>
   </footer>
 
   <script>
+    // Aplicar idioma detectado (navegador o preferencia guardada) a toda la landing
+    if (window.I18N) {
+      I18N.aplicar();
+      I18N.onChange(function(){ I18N.aplicar(); });
+    }
+
     document.getElementById("year").textContent = new Date().getFullYear();
 
     function toggleMenu() {

@@ -5,53 +5,72 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CleanTrack — Empleados</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600&display=swap" rel="stylesheet" />
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="idiomas.js"></script>
   <script src="ui.js"></script>
 
   <style>
     :root {
-      --verde-accion: #377D37;
+      --azul-osc: #0C447C;
+      --azul: #185FA5;
+      --azul-suave: #BBD2EA;
+      --verde-accion: #178A65;
       --verde-accion-claro: #E7F1E7;
       --gris-verde-700: #798C81;
       --gris-verde-900: #5F7268;
       --gris-verde-claro: #EAEEEB;
       --verde-claro: #E7F1E7;
-      --verde-texto: #2A5F2A;
+      --verde-texto: #27500A;
       --gris-fondo: #ECEBE4;
-      --gris-texto: #6B6A64;
+      --gris-texto: #5A6573;
       --gris-borde: #E2E0D8;
-      --texto: #1F2A37;
+      --texto: #1B2733;
       --blanco: #FFFFFF;
       --rojo: #A32D2D;
       --rojo-claro: #FCEBEB;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; padding: 20px; }
-    .contenedor { max-width: 600px; margin: 0 auto; display: none; }
-    .verificando { max-width: 600px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; }
+    body { font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--gris-fondo); color: var(--texto); min-height: 100vh; }
+    .verificando { max-width: 600px; margin: 60px auto; text-align: center; color: var(--gris-texto); font-size: 15px; padding: 0 20px; }
+    .contenedor { display: none; }
 
-    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-    .top .marca { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris-texto); font-weight: 600; }
-    .top h1 { font-size: 22px; font-weight: 600; margin-top: 2px; }
-    .top-botones { display: flex; gap: 8px; }
-    .btn-link { background: transparent; color: var(--gris-verde-900); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
-    .btn-salir { background: transparent; color: var(--gris-texto); border: 1.5px solid var(--gris-borde); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+    /* ===== Cabecera azul ===== */
+    .cabecera { background: var(--azul-osc); }
+    .cab-inner { max-width: 600px; margin: 0 auto; padding: 18px 20px 22px; }
+    .cab-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.16); }
+    .barra-marca { display: flex; align-items: center; gap: 9px; }
+    .logo-simbolo { height: 30px; width: auto; display: block; }
+    .marca-texto { font-family: "Sora", sans-serif; font-size: 18px; font-weight: 600; color: var(--blanco); letter-spacing: -0.01em; }
+    .cab-botones { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-cab { background: transparent; color: var(--blanco); border: 1.5px solid rgba(255,255,255,0.45); padding: 8px 15px; border-radius: 11px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; font-family: inherit; white-space: nowrap; }
+    .btn-cab:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.65); }
+    .btn-cab:active { transform: scale(0.97); }
+    .cab-titulo { margin-top: 16px; }
+    .cab-titulo h1 { font-size: 23px; font-weight: 600; color: var(--blanco); }
+    .cab-sub { font-size: 13px; color: var(--azul-suave); margin-top: 3px; }
+
+    /* ===== Cuerpo ===== */
+    .main { max-width: 600px; margin: 0 auto; padding: 22px 20px 40px; }
 
     .tarjeta { background: var(--blanco); border: 1px solid var(--gris-borde); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
     .tarjeta h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
 
     label { display: block; font-size: 13px; font-weight: 600; color: var(--gris-texto); margin-bottom: 6px; }
-    input.campo-texto { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 14px; outline: none; }
-    input.campo-texto:focus { border-color: var(--gris-verde-700); }
+    input.campo-texto { width: 100%; padding: 13px; font-size: 16px; border: 1.5px solid var(--gris-borde); border-radius: 12px; margin-bottom: 14px; outline: none; font-family: inherit; }
+    input.campo-texto:focus { border-color: var(--azul); }
 
-    /* Selector de edificios con chips + buscador */
     .selector-edificios { margin-bottom: 16px; }
     .chips-caja { background: var(--blanco); border: 1.5px solid var(--gris-borde); border-radius: 12px; padding: 8px; min-height: 48px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; cursor: text; }
-    .chips-caja.focus { border-color: var(--gris-verde-700); }
+    .chips-caja.focus { border-color: var(--azul); }
     .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--verde-accion-claro); color: var(--verde-texto); font-size: 13px; padding: 5px 10px; border-radius: 9px; font-weight: 600; }
     .chip .quitar { cursor: pointer; font-size: 16px; line-height: 1; opacity: 0.7; }
     .chip .quitar:hover { opacity: 1; }
-    .chips-input { flex: 1; min-width: 130px; border: none; outline: none; background: transparent; font-size: 15px; padding: 5px; margin: 0; }
+    .chips-input { flex: 1; min-width: 130px; border: none; outline: none; background: transparent; font-size: 15px; padding: 5px; margin: 0; font-family: inherit; }
     .sugerencias { margin-top: 6px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: var(--blanco); max-height: 170px; overflow-y: auto; display: none; }
     .sugerencias.visible { display: block; }
     .sug-item { padding: 11px 13px; font-size: 14px; cursor: pointer; border-bottom: 1px solid var(--gris-fondo); display: flex; align-items: center; gap: 9px; }
@@ -65,35 +84,29 @@
     .sug-hint { font-weight: 400; font-size: 12px; color: #9C7B3A; }
     .sug-vacio { padding: 12px 13px; font-size: 13px; color: var(--gris-texto); }
 
-    .btn-agregar { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: var(--verde-accion); color: #fff; }
+    .btn-agregar { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: var(--verde-accion); color: #fff; font-family: inherit; }
     .btn-agregar:active { transform: scale(0.98); }
     .btn-agregar:disabled { opacity: 0.6; }
 
-    .grupo-edificio { border: 1px solid var(--gris-borde); border-radius: 14px; margin-bottom: 12px; overflow: hidden; background: var(--blanco); }
-    .grupo-cabecera { display: flex; align-items: center; gap: 12px; padding: 16px; cursor: pointer; user-select: none; }
-    .grupo-cabecera:hover { background: var(--gris-fondo); }
-    .grupo-ico { width: 40px; height: 40px; border-radius: 10px; background: var(--gris-verde-claro); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .grupo-ico svg { width: 20px; height: 20px; stroke: #5F7268; }
-    .grupo-info { flex: 1; min-width: 0; }
-    .grupo-nombre { font-size: 15px; font-weight: 600; }
-    .grupo-conteo { font-size: 12px; color: var(--gris-texto); margin-top: 2px; }
-    .grupo-flecha { font-size: 14px; color: var(--gris-texto); transition: transform 0.2s; flex-shrink: 0; }
-    .grupo-edificio.abierto .grupo-flecha { transform: rotate(90deg); }
-    .grupo-cuerpo { display: none; padding: 0 16px 8px; border-top: 1px solid var(--gris-borde); }
-    .grupo-edificio.abierto .grupo-cuerpo { display: block; }
+    /* Campo PIN con botón Generar al lado */
+    .pin-fila { display: flex; gap: 8px; align-items: stretch; margin-bottom: 14px; }
+    .pin-fila .pin-input { flex: 1; margin-bottom: 0; }
+    .btn-generar { flex-shrink: 0; padding: 0 16px; border: 1.5px solid var(--azul); background: #E6F1FB; color: var(--azul-osc); border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; }
+    .btn-generar:hover { background: #d8e9f9; }
+    .btn-generar:active { transform: scale(0.97); }
 
     .empleado { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--gris-borde); }
     .empleado:last-child { border-bottom: none; }
-    .emp-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--gris-verde-claro); color: var(--gris-verde-900); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; flex-shrink: 0; }
+    .emp-avatar { width: 42px; height: 42px; border-radius: 50%; background: #E6F1FB; color: var(--azul-osc); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; flex-shrink: 0; }
     .emp-info { flex: 1; min-width: 0; }
-    .emp-nombre { font-size: 15px; font-weight: 600; }
+    .emp-nombre { font-size: 15px; font-weight: 600; word-break: break-word; }
     .emp-pin { font-size: 13px; color: var(--gris-texto); }
     .emp-inactivo .emp-nombre, .emp-inactivo .emp-pin { opacity: 0.45; }
 
     .emp-acciones { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
     .btn-icono { width: 34px; height: 34px; border-radius: 9px; border: 1.5px solid var(--gris-borde); background: var(--blanco); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
     .btn-icono svg { width: 16px; height: 16px; }
-    .btn-icono.editar svg { stroke: var(--gris-verde-900); }
+    .btn-icono.editar svg { stroke: var(--azul-osc); }
     .btn-icono.eliminar svg { stroke: var(--rojo); }
     .btn-icono:active { transform: scale(0.92); }
 
@@ -110,18 +123,37 @@
     .mensaje.error { background: var(--rojo-claro); color: var(--rojo); display: block; }
     .cargando { text-align: center; color: var(--gris-texto); padding: 20px; font-size: 14px; }
 
-    .grupo-sin-asignar { border-color: #E0B65A; }
-    .grupo-sin-asignar .ico-sin-asignar { background: #FAEEDA; }
-    .grupo-sin-asignar .ico-sin-asignar svg { stroke: #854F0B; }
-    .grupo-sin-asignar .grupo-nombre { color: #854F0B; }
+    /* ===== Lista de empleados: buscador + filtros + chips ===== */
+    .emp-lista-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+    .emp-lista-head h2 { margin-bottom: 0; }
+    .emp-contador { font-size: 12px; color: var(--gris-texto); }
+    .emp-buscador { margin-bottom: 12px; }
+    .emp-filtros { display: flex; gap: 8px; margin-bottom: 16px; }
+    .emp-filtro { flex: 1; padding: 8px 10px; border: 1.5px solid var(--gris-borde); background: var(--blanco); color: var(--gris-texto); border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .emp-filtro.activo { background: #E6F1FB; border-color: var(--azul); color: var(--azul-osc); }
+    .emp-edificios { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+    .emp-chip { font-size: 11px; font-weight: 600; background: var(--gris-verde-claro); color: var(--gris-verde-900); padding: 3px 8px; border-radius: 7px; }
+    .emp-sin-edificio { font-size: 12px; color: #9C7B3A; margin-top: 5px; }
+    .emp-vacio { text-align: center; color: var(--gris-texto); padding: 18px; font-size: 14px; }
+    .emp-inactivo .emp-avatar, .emp-inactivo .emp-edificios { opacity: 0.45; }
 
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
     .modal.abierto { display: flex; }
     .modal-caja { background: #fff; border-radius: 18px; padding: 26px; max-width: 420px; width: 100%; margin: auto; }
     .modal-titulo { font-size: 18px; font-weight: 600; margin-bottom: 18px; }
     .modal-botones { display: flex; gap: 10px; margin-top: 6px; }
-    .btn-guardar { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; color: #fff; background: var(--verde-accion); }
-    .btn-cancelar { flex: 0 0 auto; padding: 14px 20px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: transparent; color: var(--gris-texto); font-size: 15px; font-weight: 600; cursor: pointer; }
+    .btn-guardar { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; color: #fff; background: var(--verde-accion); font-family: inherit; }
+    .btn-cancelar { flex: 0 0 auto; padding: 14px 20px; border: 1.5px solid var(--gris-borde); border-radius: 12px; background: transparent; color: var(--gris-texto); font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+    /* ===================== PC (pantallas anchas) ===================== */
+    @media (min-width: 980px) {
+      .cab-inner { max-width: 1080px; padding: 20px 32px 24px; }
+      .cab-titulo h1 { font-size: 25px; }
+      .main { max-width: 1080px; padding: 26px 32px 48px; display: grid; grid-template-columns: 380px 1fr; gap: 22px; align-items: start; }
+      .col-agregar { position: sticky; top: 22px; margin: 0; }
+      .col-lista { margin: 0; }
+      .tarjeta { margin-bottom: 0; }
+    }
   </style>
 </head>
 <body>
@@ -130,83 +162,102 @@
 
   <div class="contenedor" id="contenedor">
 
-    <div class="top">
-      <div>
-        <div class="marca">CleanTrack</div>
-        <h1>Empleados</h1>
-      </div>
-      <div class="top-botones">
-        <a class="btn-salir" href="inicio.html">← Inicio</a>
-        <a class="btn-link" href="dashboard.html">Ver registros</a>
-        <button class="btn-salir" onclick="salir()">Salir</button>
-      </div>
-    </div>
-
-    <div class="tarjeta">
-      <h2>Agregar empleado</h2>
-      <label for="nombre">Nombre completo</label>
-      <input type="text" class="campo-texto" id="nombre" placeholder="Ej. Ana Torres" />
-      <label for="pin">PIN (4 dígitos)</label>
-      <input type="text" class="campo-texto" id="pin" placeholder="Ej. 4892" inputmode="numeric" maxlength="4" />
-
-      <label>Edificios donde trabaja</label>
-      <div class="selector-edificios">
-        <div class="chips-caja" id="add-chips-caja" onclick="document.getElementById('add-buscador').focus()">
-          <div id="add-chips" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
-          <input type="text" class="chips-input" id="add-buscador" placeholder="Buscar y agregar edificio..." autocomplete="off" />
+    <header class="cabecera">
+      <div class="cab-inner">
+        <div class="cab-fila">
+          <div class="barra-marca">
+            <img src="logo-simbolo.png" alt="" class="logo-simbolo" />
+            <span class="marca-texto">CleanTrack</span>
+          </div>
+          <div class="cab-botones">
+            <a class="btn-cab" href="inicio.html" data-i18n="comun.inicio">← Inicio</a>
+            <button class="btn-cab" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma">EN</button>
+            <a class="btn-cab" href="dashboard.html" data-i18n="emp.ver_registros">Ver registros</a>
+            <button class="btn-cab" onclick="salir()" data-i18n="comun.salir">Salir</button>
+          </div>
         </div>
-        <div class="sugerencias" id="add-sugerencias"></div>
+        <div class="cab-titulo">
+          <h1 data-i18n="emp.titulo">Empleados</h1>
+          <div class="cab-sub" data-i18n="emp.subtitulo">Gestiona el personal de limpieza y sus PIN</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+
+      <div class="tarjeta col-agregar">
+        <h2 data-i18n="emp.agregar_titulo">Agregar empleado</h2>
+        <label for="nombre" data-i18n="emp.nombre">Nombre completo</label>
+        <input type="text" class="campo-texto" id="nombre" data-i18n-ph="emp.nombre_ph" placeholder="Ej. Ana Torres" />
+        <label for="pin" data-i18n="emp.pin">PIN (4 dígitos)</label>
+        <div class="pin-fila">
+          <input type="text" class="campo-texto pin-input" id="pin" data-i18n-ph="emp.pin_ph" placeholder="Ej. 4892" inputmode="numeric" maxlength="4" />
+          <button type="button" class="btn-generar" onclick="generarPin('pin')" data-i18n="emp.generar">Generar</button>
+        </div>
+
+        <label data-i18n="emp.edificios">Edificios donde trabaja</label>
+        <div class="selector-edificios">
+          <div class="chips-caja" id="add-chips-caja" onclick="document.getElementById('add-buscador').focus()">
+            <div id="add-chips" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+            <input type="text" class="chips-input" id="add-buscador" data-i18n-ph="emp.buscar_edificio" placeholder="Buscar y agregar edificio..." autocomplete="off" />
+          </div>
+          <div class="sugerencias" id="add-sugerencias"></div>
+        </div>
+
+        <button class="btn-agregar" id="btn-agregar" onclick="agregarEmpleado()" data-i18n="emp.btn_agregar">Agregar empleado</button>
+        <div class="mensaje" id="mensaje-agregar"></div>
       </div>
 
-      <button class="btn-agregar" id="btn-agregar" onclick="agregarEmpleado()">Agregar empleado</button>
-      <div class="mensaje" id="mensaje-agregar"></div>
-    </div>
-
-    <div class="tarjeta">
-      <h2>Empleados por edificio</h2>
-      <div id="lista-empleados">
-        <div class="cargando">Cargando...</div>
+      <div class="tarjeta col-lista">
+        <div class="emp-lista-head">
+          <h2 data-i18n="emp.lista_titulo">Empleados</h2>
+          <span class="emp-contador" id="emp-contador"></span>
+        </div>
+        <input type="text" class="campo-texto emp-buscador" id="emp-buscador" data-i18n-ph="emp.buscar" placeholder="Buscar por nombre o edificio..." autocomplete="off" />
+        <div class="emp-filtros" id="emp-filtros">
+          <button type="button" class="emp-filtro activo" data-filtro="todos" data-i18n="emp.f_todos">Todos</button>
+          <button type="button" class="emp-filtro" data-filtro="activos" data-i18n="emp.f_activos">Activos</button>
+          <button type="button" class="emp-filtro" data-filtro="inactivos" data-i18n="emp.f_inactivos">Inactivos</button>
+        </div>
+        <div id="lista-empleados">
+          <div class="cargando" data-i18n="emp.cargando">Cargando...</div>
+        </div>
       </div>
-    </div>
+
+    </main>
 
   </div>
 
   <!-- MODAL EDITAR -->
   <div class="modal" id="modal-editar">
     <div class="modal-caja">
-      <div class="modal-titulo">Editar empleado</div>
-      <label for="edit-nombre">Nombre completo</label>
+      <div class="modal-titulo" data-i18n="emp.editar_titulo">Editar empleado</div>
+      <label for="edit-nombre" data-i18n="emp.nombre">Nombre completo</label>
       <input type="text" class="campo-texto" id="edit-nombre" />
-      <label for="edit-pin">PIN (4 dígitos)</label>
-      <input type="text" class="campo-texto" id="edit-pin" inputmode="numeric" maxlength="4" />
+      <label for="edit-pin" data-i18n="emp.pin">PIN (4 dígitos)</label>
+      <div class="pin-fila">
+        <input type="text" class="campo-texto pin-input" id="edit-pin" inputmode="numeric" maxlength="4" />
+        <button type="button" class="btn-generar" onclick="generarPin('edit-pin')" data-i18n="emp.generar">Generar</button>
+      </div>
 
-      <label>Edificios donde trabaja</label>
+      <label data-i18n="emp.edificios">Edificios donde trabaja</label>
       <div class="selector-edificios">
         <div class="chips-caja" id="edit-chips-caja" onclick="document.getElementById('edit-buscador').focus()">
           <div id="edit-chips" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
-          <input type="text" class="chips-input" id="edit-buscador" placeholder="Buscar y agregar edificio..." autocomplete="off" />
+          <input type="text" class="chips-input" id="edit-buscador" data-i18n-ph="emp.buscar_edificio" placeholder="Buscar y agregar edificio..." autocomplete="off" />
         </div>
         <div class="sugerencias" id="edit-sugerencias"></div>
       </div>
 
       <div class="mensaje" id="mensaje-editar"></div>
       <div class="modal-botones">
-        <button class="btn-cancelar" onclick="cerrarEditar()">Cancelar</button>
-        <button class="btn-guardar" id="btn-guardar-edit" onclick="guardarEdicion()">Guardar cambios</button>
+        <button class="btn-cancelar" onclick="cerrarEditar()" data-i18n="emp.cancelar">Cancelar</button>
+        <button class="btn-guardar" id="btn-guardar-edit" onclick="guardarEdicion()" data-i18n="emp.guardar">Guardar cambios</button>
       </div>
     </div>
   </div>
 
   <script>
-    const SUPABASE_URL = "https://saoirivninhucrkhckaj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_DeKuX1LvrvruEXzfPvumnw_g5N1Jw4k";
-
-    let db = null;
-    try {
-      const { createClient } = supabase;
-      db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) { console.error(e); }
-
     var listaEdificios = [];   // nombres de edificios disponibles
     var empleadosCache = [];
     var editandoId = null;
@@ -217,13 +268,16 @@
     var iconoEdificioSVG = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg>';
 
     async function verificarAcceso() {
-      if (!db) { document.getElementById("verificando").textContent = "Sin conexión a la base de datos."; return; }
+      if (!db) { document.getElementById("verificando").textContent = I18N.t("comun.sin_conexion"); return; }
       const { data } = await db.auth.getSession();
       if (!data.session) { window.location.href = "login.html"; return; }
       document.getElementById("verificando").style.display = "none";
       document.getElementById("contenedor").style.display = "block";
+      I18N.aplicar();
+      I18N.onChange(function(){ I18N.aplicar(); renderLista(); });
       await cargarEdificios();
       cargarEmpleados();
+      configurarFiltrosEmpleados();
       configurarSelector("add");
       configurarSelector("edit");
     }
@@ -234,15 +288,21 @@
     }
 
     function iniciales(nombre) {
-      var partes = nombre.trim().split(" ");
+      var partes = (nombre || "").trim().split(" ");
       if (partes.length === 1) return partes[0].substring(0,2).toUpperCase();
       return (partes[0][0] + partes[partes.length-1][0]).toUpperCase();
     }
+
+    var mapaEdificioId = {};   // nombre -> id
+    var mapaIdEdificio = {};   // id -> nombre
 
     async function cargarEdificios() {
       const { data, error } = await db.from("edificios").select("*").eq("activo", true).order("nombre", { ascending: true });
       if (error || !data) { listaEdificios = []; return; }
       listaEdificios = data.map(function(e){ return e.nombre; });
+      mapaEdificioId = {};
+      mapaIdEdificio = {};
+      data.forEach(function(e){ mapaEdificioId[e.nombre] = e.id; mapaIdEdificio[e.id] = e.nombre; });
     }
 
     // ===== SELECTOR DE CHIPS + BUSCADOR (reutilizable) =====
@@ -253,7 +313,6 @@
       buscador.addEventListener("focus", function(){ caja.classList.add("focus"); pintarSugerencias(tipo); });
       buscador.addEventListener("blur", function(){
         caja.classList.remove("focus");
-        // Cerrar sugerencias con un pequeño retraso para permitir el clic
         setTimeout(function(){ document.getElementById(tipo + "-sugerencias").classList.remove("visible"); }, 180);
       });
     }
@@ -264,13 +323,21 @@
       seleccion[tipo].forEach(function(nombre) {
         var chip = document.createElement("span");
         chip.className = "chip";
-        chip.innerHTML = nombre + ' <span class="quitar">&times;</span>';
-        chip.querySelector(".quitar").onclick = function(e) {
+        // El nombre del edificio va como texto (anti-XSS); el botón quitar es estático
+        var txt = document.createElement("span");
+        txt.textContent = nombre;
+        var quitar = document.createElement("span");
+        quitar.className = "quitar";
+        quitar.innerHTML = "&times;";
+        quitar.addEventListener("click", function(e) {
           e.stopPropagation();
           seleccion[tipo] = seleccion[tipo].filter(function(x){ return x !== nombre; });
           pintarChips(tipo);
           pintarSugerencias(tipo);
-        };
+        });
+        chip.appendChild(txt);
+        chip.appendChild(document.createTextNode(" "));
+        chip.appendChild(quitar);
         cont.appendChild(chip);
       });
     }
@@ -286,7 +353,6 @@
 
       sug.innerHTML = "";
 
-      // "Sin asignar" como primera opción (solo al editar, y solo si no estás buscando algo específico)
       var mostrarSinAsignar = (tipo === "edit") && (texto === "" || "sin asignar".indexOf(texto) !== -1);
       if (mostrarSinAsignar) {
         var itemSin = document.createElement("div");
@@ -320,7 +386,10 @@
       }
 
       if (disponibles.length === 0 && !mostrarSinAsignar) {
-        sug.innerHTML = '<div class="sug-vacio">' + (texto ? "Sin coincidencias." : "Ya agregaste todos los edificios.") + '</div>';
+        var vacioDiv = document.createElement("div");
+        vacioDiv.className = "sug-vacio";
+        vacioDiv.textContent = texto ? I18N.t("emp.sin_coincidencias") : I18N.t("emp.todos_agregados");
+        sug.appendChild(vacioDiv);
         sug.classList.add("visible");
         return;
       }
@@ -328,7 +397,11 @@
       disponibles.forEach(function(nombre) {
         var item = document.createElement("div");
         item.className = "sug-item";
-        item.innerHTML = iconoEdificioSVG + '<span>' + nombre + '</span>';
+        // icono estático + nombre como texto (anti-XSS)
+        item.innerHTML = iconoEdificioSVG;
+        var span = document.createElement("span");
+        span.textContent = nombre;
+        item.appendChild(span);
         item.onmousedown = function(e) {
           e.preventDefault();
           seleccion[tipo].push(nombre);
@@ -343,108 +416,170 @@
     }
 
     // ===== LISTA DE EMPLEADOS AGRUPADA =====
-    async function cargarEmpleados() {
-      var cont = document.getElementById("lista-empleados");
-      cont.innerHTML = '<div class="cargando">Cargando...</div>';
-      const { data, error } = await db.from("empleados").select("*").order("created_at", { ascending: true });
-      if (error) { cont.innerHTML = '<div class="mensaje error" style="display:block">Error: ' + error.message + '</div>'; return; }
-      if (!data || data.length === 0) { cont.innerHTML = '<div class="cargando">Aún no hay empleados. Agrega el primero arriba.</div>'; return; }
+    var filtroActual = "todos";
 
-      empleadosCache = data;
-
-      // Solo agrupamos por edificios ACTIVOS (listaEdificios trae solo activos)
-      var grupos = {};
-      var huerfanos = [];   // empleados que no quedaron en ningún edificio activo
-
-      data.forEach(function(emp) {
-        var edificiosEmp = (emp.edificios || "").split(",").map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
-        // Solo los edificios del empleado que siguen activos
-        var edificiosActivos = edificiosEmp.filter(function(ed){ return listaEdificios.indexOf(ed) !== -1; });
-
-        if (edificiosActivos.length === 0) {
-          huerfanos.push(emp);
-        } else {
-          edificiosActivos.forEach(function(ed) {
-            if (!grupos[ed]) grupos[ed] = [];
-            grupos[ed].push(emp);
-          });
-        }
-      });
-
-      cont.innerHTML = "";
-
-      var nombresEdificios = Object.keys(grupos).sort();
-
-      if (nombresEdificios.length === 0 && huerfanos.length === 0) {
-        cont.innerHTML = '<div class="cargando">Aún no hay empleados. Agrega el primero arriba.</div>';
-        return;
-      }
-
-      // Grupos de edificios activos
-      nombresEdificios.forEach(function(edificio, idx) {
-        var emps = grupos[edificio];
-        var activos = emps.filter(function(e){ return e.activo; }).length;
-        var cuerpo = document.createElement("div");
-        cuerpo.className = "grupo-cuerpo";
-        emps.forEach(function(emp){ cuerpo.appendChild(filaEmpleado(emp)); });
-
-        var claseAbierto = idx === 0 ? " abierto" : "";
-        var grupo = document.createElement("div");
-        grupo.className = "grupo-edificio" + claseAbierto;
-        grupo.innerHTML =
-          '<div class="grupo-cabecera" onclick="this.parentElement.classList.toggle(\'abierto\')">' +
-            '<div class="grupo-ico">' + iconoEdificioSVG + '</div>' +
-            '<div class="grupo-info">' +
-              '<div class="grupo-nombre">' + edificio + '</div>' +
-              '<div class="grupo-conteo">' + emps.length + ' empleado' + (emps.length !== 1 ? 's' : '') + ' · ' + activos + ' activo' + (activos !== 1 ? 's' : '') + '</div>' +
-            '</div>' +
-            '<div class="grupo-flecha">▶</div>' +
-          '</div>';
-        grupo.appendChild(cuerpo);
-        cont.appendChild(grupo);
-      });
-
-      // Grupo especial "Sin asignar" (empleados sin edificio activo) — al final
-      if (huerfanos.length > 0) {
-        var cuerpoH = document.createElement("div");
-        cuerpoH.className = "grupo-cuerpo";
-        huerfanos.forEach(function(emp){ cuerpoH.appendChild(filaEmpleado(emp)); });
-
-        var grupoH = document.createElement("div");
-        grupoH.className = "grupo-edificio grupo-sin-asignar" + (nombresEdificios.length === 0 ? " abierto" : "");
-        grupoH.innerHTML =
-          '<div class="grupo-cabecera" onclick="this.parentElement.classList.toggle(\'abierto\')">' +
-            '<div class="grupo-ico ico-sin-asignar"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="17" y1="8" x2="22" y2="13"></line><line x1="22" y1="8" x2="17" y2="13"></line></svg></div>' +
-            '<div class="grupo-info">' +
-              '<div class="grupo-nombre">Sin asignar</div>' +
-              '<div class="grupo-conteo">' + huerfanos.length + ' empleado' + (huerfanos.length !== 1 ? 's' : '') + ' esperando edificio · edítalos para reasignar</div>' +
-            '</div>' +
-            '<div class="grupo-flecha">▶</div>' +
-          '</div>';
-        grupoH.appendChild(cuerpoH);
-        cont.appendChild(grupoH);
-      }
+    function edificiosDe(emp) {
+      // Edificios del empleado desde la tabla normalizada (adjuntados como emp._edificios)
+      return emp._edificios || [];
+    }
+    function coincideFiltro(emp) {
+      if (filtroActual === "activos") return !!emp.activo;
+      if (filtroActual === "inactivos") return !emp.activo;
+      return true;
+    }
+    function coincideBusqueda(emp, termino) {
+      if (!termino) return true;
+      if ((emp.nombre || "").toLowerCase().indexOf(termino) !== -1) return true;
+      return edificiosDe(emp).some(function(ed){ return ed.toLowerCase().indexOf(termino) !== -1; });
+    }
+    function empleadosVisibles() {
+      var b = document.getElementById("emp-buscador");
+      var termino = b ? b.value.trim().toLowerCase() : "";
+      return empleadosCache.filter(function(emp){ return coincideFiltro(emp) && coincideBusqueda(emp, termino); });
+    }
+    function actualizarContadorEmpleados() {
+      var el = document.getElementById("emp-contador");
+      if (!el) return;
+      var b = document.getElementById("emp-buscador");
+      var termino = b ? b.value.trim().toLowerCase() : "";
+      var total = empleadosCache.length;
+      var vis = empleadosVisibles().length;
+      if (termino || filtroActual !== "todos") el.textContent = "Mostrando " + vis + " de " + total;
+      else el.textContent = total + (total === 1 ? " empleado" : " empleados");
     }
 
-    // Construye la fila de un empleado (reutilizable)
+    async function cargarEmpleados() {
+      var cont = document.getElementById("lista-empleados");
+      cont.innerHTML = '<div class="cargando" data-i18n="emp.cargando">Cargando...</div>';
+      const { data, error } = await db.from("empleados").select("*").order("nombre", { ascending: true });
+      if (error) {
+        cont.innerHTML = "";
+        var errDiv = document.createElement("div");
+        errDiv.className = "mensaje error";
+        errDiv.style.display = "block";
+        errDiv.textContent = "Error: " + error.message;
+        cont.appendChild(errDiv);
+        return;
+      }
+      empleadosCache = data || [];
+
+      // Traer los vínculos empleado-edificio (tabla normalizada) y adjuntarlos a cada empleado
+      const vinc = await db.from("empleado_edificios").select("empleado_id, edificio_id");
+      var porEmpleado = {};
+      if (!vinc.error && vinc.data) {
+        vinc.data.forEach(function(v){
+          if (!porEmpleado[v.empleado_id]) porEmpleado[v.empleado_id] = [];
+          var nombre = mapaIdEdificio[v.edificio_id];
+          if (nombre) porEmpleado[v.empleado_id].push(nombre);
+        });
+      }
+      empleadosCache.forEach(function(emp){
+        emp._edificios = (porEmpleado[emp.id] || []).sort();   // lista de nombres desde la tabla nueva
+      });
+
+      renderLista();
+    }
+
+    function renderLista() {
+      var cont = document.getElementById("lista-empleados");
+      cont.innerHTML = "";
+      if (empleadosCache.length === 0) {
+        cont.innerHTML = '<div class="emp-vacio"></div>'; cont.firstChild.textContent = I18N.t("emp.vacio_inicial");
+        actualizarContadorEmpleados();
+        return;
+      }
+      var visibles = empleadosVisibles();
+      if (visibles.length === 0) {
+        cont.innerHTML = '<div class="emp-vacio"></div>'; cont.firstChild.textContent = I18N.t("emp.sin_coincidencias");
+        actualizarContadorEmpleados();
+        return;
+      }
+      visibles.forEach(function(emp){ cont.appendChild(filaEmpleado(emp)); });
+      actualizarContadorEmpleados();
+    }
+
+    // Construye la fila de un empleado de forma SEGURA contra XSS.
     function filaEmpleado(emp) {
       var div = document.createElement("div");
       div.className = "empleado" + (emp.activo ? "" : " emp-inactivo");
+      div.dataset.id = emp.id;
       div.innerHTML =
-        '<div class="emp-avatar">' + iniciales(emp.nombre) + '</div>' +
+        '<div class="emp-avatar"></div>' +
         '<div class="emp-info">' +
-          '<div class="emp-nombre">' + emp.nombre + '</div>' +
-          '<div class="emp-pin">PIN: ' + emp.pin + ' · ' + (emp.activo ? "Activo" : "Inactivo") + '</div>' +
+          '<div class="emp-nombre"></div>' +
+          '<div class="emp-edificios"></div>' +
+          '<div class="emp-pin"></div>' +
         '</div>' +
         '<div class="emp-acciones">' +
-          '<button class="btn-icono editar" title="Editar" onclick="abrirEditar(' + emp.id + ')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"></path></svg></button>' +
-          '<button class="btn-icono eliminar" title="Eliminar" onclick="eliminarEmpleado(' + emp.id + ', \'' + emp.nombre.replace(/'/g, "\\'") + '\')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>' +
+          '<button class="btn-icono editar" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"></path></svg></button>' +
+          '<button class="btn-icono eliminar" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>' +
           '<label class="switch">' +
-            '<input type="checkbox" ' + (emp.activo ? "checked" : "") + ' onchange="cambiarEstado(' + emp.id + ', this.checked)" />' +
+            '<input type="checkbox" ' + (emp.activo ? "checked" : "") + ' />' +
             '<span class="switch-track"></span><span class="switch-thumb"></span>' +
           '</label>' +
         '</div>';
+      div.querySelector(".emp-avatar").textContent = iniciales(emp.nombre);
+      div.querySelector(".emp-nombre").textContent = emp.nombre || "";
+      div.querySelector(".emp-pin").textContent = I18N.t("emp.pin_label") + (emp.pin || "");
+      var edis = edificiosDe(emp);
+      var contEdi = div.querySelector(".emp-edificios");
+      if (edis.length === 0) {
+        contEdi.className = "emp-sin-edificio";
+        contEdi.textContent = I18N.t("emp.sin_edificio_asignado");
+      } else {
+        edis.forEach(function(ed){
+          var chip = document.createElement("span");
+          chip.className = "emp-chip";
+          chip.textContent = ed;
+          contEdi.appendChild(chip);
+        });
+      }
+      div.querySelector(".btn-icono.editar").addEventListener("click", function() { abrirEditar(emp.id); });
+      div.querySelector(".btn-icono.eliminar").addEventListener("click", function() { eliminarEmpleado(emp.id, emp.nombre, div); });
+      div.querySelector(".switch input").addEventListener("change", function(e) { cambiarEstado(emp.id, e.target.checked, div); });
       return div;
+    }
+
+    function configurarFiltrosEmpleados() {
+      var buscador = document.getElementById("emp-buscador");
+      if (buscador) buscador.addEventListener("input", function(){ renderLista(); });
+      var filtros = document.querySelectorAll(".emp-filtro");
+      filtros.forEach(function(btn){
+        btn.addEventListener("click", function(){
+          filtros.forEach(function(b){ b.classList.remove("activo"); });
+          btn.classList.add("activo");
+          filtroActual = btn.dataset.filtro;
+          renderLista();
+        });
+      });
+    }
+
+    // Lista de PIN fáciles de adivinar que NO se deben generar
+    var PINS_FACILES = {
+      "0000":1,"1111":1,"2222":1,"3333":1,"4444":1,"5555":1,"6666":1,"7777":1,"8888":1,"9999":1,
+      "1234":1,"2345":1,"3456":1,"4567":1,"5678":1,"6789":1,"7890":1,
+      "4321":1,"5432":1,"6543":1,"7654":1,"8765":1,"9876":1,"0987":1,
+      "1212":1,"1122":1,"2580":1,"0852":1,"1004":1,"2020":1,"2024":1,"2025":1,"6969":1,"1313":1
+    };
+
+    function generarPin(campoId) {
+      // PIN ya usados en la compañía (empleadosCache viene filtrado por RLS)
+      var usados = {};
+      empleadosCache.forEach(function(e){ if (e.pin) usados[String(e.pin)] = 1; });
+
+      var nuevo = null;
+      // Hasta 2000 intentos: de sobra para 10.000 combinaciones posibles
+      for (var i = 0; i < 2000; i++) {
+        var n = Math.floor(Math.random() * 10000);
+        var candidato = ("000" + n).slice(-4);   // siempre 4 dígitos
+        if (!usados[candidato] && !PINS_FACILES[candidato]) { nuevo = candidato; break; }
+      }
+
+      if (!nuevo) {
+        uiToast("No se pudo generar un PIN libre. Revisa cuántos empleados tienes.", "error");
+        return;
+      }
+      document.getElementById(campoId).value = nuevo;
     }
 
     async function agregarEmpleado() {
@@ -461,19 +596,51 @@
       document.getElementById("btn-agregar").disabled = true;
       msg.textContent = "Agregando..."; msg.className = "mensaje"; msg.style.display = "block";
 
-      const { error } = await db.from("empleados").insert([{ nombre: nombre, pin: pin, activo: true, edificios: seleccion.add.join(", ") }]);
+      // 1) Crear el empleado (los edificios van en la tabla normalizada, paso 2)
+      const { data: creado, error } = await db.from("empleados")
+        .insert([{ nombre: nombre, pin: pin, activo: true }])
+        .select()
+        .single();
 
       if (error) {
         msg.textContent = "Error: " + error.message; msg.className = "mensaje error";
+        document.getElementById("btn-agregar").disabled = false;
+        return;
+      }
+
+      // 2) Insertar los vínculos empleado-edificio en la tabla normalizada
+      var errVinc = await guardarVinculos(creado.id, creado.compania_id, seleccion.add);
+      if (errVinc) {
+        msg.textContent = "Empleado creado, pero hubo un problema al asignar edificios: " + errVinc; msg.className = "mensaje error";
       } else {
         msg.textContent = "✓ Empleado agregado"; msg.className = "mensaje ok";
-        document.getElementById("nombre").value = "";
-        document.getElementById("pin").value = "";
-        seleccion.add = [];
-        pintarChips("add");
-        cargarEmpleados();
       }
+      document.getElementById("nombre").value = "";
+      document.getElementById("pin").value = "";
+      seleccion.add = [];
+      pintarChips("add");
+      cargarEmpleados();
       document.getElementById("btn-agregar").disabled = false;
+    }
+
+    // Reemplaza los vínculos de un empleado: borra los actuales e inserta los nuevos.
+    // Devuelve null si todo OK, o un mensaje de error.
+    async function guardarVinculos(empleadoId, companiaId, nombresEdificios) {
+      // Borrar los vínculos actuales del empleado
+      const del = await db.from("empleado_edificios").delete().eq("empleado_id", empleadoId);
+      if (del.error) return del.error.message;
+
+      // Convertir nombres -> ids y armar las filas a insertar
+      var filas = [];
+      nombresEdificios.forEach(function(nombre){
+        var idEd = mapaEdificioId[nombre];
+        if (idEd) filas.push({ empleado_id: empleadoId, edificio_id: idEd, compania_id: companiaId });
+      });
+      if (filas.length === 0) return null;   // sin edificios: nada que insertar
+
+      const ins = await db.from("empleado_edificios").insert(filas);
+      if (ins.error) return ins.error.message;
+      return null;
     }
 
     function abrirEditar(id) {
@@ -485,7 +652,7 @@
       document.getElementById("mensaje-editar").className = "mensaje";
       document.getElementById("edit-buscador").value = "";
 
-      seleccion.edit = (emp.edificios || "").split(",").map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+      seleccion.edit = edificiosDe(emp).slice();   // desde la tabla normalizada (_edificios)
       pintarChips("edit");
       document.getElementById("edit-sugerencias").classList.remove("visible");
       document.getElementById("modal-editar").classList.add("abierto");
@@ -510,32 +677,69 @@
       document.getElementById("btn-guardar-edit").disabled = true;
       msg.textContent = "Guardando..."; msg.className = "mensaje"; msg.style.display = "block";
 
-      const { error } = await db.from("empleados").update({ nombre: nombre, pin: pin, edificios: seleccion.edit.join(", ") }).eq("id", editandoId);
+      // 1) Actualizar datos del empleado (los edificios van en la tabla normalizada, paso 2)
+      const { error } = await db.from("empleados").update({ nombre: nombre, pin: pin }).eq("id", editandoId);
+
+      if (error) {
+        document.getElementById("btn-guardar-edit").disabled = false;
+        msg.textContent = "Error: " + error.message; msg.className = "mensaje error";
+        return;
+      }
+
+      // 2) Actualizar los vínculos en la tabla normalizada
+      var emp = empleadosCache.find(function(e){ return e.id === editandoId; });
+      var companiaId = emp ? emp.compania_id : null;
+      var errVinc = await guardarVinculos(editandoId, companiaId, seleccion.edit);
 
       document.getElementById("btn-guardar-edit").disabled = false;
-      if (error) {
-        msg.textContent = "Error: " + error.message; msg.className = "mensaje error";
+      if (errVinc) {
+        msg.textContent = "Guardado, pero hubo un problema con los edificios: " + errVinc; msg.className = "mensaje error";
       } else {
         cerrarEditar();
         cargarEmpleados();
       }
     }
 
-    async function eliminarEmpleado(id, nombre) {
+    async function eliminarEmpleado(id, nombre, rowEl) {
       const ok = await uiConfirm("¿Eliminar a " + nombre + "? Esta acción no se puede deshacer. (Sus registros de limpieza se conservan.)", { titulo: "Eliminar empleado", textoOk: "Sí, eliminar", peligro: true });
       if (!ok) return;
       const { error } = await db.from("empleados").delete().eq("id", id);
       if (error) { uiToast("No se pudo eliminar: " + error.message, "error"); return; }
-      cargarEmpleados();
+      // Quitar de la cache en memoria
+      empleadosCache = empleadosCache.filter(function(e){ return e.id !== id; });
+      // Quitar solo esa fila, sin recargar (no salta arriba).
+      // Si ya no queda ninguna visible, re-render para mostrar el estado vacío correcto.
+      if (rowEl && empleadosVisibles().length > 0) {
+        rowEl.remove();
+        actualizarContadorEmpleados();
+      } else {
+        renderLista();
+      }
     }
 
-    async function cambiarEstado(id, nuevoEstado) {
+    async function cambiarEstado(id, nuevoEstado, rowEl) {
       const { error } = await db.from("empleados").update({ activo: nuevoEstado }).eq("id", id);
-      if (error) uiToast("No se pudo cambiar el estado: " + error.message, "error");
-      cargarEmpleados();
+      if (error) {
+        uiToast("No se pudo cambiar el estado: " + error.message, "error");
+        var sw = rowEl ? rowEl.querySelector(".switch input") : null;
+        if (sw) sw.checked = !nuevoEstado;  // revertir si falló
+        return;
+      }
+      // Actualizar la cache en memoria
+      var emp = empleadosCache.find(function(e){ return e.id === id; });
+      if (emp) emp.activo = nuevoEstado;
+
+      if (!rowEl) { renderLista(); return; }
+      // Si con el filtro actual la fila ya no debe verse, quitarla; si no, actualizarla en sitio
+      if (emp && !coincideFiltro(emp)) {
+        rowEl.remove();
+      } else {
+        rowEl.classList.toggle("emp-inactivo", !nuevoEstado);
+      }
+      actualizarContadorEmpleados();
     }
 
     verificarAcceso();
-  </script>
+    </script>
 </body>
 </html>
