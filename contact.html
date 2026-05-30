@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CleanTrack — Contact us</title>
+  <title data-i18n="cont.titulo_pagina">CleanTrack — Contact us</title>
   <meta name="description" content="Request a free quote for CleanTrack. Your first 30 days are free — no cost, no commitment." />
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="idiomas.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -143,66 +144,67 @@
         <span></span><span></span><span></span>
       </button>
       <div class="nav-links" id="navLinks">
-        <a href="/#how">How it works</a>
-        <a href="/#why">Why CleanTrack</a>
-        <a href="login.html" class="login">Supervisor login</a>
+        <a href="/#how" data-i18n="land.nav_how">How it works</a>
+        <a href="/#why" data-i18n="land.nav_why">Why CleanTrack</a>
+        <a href="login.html" class="login" data-i18n="land.nav_login">Supervisor login</a>
+        <button class="login" data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma" style="background:transparent;cursor:pointer;font-family:inherit;">EN</button>
       </div>
     </div>
   </nav>
 
   <header class="head">
     <img src="logo-simbolo.png" alt="CleanTrack" />
-    <h1>Let's talk about your <span class="acento">cleaning team</span></h1>
+    <h1><span data-i18n="cont.h1_a">Let's talk about your</span> <span class="acento" data-i18n="cont.h1_b">cleaning team</span></h1>
     <div class="linea"></div>
-    <p class="sub frase">Tell us a bit about your company and we'll send you a tailored quote.</p>
+    <p class="sub frase" data-i18n="cont.sub">Tell us a bit about your company and we'll send you a tailored quote.</p>
   </header>
 
   <main class="contenido">
     <div class="grid">
 
       <div class="tarjeta">
-        <h2>Request a quote</h2>
-        <p class="desc">Fill out the form and we'll get back to you shortly. No commitment.</p>
+        <h2 data-i18n="cont.form_titulo">Request a quote</h2>
+        <p class="desc" data-i18n="cont.form_sub">Fill out the form and we'll get back to you shortly. No commitment.</p>
 
         <div class="campo">
-          <label for="nombre">Your name</label>
+          <label for="nombre" data-i18n="cont.f_nombre">Your name</label>
           <input type="text" id="nombre" placeholder="John Smith" autocomplete="name" />
         </div>
         <div class="campo">
-          <label for="empresa">Company name</label>
+          <label for="empresa" data-i18n="cont.f_empresa">Company name</label>
           <input type="text" id="empresa" placeholder="Smith Cleaning Services" autocomplete="organization" />
         </div>
         <div class="campo">
-          <label for="email">Email</label>
+          <label for="email" data-i18n="cont.f_email">Email</label>
           <input type="email" id="email" placeholder="you@company.com" autocomplete="email" />
         </div>
         <div class="campo">
-          <label for="edificios">How many buildings do you service?</label>
+          <label for="edificios" data-i18n="cont.f_edificios">How many buildings do you service?</label>
           <select id="edificios">
-            <option value="">Select an option</option>
-            <option value="1-2">1–2 buildings</option>
-            <option value="3-5">3–5 buildings</option>
-            <option value="6-10">6–10 buildings</option>
-            <option value="10+">More than 10 buildings</option>
+            <option value="" data-i18n="cont.f_select">Select an option</option>
+            <option value="1-2" data-i18n="cont.f_op1">1–2 buildings</option>
+            <option value="3-5" data-i18n="cont.f_op2">3–5 buildings</option>
+            <option value="6-10" data-i18n="cont.f_op3">6–10 buildings</option>
+            <option value="10+" data-i18n="cont.f_op4">More than 10 buildings</option>
           </select>
         </div>
         <div class="campo">
-          <label for="mensaje">Anything else we should know? (optional)</label>
+          <label for="mensaje" data-i18n="cont.f_mensaje">Anything else we should know? (optional)</label>
           <textarea id="mensaje" placeholder="Tell us about your team, your needs, or any questions you have."></textarea>
         </div>
 
-        <button class="btn-enviar" id="btnEnviar" onclick="enviar()">Send request</button>
+        <button class="btn-enviar" id="btnEnviar" onclick="enviar()" data-i18n="cont.f_enviar">Send request</button>
 
         <div class="aviso" id="aviso"></div>
       </div>
 
       <div class="tarjeta info">
-        <h3>Contact</h3>
+        <h3 data-i18n="cont.contacto_titulo">Contact</h3>
 
         <div class="info-item">
           <div class="ic">✉️</div>
           <div>
-            <div class="et">Email</div>
+            <div class="et" data-i18n="cont.email_label">Email</div>
             <div class="vl"><a href="mailto:info@cleantrack-app.com">info@cleantrack-app.com</a></div>
           </div>
         </div>
@@ -210,14 +212,14 @@
         <div class="info-item">
           <div class="ic">🌐</div>
           <div>
-            <div class="et">Website</div>
+            <div class="et" data-i18n="cont.web_label">Website</div>
             <div class="vl">cleantrack-app.com</div>
           </div>
         </div>
 
         <div class="gratis">
-          <b>Your first 30 days are free</b>
-          Try it risk-free. We help you set everything up — no cost, no commitment.
+          <b data-i18n="cont.promo_titulo">Your first 30 days are free</b>
+          <span data-i18n="cont.promo_sub">Try it risk-free. We help you set everything up — no cost, no commitment.</span>
         </div>
       </div>
 
@@ -226,11 +228,12 @@
 
   <footer>
     <div class="marca">CleanTrack</div>
-    <div class="frase">Every cleaning, verified.</div>
-    <div style="margin-top:12px; font-size:13px;">© <span id="year"></span> CleanTrack · <a href="login.html">Supervisor login</a></div>
+    <div class="frase" data-i18n="land.foot_frase">Every cleaning, verified.</div>
+    <div style="margin-top:12px; font-size:13px;">© <span id="year"></span> CleanTrack · <a href="login.html" data-i18n="land.foot_login">Supervisor login</a></div>
   </footer>
 
   <script>
+    if (window.I18N) { I18N.aplicar(); I18N.onChange(function(){ I18N.aplicar(); }); }
     document.getElementById("year").textContent = new Date().getFullYear();
 
     function toggleMenu() {
