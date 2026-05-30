@@ -383,7 +383,8 @@
       "land.cta_sub": "Tus primeros 30 días son gratis. Te ayudamos a configurar todo — sin costo, sin compromiso.",
       "land.cta_btn": "Contáctanos para una cotización",
       "land.foot_frase": "Cada limpieza, verificada.",
-      "land.foot_login": "Acceso supervisor"
+      "land.foot_login": "Acceso supervisor",
+      "land.foot_privacy": "Política de Privacidad"
     },
     en: {
       "comun.salir": "Log out",
@@ -753,7 +754,8 @@
       "land.cta_sub": "Your first 30 days are free. We help you set everything up — no cost, no commitment.",
       "land.cta_btn": "Contact us for a quote",
       "land.foot_frase": "Every cleaning, verified.",
-      "land.foot_login": "Supervisor login"
+      "land.foot_login": "Supervisor login",
+      "land.foot_privacy": "Privacy Policy"
     }
   };
 
