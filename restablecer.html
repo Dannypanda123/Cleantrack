@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="rst.titulo_pagina">CleanTrack — Restablecer contraseña</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="idiomas.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --azul-900: #0F1F36;
+      --azul-700: #1B2E4D;
+      --azul-500: #3D5170;
+      --azul-claro: #DCE3EF;
+      --grafito-900: #2E3640;
+      --grafito-700: #3D4654;
+      --verde: #1D9E75;
+      --gris-fondo: #ECEBE4;
+      --gris-texto: #6B6A64;
+      --gris-borde: #E2E0D8;
+      --texto: #1F2A37;
+      --blanco: #FFFFFF;
+      --rojo: #A32D2D;
+      --rojo-claro: #FCEBEB;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: safe center;
+      justify-content: center;
+      padding: 20px;
+      /* Fondo gris pastel suave con un toque de profundidad azul */
+      background:
+        radial-gradient(circle at 25% 20%, rgba(27,46,77,0.08), transparent 42%),
+        radial-gradient(circle at 80% 85%, rgba(15,31,54,0.06), transparent 45%),
+        linear-gradient(160deg, #F1F0EA 0%, #E7E6DF 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    /* Patrón sutil de cuadrícula muy tenue */
+    body::before {
+      content: "";
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(0,0,0,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.018) 1px, transparent 1px);
+      background-size: 44px 44px;
+      pointer-events: none;
+    }
+
+    .caja {
+      position: relative;
+      width: 100%; max-width: 400px;
+      background: var(--blanco);
+      border-radius: 20px;
+      padding: 0;
+      box-shadow: 0 20px 50px rgba(15,31,54,0.20), 0 4px 12px rgba(0,0,0,0.08);
+      overflow: hidden;
+      animation: aparecer 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes aparecer { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Cabecera con el logo sobre banda azul de marca */
+    .cabecera {
+      background: linear-gradient(135deg, var(--azul-700), var(--azul-900));
+      padding: 32px 32px 28px;
+      text-align: center;
+      position: relative;
+    }
+    .logo-img {
+      width: 125px; height: 125px; object-fit: contain; display: block; margin: 0 auto 6px;
+      filter: drop-shadow(0 6px 18px rgba(0,0,0,0.28));
+    }
+    .marca-nombre {
+      font-family: "Sora", -apple-system, sans-serif;
+      color: #fff; font-size: 26px; font-weight: 700; letter-spacing: 0.01em;
+      text-align: center; line-height: 1;
+    }
+    .marca-nombre .verde-txt { color: var(--verde); }
+    .marca-linea {
+      width: 38px; height: 3px; background: var(--verde); border-radius: 3px;
+      margin: 12px auto 0;
+    }
+    .cabecera .titulo { color: #fff; font-size: 17px; font-weight: 600; letter-spacing: 0.01em; margin-top: 14px; }
+    .cabecera .subtitulo { color: rgba(255,255,255,0.72); font-size: 13px; margin-top: 4px; letter-spacing: 0.02em; }
+
+    .cuerpo { padding: 30px 32px 34px; }
+
+    label { display: block; font-size: 12.5px; font-weight: 600; color: var(--gris-texto); margin-bottom: 7px; letter-spacing: 0.02em; }
+    .campo { margin-bottom: 18px; }
+    input {
+      width: 100%; padding: 14px 15px; font-size: 15px;
+      border: 1.5px solid var(--gris-borde); border-radius: 11px;
+      outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+      background: #FCFBF8;
+    }
+    input:focus { border-color: var(--azul-500); box-shadow: 0 0 0 3px rgba(27,46,77,0.16); background: #fff; }
+
+    .btn {
+      width: 100%; padding: 15px; border: none; border-radius: 11px;
+      font-size: 15px; font-weight: 600; cursor: pointer; color: #fff;
+      background: linear-gradient(135deg, var(--grafito-700), var(--grafito-900));
+      transition: transform 0.08s, box-shadow 0.15s; margin-top: 4px;
+      box-shadow: 0 4px 14px rgba(46,54,64,0.32);
+    }
+    .btn:hover { box-shadow: 0 6px 20px rgba(46,54,64,0.45); }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.6; cursor: default; }
+
+    .mensaje { text-align: center; font-size: 13px; margin-top: 16px; padding: 11px; border-radius: 10px; display: none; }
+    .mensaje.error { background: var(--rojo-claro); color: var(--rojo); display: block; }
+    .mensaje.cargando { background: var(--azul-claro); color: var(--azul-900); display: block; }
+
+    .pie { text-align: center; font-size: 11.5px; color: var(--gris-texto); margin-top: 22px; letter-spacing: 0.03em; }
+  </style>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+</head>
+<body>
+  <div class="caja">
+    <div class="cabecera">
+      <button data-i18n-toggle onclick="I18N.toggle()" aria-label="Cambiar idioma" style="position:absolute; top:14px; right:14px; background:rgba(255,255,255,0.15); border:1.5px solid rgba(255,255,255,0.35); color:#fff; padding:5px 11px; border-radius:9px; font-size:12px; font-weight:600; cursor:pointer;">EN</button>
+      <img src="logo-simbolo.png" alt="CleanTrack" class="logo-img" />
+      <div class="marca-nombre">Clean<span class="verde-txt">Track</span></div>
+      <div class="marca-linea"></div>
+      <div class="titulo" data-i18n="log.titulo">Panel del supervisor</div>
+      <div class="subtitulo" data-i18n="log.subtitulo">Gestión profesional de limpieza</div>
+    </div>
+
+        <div class="cuerpo">
+      <div class="campo">
+        <label for="password" data-i18n="rst.nueva">Nueva contraseña</label>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" />
+      </div>
+      <div class="campo">
+        <label for="password2" data-i18n="rst.confirmar">Confirmar contraseña</label>
+        <input type="password" id="password2" placeholder="••••••••" autocomplete="new-password" />
+      </div>
+
+      <button class="btn" id="btn-guardar" onclick="guardarPassword()" data-i18n="rst.guardar">Guardar contraseña</button>
+
+      <div class="mensaje" id="mensaje"></div>
+
+      <div class="olvido"><a href="login.html" data-i18n="rst.volver">Volver a iniciar sesión</a></div>
+
+      <div class="pie" data-i18n="log.pie">CleanTrack · Acceso seguro</div>
+    </div>
+  </div>
+
+  <script>
+    var db = window.db;
+    I18N.aplicar();
+
+    function mostrarMensaje(texto, tipo) {
+      var m = document.getElementById("mensaje");
+      m.textContent = texto;
+      m.className = "mensaje " + tipo;
+    }
+
+    // Al llegar desde el correo, Supabase incluye un token en la URL que crea una sesión temporal
+    // de recuperación. Verificamos que exista antes de permitir cambiar la contraseña.
+    var sesionRecuperacion = false;
+    db.auth.onAuthStateChange(function(event, session) {
+      if (event === "PASSWORD_RECOVERY" || (session && session.user)) {
+        sesionRecuperacion = true;
+      }
+    });
+
+    async function guardarPassword() {
+      var p1 = document.getElementById("password").value;
+      var p2 = document.getElementById("password2").value;
+
+      if (!p1 || !p2) { mostrarMensaje(I18N.t("rst.falta"), "error"); return; }
+      if (p1.length < 8) { mostrarMensaje(I18N.t("rst.corta"), "error"); return; }
+      if (p1 !== p2) { mostrarMensaje(I18N.t("rst.no_coincide"), "error"); return; }
+      if (!db) { mostrarMensaje(I18N.t("log.sin_conexion"), "error"); return; }
+
+      // Verificar que hay sesión (de lo contrario el enlace expiró o es inválido)
+      const { data: sesion } = await db.auth.getSession();
+      if (!sesion || !sesion.session) {
+        mostrarMensaje(I18N.t("rst.enlace_invalido"), "error");
+        return;
+      }
+
+      document.getElementById("btn-guardar").disabled = true;
+      mostrarMensaje(I18N.t("rst.guardando"), "cargando");
+
+      const { error } = await db.auth.updateUser({ password: p1 });
+
+      if (error) {
+        mostrarMensaje(I18N.t("rst.error"), "error");
+        document.getElementById("btn-guardar").disabled = false;
+        console.error(error);
+        return;
+      }
+      mostrarMensaje(I18N.t("rst.exito"), "ok");
+      setTimeout(function(){ window.location.href = "login.html"; }, 2500);
+    }
+
+    document.getElementById("password2").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") guardarPassword();
+    });
+  </script>
+</body>
+</html>
