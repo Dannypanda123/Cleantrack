@@ -87,6 +87,20 @@
       .seccion { margin-bottom: 0; }
       .seccion-equipo { grid-column: 1 / -1; }
     }
+      .nota-cobro { margin-top: 12px; padding: 10px 14px; background: var(--azul-claro, #EAF1FA); color: var(--azul-texto, #185FA5); border-radius: 8px; font-size: 13px; }
+      .invitar-bloque { margin-top: 16px; padding-top: 18px; border-top: 1px solid var(--gris-borde); }
+    .invitar-titulo { font-size: 15px; font-weight: 700; color: var(--azul-osc); margin-bottom: 4px; }
+    .invitar-sub { font-size: 13px; color: var(--gris-texto); margin-bottom: 14px; }
+    .invitar-campos { display: flex; flex-wrap: wrap; gap: 10px; }
+    .inv-input { flex: 1; min-width: 180px; padding: 11px 14px; border: 1.5px solid var(--gris-borde); border-radius: 11px; font-size: 14px; font-family: inherit; color: var(--texto); }
+    .inv-input:focus { outline: none; border-color: var(--azul); }
+    .btn-invitar { background: var(--verde-accion); color: #fff; border: none; padding: 11px 20px; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; }
+    .btn-invitar:hover { background: #14724f; }
+    .btn-invitar:disabled { opacity: 0.6; cursor: not-allowed; }
+    .inv-mensaje { margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 13px; }
+    .inv-mensaje.ok { background: var(--verde-claro); color: var(--verde-texto); }
+    .inv-mensaje.err { background: var(--ambar-claro); color: var(--ambar-texto); }
+    .inv-mensaje.info { background: var(--azul-claro); color: var(--azul-texto); }
   </style>
 </head>
 <body>
@@ -141,7 +155,16 @@
       <div class="seccion seccion-equipo">
         <div class="seccion-titulo" data-i18n="pan.equipo_titulo">Tu equipo de supervisores</div>
         <div id="equipo-contenido"><div class="cargando" data-i18n="pan.equipo_cargando">Cargando...</div></div>
-        <div class="nota-futuro" data-i18n="pan.nota">Para agregar o quitar supervisores, contacta a soporte técnico por ahora. Pronto podrás gestionarlos directamente desde aquí.</div>
+        <div class="invitar-bloque">
+          <div class="invitar-titulo" data-i18n="pan.inv_titulo">Invitar a un supervisor</div>
+          <div class="invitar-sub" data-i18n="pan.inv_sub">Recibirá un correo para crear su contraseña y acceder con rol de supervisor.</div>
+          <div class="invitar-campos">
+            <input type="text" id="inv-nombre" class="inv-input" data-i18n-ph="pan.inv_nombre_ph" placeholder="Nombre del supervisor" />
+            <input type="email" id="inv-email" class="inv-input" data-i18n-ph="pan.inv_email_ph" placeholder="correo@ejemplo.com" />
+            <button type="button" id="btn-invitar" class="btn-invitar" onclick="invitarSupervisor()" data-i18n="pan.inv_boton">Enviar invitación</button>
+          </div>
+          <div id="inv-mensaje" class="inv-mensaje" style="display:none;"></div>
+        </div>
       </div>
 
     </main>
@@ -151,6 +174,26 @@
   <script>
     // El cliente de Supabase (db) viene de config.js
     var db = window.db;
+
+    // Invitar supervisor — validación lista; la creación real se conecta en Fase 3 (Edge Function segura)
+    function mostrarInvMensaje(texto, tipo) {
+      var m = document.getElementById("inv-mensaje");
+      m.textContent = texto;
+      m.className = "inv-mensaje " + tipo;
+      m.style.display = "block";
+    }
+    function emailValido(e) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+    }
+    async function invitarSupervisor() {
+      var nombre = (document.getElementById("inv-nombre").value || "").trim();
+      var email = (document.getElementById("inv-email").value || "").trim();
+      if (!nombre) { mostrarInvMensaje(I18N.t("pan.inv_falta_nombre"), "err"); return; }
+      if (!emailValido(email)) { mostrarInvMensaje(I18N.t("pan.inv_email_invalido"), "err"); return; }
+      // FASE 3: aquí se llamará a la Edge Function segura que crea la invitación.
+      // Por ahora, sin conexión real, avisamos que la función está en preparación.
+      mostrarInvMensaje(I18N.t("pan.inv_en_preparacion"), "info");
+    }
 
     async function verificarAcceso() {
       if (!db) { document.getElementById("verificando").textContent = I18N.t("comun.sin_conexion"); return; }
@@ -182,6 +225,31 @@
       if (!f) return "—";
       var d = new Date(f + "T00:00:00");
       return d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
+    }
+
+    // Calcula la próxima fecha de cobro a partir del día fijo del mes (dia_cobro)
+    function proximoCobro(dia) {
+      if (!dia || dia < 1 || dia > 31) return "—";
+      var hoy = new Date(); hoy.setHours(0,0,0,0);
+      var anio = hoy.getFullYear();
+      var mes = hoy.getMonth(); // 0-11
+      // Ajusta el día al último día del mes si el mes no tiene ese día (ej. 31 en febrero)
+      function fechaEn(anio, mes, dia) {
+        var ultimoDia = new Date(anio, mes + 1, 0).getDate();
+        var d = Math.min(dia, ultimoDia);
+        return new Date(anio, mes, d);
+      }
+      var esteMes = fechaEn(anio, mes, dia);
+      var objetivo;
+      if (esteMes >= hoy) {
+        objetivo = esteMes;
+      } else {
+        // pasar al mes siguiente
+        var m2 = mes + 1, a2 = anio;
+        if (m2 > 11) { m2 = 0; a2++; }
+        objetivo = fechaEn(a2, m2, dia);
+      }
+      return objetivo.getDate() + "/" + (objetivo.getMonth() + 1) + "/" + objetivo.getFullYear();
     }
 
     async function cargarTodo() {
@@ -223,7 +291,15 @@
       cont.appendChild(filaSub(I18N.t("pan.f_inicio"), fmtFecha(c.fecha_inicio_prueba)));
       cont.appendChild(filaSub(I18N.t("pan.f_fin"), fmtFecha(c.fecha_fin_prueba)));
       cont.appendChild(filaSub(I18N.t("pan.f_edificios"), c.edificios_contratados != null ? c.edificios_contratados : "—"));
-      cont.appendChild(filaSub(I18N.t("pan.f_precio"), c.precio_mensual != null ? ("$" + c.precio_mensual) : "—"));
+
+      // Próxima fecha de cobro: mismo día (dia_cobro) cada mes
+      cont.appendChild(filaSub(I18N.t("pan.f_proximo_cobro"), proximoCobro(c.dia_cobro)));
+
+      // Nota: las facturas se envían por correo
+      var nota = document.createElement("div");
+      nota.className = "nota-cobro";
+      nota.textContent = I18N.t("pan.nota_facturas");
+      cont.appendChild(nota);
     }
 
     // Crea una fila de "label -> valor" de forma segura (anti-XSS)
