@@ -119,6 +119,9 @@
     .mensaje.cargando { background: var(--azul-claro); color: var(--azul-900); display: block; }
 
     .pie { text-align: center; font-size: 11.5px; color: var(--gris-texto); margin-top: 22px; letter-spacing: 0.03em; }
+      .olvido { text-align: center; margin-top: 14px; }
+    .olvido a { color: var(--azul, #185FA5); font-size: 13px; text-decoration: none; font-weight: 500; }
+    .olvido a:hover { text-decoration: underline; }
   </style>
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
@@ -147,6 +150,8 @@
 
       <button class="btn" id="btn-entrar" onclick="entrar()" data-i18n="log.entrar">Iniciar sesión</button>
 
+      <div class="olvido"><a href="#" id="link-olvido" onclick="mostrarRecuperar(); return false;" data-i18n="log.olvido">¿Olvidaste tu contraseña?</a></div>
+
       <div class="mensaje" id="mensaje"></div>
 
       <div class="pie" data-i18n="log.pie">CleanTrack · Acceso seguro</div>
@@ -172,6 +177,27 @@
       }
     }
     revisarSesion();
+
+    async function mostrarRecuperar() {
+      var email = document.getElementById("email").value.trim();
+      if (!email) {
+        mostrarMensaje(I18N.t("log.recuperar_pide_email"), "error");
+        document.getElementById("email").focus();
+        return;
+      }
+      if (!db) { mostrarMensaje(I18N.t("log.sin_conexion"), "error"); return; }
+      mostrarMensaje(I18N.t("log.recuperar_enviando"), "cargando");
+      const { error } = await db.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + "/restablecer.html"
+      });
+      if (error) {
+        mostrarMensaje(I18N.t("log.recuperar_error"), "error");
+        console.error(error);
+        return;
+      }
+      // Mensaje neutro: no revela si el email existe o no (buena práctica de seguridad)
+      mostrarMensaje(I18N.t("log.recuperar_ok"), "ok");
+    }
 
     async function entrar() {
       var email = document.getElementById("email").value.trim();
